@@ -1,5 +1,7 @@
 # What can LLMs tell us about the ETI?
 
+**Jason DeBacker** (University of South Carolina) and **Max Ghenis** (PolicyEngine)
+
 ```{admonition} Abstract
 :class: abstract
 

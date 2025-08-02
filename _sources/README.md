@@ -4,41 +4,44 @@ This directory contains the JupyterBook version of "What can LLMs tell us about 
 
 ## Prerequisites
 
-- Python 3.13+
+- Python 3.12 (required for dependency compatibility)
 - [uv](https://github.com/astral-sh/uv) (will be auto-installed if missing)
 
 ## Quick Start
 
 ```bash
-# Install dependencies with uv
+# Install dependencies
 make install
 
-# Run test simulations (uses gpt-4o-mini only)
+# Build and serve the book locally
+make serve
+```
+
+That's it! The book will be available at http://localhost:8000
+
+## Full Pipeline
+
+To run the complete analysis with LLM simulations:
+
+```bash
+# Set your Expected Parrot API key
+export EXPECTED_PARROT_API_KEY=your-key-here
+
+# Run test simulations (uses gpt-4o-mini, cheaper)
 make test-data
 
 # Generate figures and tables
 make figures tables
 
-# Build the book
-make book
-
-# Serve locally
-make serve
-```
-
-## Full Pipeline
-
-To run the complete analysis (warning: expensive API calls!):
-
-```bash
-# Set your OpenAI API key
-export OPENAI_API_KEY=your-key-here
-
-# Run full simulations
-make data
-
 # Build everything
 make all
+```
+
+For full simulations (warning: expensive API calls!):
+
+```bash
+# Run full simulations with multiple models
+make data
 ```
 
 ## Structure
