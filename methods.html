@@ -167,9 +167,9 @@
         </ul>
         <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Methods</a></li>
-<li class="toctree-l1"><a class="reference internal" href="results/pknf_replication.html">Replicating a Lab Experiment</a></li>
-<li class="toctree-l1"><a class="reference internal" href="results/gruber_saez_replication.html">Replicating an Observational Study</a></li>
-<li class="toctree-l1"><a class="reference internal" href="results/model_comparison.html">Model Comparisons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="results/pknf_replication.html">Study 1: Lab Experiment Replication</a></li>
+<li class="toctree-l1"><a class="reference internal" href="results/tax_survey.html">Study 2: Tax Response Survey</a></li>
+<li class="toctree-l1"><a class="reference internal" href="results/model_comparison.html">Cross-Model Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="discussion.html">Discussion and Conclusion</a></li>
 <li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
 </ul>
@@ -364,16 +364,19 @@
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#experimental-approach-replicating-pknf-2024">Experimental Approach: Replicating PKNF (2024)</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#key-modifications-for-llm-implementation">Key Modifications for LLM Implementation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#study-1-lab-experiment-replication-pknf-2024">Study 1: Lab Experiment Replication (PKNF 2024)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#experimental-design">Experimental Design</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#llm-implementation">LLM Implementation</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#observational-approach-replicating-gruber-saez-2002">Observational Approach: Replicating Gruber &amp; Saez (2002)</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#parameter-space">Parameter Space</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#study-2-tax-response-survey">Study 2: Tax Response Survey</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#motivation">Motivation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#factorial-design">Factorial Design</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#prompt-design">Prompt Design</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#eti-calculation">ETI Calculation</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#eti-calculation">ETI Calculation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation-details">Implementation Details</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation">Implementation</a></li>
 </ul>
             </nav>
         </div>
@@ -387,10 +390,13 @@
                   
   <section class="tex2jax_ignore mathjax_ignore" id="methods">
 <h1>Methods<a class="headerlink" href="#methods" title="Link to this heading">#</a></h1>
-<p>This study employs two complementary approaches to elicit elasticity of taxable income (ETI) estimates from large language models:</p>
-<section id="experimental-approach-replicating-pknf-2024">
-<h2>Experimental Approach: Replicating PKNF (2024)<a class="headerlink" href="#experimental-approach-replicating-pknf-2024" title="Link to this heading">#</a></h2>
-<p>We replicate the controlled laboratory experiment of , which measures labor supply responses to changes in tax schedules. The experiment consists of:</p>
+<p>This study employs two complementary approaches to investigate LLM perceptions of tax response behavior:</p>
+<section id="study-1-lab-experiment-replication-pknf-2024">
+<h2>Study 1: Lab Experiment Replication (PKNF 2024)<a class="headerlink" href="#study-1-lab-experiment-replication-pknf-2024" title="Link to this heading">#</a></h2>
+<p>We replicate the controlled laboratory experiment of , which measures labor supply responses to changes in tax schedules. This is a true replication: we use the same experimental design but substitute LLM responses for human subjects.</p>
+<section id="experimental-design">
+<h3>Experimental Design<a class="headerlink" href="#experimental-design" title="Link to this heading">#</a></h3>
+<p>The experiment consists of:</p>
 <ul class="simple">
 <li><p><strong>16 rounds</strong> of decision-making</p></li>
 <li><p><strong>Three tax schedules</strong>:</p>
@@ -403,57 +409,119 @@
 <li><p><strong>Tax reform</strong> after round 8 (either adding or removing the notch)</p></li>
 <li><p><strong>Randomized labor endowments</strong> (14-30 units per round)</p></li>
 </ul>
-<section id="key-modifications-for-llm-implementation">
-<h3>Key Modifications for LLM Implementation<a class="headerlink" href="#key-modifications-for-llm-implementation" title="Link to this heading">#</a></h3>
-<ol class="arabic simple">
-<li><p>We prompt LLMs with the same instructions given to human subjects</p></li>
-<li><p>We do not implement the “real effort” task (typing characters)</p></li>
-<li><p>We use OpenAI’s GPT models (<code class="docutils literal notranslate"><span class="pre">gpt-4o</span></code> and <code class="docutils literal notranslate"><span class="pre">gpt-4o-mini</span></code>)</p></li>
-</ol>
 </section>
-</section>
-<section id="observational-approach-replicating-gruber-saez-2002">
-<h2>Observational Approach: Replicating Gruber &amp; Saez (2002)<a class="headerlink" href="#observational-approach-replicating-gruber-saez-2002" title="Link to this heading">#</a></h2>
-<p>To simulate observational data with plausibly exogenous variation in marginal tax rates, we prompt LLMs with taxpayer scenarios:</p>
-<div class="admonition-llm-prompt-template admonition">
-<p class="admonition-title">LLM Prompt Template</p>
-<p>You are a taxpayer with the following tax profile:</p>
-<ul class="simple">
-<li><p>Your broad income last year was [$X]</p></li>
-<li><p>Your taxable income last year was [<span class="math notranslate nohighlight">\(0.75 × X\)</span>]</p></li>
-<li><p>Your marginal tax rate last year was [<span class="math notranslate nohighlight">\(r\%\)</span>]</p></li>
-</ul>
-<p>This year, if you had the same broad income, your marginal tax rate will change to [<span class="math notranslate nohighlight">\(r'\%\)</span>]. Given this change, estimate your taxable income for this year.</p>
+<section id="llm-implementation">
+<h3>LLM Implementation<a class="headerlink" href="#llm-implementation" title="Link to this heading">#</a></h3>
+<p>We prompt LLMs with instructions mirroring those given to human subjects:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>LABOR DECISION - Round [N]
+
+You have [X] hours available to work this round.
+Each hour of work earns $20.
+
+TAX SYSTEM:
+[Description of current tax schedule]
+
+How many hours will you work? (0 to [X])
+</pre></div>
 </div>
-<section id="parameter-space">
-<h3>Parameter Space<a class="headerlink" href="#parameter-space" title="Link to this heading">#</a></h3>
-<ul class="simple">
-<li><p><strong>Broad income</strong>: <span class="math notranslate nohighlight">\(50,000 to \)</span>200,000 (in $10,000 increments)</p></li>
-<li><p><strong>Tax rates</strong>: 15% to 35% (in 2% increments)</p></li>
-<li><p><strong>Simulations</strong>: 100 responses per scenario</p></li>
-<li><p><strong>Total observations</strong>: 35,200 (2 models × 16 incomes × 11 rates × 100 reps)</p></li>
-</ul>
+<p>We run 100 simulated subjects per treatment group using OpenAI’s GPT models.</p>
 </section>
+</section>
+<section id="study-2-tax-response-survey">
+<h2>Study 2: Tax Response Survey<a class="headerlink" href="#study-2-tax-response-survey" title="Link to this heading">#</a></h2>
+<p>Unlike Study 1, this is an <em>original</em> survey experiment—not a replication of any observational study.</p>
+<section id="motivation">
+<h3>Motivation<a class="headerlink" href="#motivation" title="Link to this heading">#</a></h3>
+<p>Prior work has attempted to “replicate” observational studies like  by asking LLMs hypothetical questions about tax responses. This framing is problematic:</p>
+<ol class="arabic simple">
+<li><p><strong>No identification strategy</strong>: Observational studies derive their credibility from natural experiments (tax reforms, instrument variables). Asking LLMs “what would you do if taxes changed” has no analog.</p></li>
+<li><p><strong>Missing context</strong>: Real taxpayers have histories, constraints, and information that cannot be captured in a brief prompt.</p></li>
+<li><p><strong>Hallucination risk</strong>: Open-ended numerical responses invite fabrication.</p></li>
+</ol>
+<p>We instead design a clean survey experiment that acknowledges its hypothetical nature while maximizing signal.</p>
+</section>
+<section id="factorial-design">
+<h3>Factorial Design<a class="headerlink" href="#factorial-design" title="Link to this heading">#</a></h3>
+<p>We systematically vary:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Factor</p></th>
+<th class="head"><p>Levels</p></th>
+<th class="head"><p>Rationale</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Income</p></td>
+<td><p><span class="math notranslate nohighlight">\(40k, \)</span>95k, <span class="math notranslate nohighlight">\(180k, \)</span>400k</p></td>
+<td><p>Spans tax brackets</p></td>
+</tr>
+<tr class="row-odd"><td><p>Rate change</p></td>
+<td><p>+5pp, -5pp</p></td>
+<td><p>Tests direction effects</p></td>
+</tr>
+<tr class="row-even"><td><p>Persona type</p></td>
+<td><p>Wage worker, Self-employed</p></td>
+<td><p>Tests margin heterogeneity</p></td>
+</tr>
+<tr class="row-odd"><td><p>Model</p></td>
+<td><p>GPT-4o, GPT-4o-mini, Claude, Gemini</p></td>
+<td><p>Tests model differences</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Total: 4 × 2 × 2 × 4 = 64 scenarios per model, with 50 repetitions each.</p>
+</section>
+<section id="prompt-design">
+<h3>Prompt Design<a class="headerlink" href="#prompt-design" title="Link to this heading">#</a></h3>
+<p>Each prompt includes:</p>
+<ol class="arabic simple">
+<li><p><strong>Persona description</strong>: Demographics, occupation, filing status</p></li>
+<li><p><strong>Current tax situation</strong>: Income, filing status, marginal rate</p></li>
+<li><p><strong>Policy change</strong>: Direction and magnitude of rate change</p></li>
+<li><p><strong>Categorical response options</strong>: Avoids open-ended hallucination</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>You are a 35-year-old software engineer, single with no dependents.
+
+Your current tax situation:
+- Filing status: single
+- Annual wage income: $95,000
+- Current federal marginal tax rate: 22%
+
+A tax law change will increase your marginal rate by 5 percentage points, from 22% to 27%.
+
+What would your taxable income be next year?
+- MUCH_LOWER: decrease 10%+
+- SOMEWHAT_LOWER: decrease 2-10%
+- ABOUT_SAME: within 2%
+- SOMEWHAT_HIGHER: increase 2-10%
+- MUCH_HIGHER: increase 10%+
+</pre></div>
+</div>
 </section>
 <section id="eti-calculation">
-<h2>ETI Calculation<a class="headerlink" href="#eti-calculation" title="Link to this heading">#</a></h2>
-<p>For each simulation, we compute the elasticity of taxable income using:</p>
+<h3>ETI Calculation<a class="headerlink" href="#eti-calculation" title="Link to this heading">#</a></h3>
+<p>For each categorical response, we compute implied ETI using:</p>
 <div class="math notranslate nohighlight">
 \[e = \frac{\% \Delta \text{Income}}{\% \Delta (1 - \text{MTR})}\]</div>
-<p>Where:</p>
+<p>Using midpoint assumptions:</p>
 <ul class="simple">
-<li><p><span class="math notranslate nohighlight">\(\% \Delta \text{Income} = \frac{\text{New Income} - \text{Initial Income}}{\text{Initial Income}}\)</span></p></li>
-<li><p><span class="math notranslate nohighlight">\(\% \Delta (1 - \text{MTR}) = \frac{(1 - \text{New Rate}) - (1 - \text{Initial Rate})}{1 - \text{Initial Rate}}\)</span></p></li>
+<li><p>MUCH_LOWER → -15%</p></li>
+<li><p>SOMEWHAT_LOWER → -6%</p></li>
+<li><p>ABOUT_SAME → 0%</p></li>
+<li><p>SOMEWHAT_HIGHER → +6%</p></li>
+<li><p>MUCH_HIGHER → +15%</p></li>
 </ul>
 </section>
-<section id="implementation-details">
-<h2>Implementation Details<a class="headerlink" href="#implementation-details" title="Link to this heading">#</a></h2>
-<p>All simulations are implemented in Python using:</p>
+</section>
+<section id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Link to this heading">#</a></h2>
+<p>All simulations use:</p>
 <ul class="simple">
-<li><p>OpenAI API for LLM interactions</p></li>
-<li><p>Pandas for data management</p></li>
-<li><p>Statsmodels for regression analysis</p></li>
-<li><p>Matplotlib/Seaborn for visualizations</p></li>
+<li><p><strong>EDSL</strong> (Expected Parrot’s Domain-Specific Language) for survey orchestration</p></li>
+<li><p><strong>OpenAI API</strong> for GPT models</p></li>
+<li><p><strong>Universal caching</strong> to reduce costs on repeated runs</p></li>
+<li><p><strong>Python 3.12</strong> with pandas, statsmodels, matplotlib</p></li>
 </ul>
 <p>Code is available at <a class="reference external" href="https://github.com/MaxGhenis/llm-eti">github.com/MaxGhenis/llm-eti</a>.</p>
 </section>
@@ -524,16 +592,19 @@
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#experimental-approach-replicating-pknf-2024">Experimental Approach: Replicating PKNF (2024)</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#key-modifications-for-llm-implementation">Key Modifications for LLM Implementation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#study-1-lab-experiment-replication-pknf-2024">Study 1: Lab Experiment Replication (PKNF 2024)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#experimental-design">Experimental Design</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#llm-implementation">LLM Implementation</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#observational-approach-replicating-gruber-saez-2002">Observational Approach: Replicating Gruber &amp; Saez (2002)</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#parameter-space">Parameter Space</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#study-2-tax-response-survey">Study 2: Tax Response Survey</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#motivation">Motivation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#factorial-design">Factorial Design</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#prompt-design">Prompt Design</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#eti-calculation">ETI Calculation</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#eti-calculation">ETI Calculation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation-details">Implementation Details</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation">Implementation</a></li>
 </ul>
   </nav></div>
 
