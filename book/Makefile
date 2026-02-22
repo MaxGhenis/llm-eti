@@ -34,7 +34,7 @@ install:
 .PHONY: data
 data:
 	@echo "Running LLM simulations with EDSL..."
-	@mkdir -p $(DATA_DIR)
+	@mkdir $(DATA_DIR)
 	cd .. && $(UV) run python book/$(SCRIPTS_DIR)/run_pknf_simulation.py
 	cd .. && $(UV) run python book/$(SCRIPTS_DIR)/run_gruber_saez_simulation.py
 
@@ -42,7 +42,7 @@ data:
 .PHONY: test-data
 test-data:
 	@echo "Running test simulations with gpt-4o-mini using EDSL..."
-	@mkdir -p $(DATA_DIR)
+	@mkdir $(DATA_DIR)
 	cd .. && $(UV) run python book/$(SCRIPTS_DIR)/run_pknf_simulation.py --test --model gpt-4o-mini
 	cd .. && $(UV) run python book/$(SCRIPTS_DIR)/run_gruber_saez_simulation.py --test --model gpt-4o-mini
 
@@ -50,14 +50,14 @@ test-data:
 .PHONY: figures
 figures:
 	@echo "Generating figures..."
-	@mkdir -p $(FIGURES_DIR)
+	@mkdir $(FIGURES_DIR)
 	cd .. && $(UV) run python book/$(SCRIPTS_DIR)/generate_figures.py
 
 # Generate tables from data
 .PHONY: tables
 tables:
 	@echo "Generating tables..."
-	@mkdir -p $(TABLES_DIR)
+	@mkdir $(TABLES_DIR)
 	cd .. && $(UV) run python book/$(SCRIPTS_DIR)/generate_tables.py
 
 # Build the JupyterBook
