@@ -393,7 +393,7 @@
 <p>This study employs two complementary approaches to investigate LLM perceptions of tax response behavior:</p>
 <section id="study-1-lab-experiment-replication-pknf-2024">
 <h2>Study 1: Lab Experiment Replication (PKNF 2024)<a class="headerlink" href="#study-1-lab-experiment-replication-pknf-2024" title="Link to this heading">#</a></h2>
-<p>We replicate the controlled laboratory experiment of , which measures labor supply responses to changes in tax schedules. This is a true replication: we use the same experimental design but substitute LLM responses for human subjects.</p>
+<p>We replicate the controlled laboratory experiment of <span id="id1">[<a class="reference internal" href="references.html#id12" title="Katharina Pfeil, Matthias Kasper, Sarah Necker, and Lars P. Feld. Tax System Design, Tax Reform, and Labor Supply. CESifo Working Paper Series 11350, CESifo, 10 2024. URL: https://ideas.repec.org/p/ces/ceswps/_11350.html.">Pfeil <em>et al.</em>, 2024</a>]</span>, which measures labor supply responses to changes in tax schedules. This is a true replication: we use the same experimental design but substitute LLM responses for human subjects.</p>
 <section id="experimental-design">
 <h3>Experimental Design<a class="headerlink" href="#experimental-design" title="Link to this heading">#</a></h3>
 <p>The experiment consists of:</p>
@@ -432,7 +432,7 @@ How many hours will you work? (0 to [X])
 <p>Unlike Study 1, this is an <em>original</em> survey experiment—not a replication of any observational study.</p>
 <section id="motivation">
 <h3>Motivation<a class="headerlink" href="#motivation" title="Link to this heading">#</a></h3>
-<p>Prior work has attempted to “replicate” observational studies like  by asking LLMs hypothetical questions about tax responses. This framing is problematic:</p>
+<p>Prior work has attempted to “replicate” observational studies like <span id="id2">[<a class="reference internal" href="references.html#id13" title="Jon Gruber and Emmanuel Saez. The elasticity of taxable income: evidence and implications. Journal of Public Economics, 84(1):1-32, 4 2002.">Gruber and Saez, 2002</a>]</span> by asking LLMs hypothetical questions about tax responses. This framing is problematic:</p>
 <ol class="arabic simple">
 <li><p><strong>No identification strategy</strong>: Observational studies derive their credibility from natural experiments (tax reforms, instrument variables). Asking LLMs “what would you do if taxes changed” has no analog.</p></li>
 <li><p><strong>Missing context</strong>: Real taxpayers have histories, constraints, and information that cannot be captured in a brief prompt.</p></li>
@@ -464,13 +464,13 @@ How many hours will you work? (0 to [X])
 <td><p>Tests margin heterogeneity</p></td>
 </tr>
 <tr class="row-odd"><td><p>Model</p></td>
-<td><p>GPT-4o, GPT-4o-mini, Claude, Gemini</p></td>
+<td><p>GPT-4o, GPT-4o-mini</p></td>
 <td><p>Tests model differences</p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>Total: 4 × 2 × 2 × 4 = 64 scenarios per model, with 50 repetitions each.</p>
+<p>Total: 4 × 2 × 2 = 16 scenarios per model, with 50 repetitions each.</p>
 </section>
 <section id="prompt-design">
 <h3>Prompt Design<a class="headerlink" href="#prompt-design" title="Link to this heading">#</a></h3>

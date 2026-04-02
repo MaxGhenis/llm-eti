@@ -1,17 +1,4 @@
----
-kernelspec:
-  name: python3
-  display_name: Python 3
----
-
 # Study 2: Tax Response Survey
-
-```{code-cell} python
-:tags: [remove-cell]
-
-# Setup: Import paper results (single source of truth)
-from llm_eti.paper_results import r
-```
 
 We conduct an original survey experiment asking LLMs to simulate taxpayer responses to marginal tax rate changes.
 
@@ -23,12 +10,10 @@ Unlike observational studies that rely on natural experiments for identification
 
 We vary four factors:
 
-```{code-cell} python
-:tags: [remove-input]
-
-from IPython.display import Markdown
-Markdown(r.table_factorial_design())
+```{include} ../generated/factorial_design.md
 ```
+
+This yields 16 scenarios per model, or 32 total model-scenario combinations, with 50 repetitions per scenario.
 
 ### Survey Prompt
 
@@ -56,40 +41,28 @@ What would your taxable income be next year?
 
 ### Response Distribution by Model
 
-```{code-cell} python
-:tags: [remove-input]
-
-from IPython.display import Markdown
-Markdown(r.table_response_dist())
+```{include} ../generated/response_distribution.md
 ```
 
 ### Key Finding: GPT-4o Exhibits Realistic Frictions
 
-The most striking result is GPT-4o's high "about same" response rate ({eval}`r.gpt4o.non_response_rate`). This aligns with empirical findings on optimization frictions:
+The most striking result is GPT-4o's high "about same" response rate (80.5%). This aligns with empirical findings on optimization frictions:
 
 - {cite}`Chetty2012` shows that adjustment costs prevent many taxpayers from responding to tax changes
 - {cite}`KlevenWaseem2013` find substantial bunching below notches, indicating incomplete optimization
 
-GPT-4o-mini, by contrast, shows only {eval}`r.gpt4o_mini.non_response_rate` non-response—suggesting it over-optimizes and misses real-world frictions.
+GPT-4o-mini, by contrast, shows only 3.1% non-response, suggesting it over-optimizes and misses real-world frictions.
 
 ### Implied ETI Estimates
 
 Converting categorical responses to ETI estimates using midpoint assumptions:
 
-```{code-cell} python
-:tags: [remove-input]
-
-from IPython.display import Markdown
-Markdown(r.table_mean_eti())
+```{include} ../generated/mean_eti.md
 ```
 
 ### Heterogeneity by Income
 
-```{code-cell} python
-:tags: [remove-input]
-
-from IPython.display import Markdown
-Markdown(r.table_eti_by_income())
+```{include} ../generated/eti_by_income.md
 ```
 
 Both models correctly predict that higher-income taxpayers are more responsive—a robust finding in the empirical literature ({cite}`GruberSaez2002`; {cite}`SaezEtAl2012`).
@@ -98,8 +71,8 @@ Both models correctly predict that higher-income taxpayers are more responsive�
 
 Self-employed personas show larger ETIs than wage workers across both models:
 
-- **GPT-4o**: {eval}`r.gpt4o.eti_self_employed` (self-employed) vs. {eval}`r.gpt4o.eti_wage_worker` (wage worker)
-- **GPT-4o-mini**: {eval}`r.gpt4o_mini.eti_self_employed` vs. {eval}`r.gpt4o_mini.eti_wage_worker`
+- **GPT-4o**: 0.48 (self-employed) vs. 0.31 (wage worker)
+- **GPT-4o-mini**: 1.42 vs. 1.15
 
 This pattern is economically sensible: self-employed individuals have more flexibility in reporting and timing of income.
 
@@ -121,8 +94,8 @@ The key insight is that LLMs cannot replicate observational studies because they
 
 These results suggest GPT-4o has internalized economically sensible priors about tax responses from its training data. The model:
 
-1. Produces mean ETI close to empirical estimates ({eval}`r.gpt4o.eti` vs. {eval}`r.empirical_range`)
-2. Exhibits realistic optimization frictions ({eval}`r.gpt4o.non_response_rate` non-response)
+1. Produces mean ETI close to empirical estimates (0.36 vs. 0.25-0.40)
+2. Exhibits realistic optimization frictions (80.5% non-response)
 3. Correctly predicts income heterogeneity (higher income → larger ETI)
 4. Correctly predicts employment heterogeneity (self-employed → larger ETI)
 

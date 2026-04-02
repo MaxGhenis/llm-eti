@@ -59,9 +59,9 @@ We systematically vary:
 | Income | $40k, $95k, $180k, $400k | Spans tax brackets |
 | Rate change | +5pp, -5pp | Tests direction effects |
 | Persona type | Wage worker, Self-employed | Tests margin heterogeneity |
-| Model | GPT-4o, GPT-4o-mini, Claude, Gemini | Tests model differences |
+| Model | GPT-4o, GPT-4o-mini | Tests model differences |
 
-Total: 4 × 2 × 2 × 4 = 64 scenarios per model, with 50 repetitions each.
+Total: 4 × 2 × 2 = 16 scenarios per model, with 50 repetitions each.
 
 ### Prompt Design
 

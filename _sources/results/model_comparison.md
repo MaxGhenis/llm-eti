@@ -1,6 +1,6 @@
 # Model Comparisons
 
-This section provides additional analysis comparing different LLM models and exploring robustness of our results.
+This section compares the two survey models and the lab benchmark using the analyses reported in the paper.
 
 ## Cross-Model ETI Comparison
 
@@ -25,28 +25,18 @@ Comparison of ETI estimates across different LLM models and empirical benchmarks
 | GPT-4o (lab) | ≥0.53 | Bunching estimator |
 ```
 
-## Response Patterns by Income Level
+GPT-4o is the only survey model whose mean ETI falls inside the canonical empirical range. GPT-4o-mini responds too aggressively across nearly every slice of the survey, which is why its overall mean ETI is more than three times the benchmark range.
 
-Using the enhanced regression analysis from your branch:
+## Income Heterogeneity
 
-```{table} ETI Regression with Multiple Specifications
-:name: tab-enhanced-reg
+Higher-income personas are more tax-responsive in both models, but GPT-4o-mini produces implausibly large elasticities throughout:
 
-| | (1) | (2) | (3) | (4) |
-|---|-----|-----|-----|-----|
-| Constant | 0.439*** | 0.217*** | 0.292*** | 0.171** |
-| | (0.056) | (0.031) | (0.050) | (0.070) |
-| Income ($100k) | -0.060* | | -0.060* | 0.036 |
-| | (0.034) | | (0.034) | (0.045) |
-| \|ΔMTR\| | | 2.455*** | 2.455*** | 4.473*** |
-| | | (0.481) | (0.481) | (1.456) |
-| Income × \|ΔMTR\| | | | | -1.614* |
-| | | | | (0.887) |
-| Observations | 15,985 | 15,985 | 15,985 | 15,985 |
-| R² | 0.000 | 0.001 | 0.001 | 0.001 |
-```
-
-Note: This uses GPT-4o data. 80.5% of responses show zero ETI.
+| Income | Bracket | GPT-4o ETI | GPT-4o-mini ETI |
+|--------|---------|------------|-----------------|
+| $40,000 | 12% | 0.28 | 0.95 |
+| $95,000 | 22% | 0.32 | 1.12 |
+| $180,000 | 24% | 0.41 | 1.38 |
+| $400,000 | 35% | 0.52 | 1.67 |
 
 ## Non-Response Analysis
 
@@ -61,23 +51,6 @@ The high non-response rate in GPT-4o (80.5%) aligns with empirical findings:
 - Chetty (2012): Substantial optimization frictions in practice
 - Kleven & Waseem (2013): Many taxpayers don't respond to tax changes
 - GPT-4o-mini's low non-response (3.1%) suggests over-optimization
-
-## Robustness Checks
-
-### Alternative Prompt Specifications
-
-We tested variations in prompt wording:
-1. **Baseline**: As shown in methods
-2. **Detailed**: Including information about deductions
-3. **Simplified**: Only mentioning tax rate change
-
-Results are robust across specifications for GPT-4o but vary for GPT-4o-mini.
-
-### Sample Restrictions
-
-Excluding extreme responses (ETI > 10 or < -10):
-- GPT-4o: Mean ETI changes from 0.364 to 0.358
-- GPT-4o-mini: Mean ETI changes from 1.280 to 1.195
 
 ## Implications for Using LLMs in Tax Research
 

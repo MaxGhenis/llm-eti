@@ -366,13 +366,8 @@
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cross-model-eti-comparison">Cross-Model ETI Comparison</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#key-findings-across-models">Key Findings Across Models</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#response-patterns-by-income-level">Response Patterns by Income Level</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#income-heterogeneity">Income Heterogeneity</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#non-response-analysis">Non-Response Analysis</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robustness-checks">Robustness Checks</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#alternative-prompt-specifications">Alternative Prompt Specifications</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-restrictions">Sample Restrictions</a></li>
-</ul>
-</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implications-for-using-llms-in-tax-research">Implications for Using LLMs in Tax Research</a></li>
 </ul>
             </nav>
@@ -387,7 +382,7 @@
                   
   <section class="tex2jax_ignore mathjax_ignore" id="model-comparisons">
 <h1>Model Comparisons<a class="headerlink" href="#model-comparisons" title="Link to this heading">#</a></h1>
-<p>This section provides additional analysis comparing different LLM models and exploring robustness of our results.</p>
+<p>This section compares the two survey models and the lab benchmark using the analyses reported in the paper.</p>
 <section id="cross-model-eti-comparison">
 <h2>Cross-Model ETI Comparison<a class="headerlink" href="#cross-model-eti-comparison" title="Link to this heading">#</a></h2>
 <figure class="align-default" id="fig-model-compare">
@@ -432,85 +427,43 @@
 </tbody>
 </table>
 </div>
+<p>GPT-4o is the only survey model whose mean ETI falls inside the canonical empirical range. GPT-4o-mini responds too aggressively across nearly every slice of the survey, which is why its overall mean ETI is more than three times the benchmark range.</p>
 </section>
-<section id="response-patterns-by-income-level">
-<h2>Response Patterns by Income Level<a class="headerlink" href="#response-patterns-by-income-level" title="Link to this heading">#</a></h2>
-<p>Using the enhanced regression analysis from your branch:</p>
-<div class="pst-scrollable-table-container"><table class="table" id="tab-enhanced-reg">
-<caption><span class="caption-number">Table 4 </span><span class="caption-text">ETI Regression with Multiple Specifications</span><a class="headerlink" href="#tab-enhanced-reg" title="Link to this table">#</a></caption>
+<section id="income-heterogeneity">
+<h2>Income Heterogeneity<a class="headerlink" href="#income-heterogeneity" title="Link to this heading">#</a></h2>
+<p>Higher-income personas are more tax-responsive in both models, but GPT-4o-mini produces implausibly large elasticities throughout:</p>
+<div class="pst-scrollable-table-container"><table class="table">
 <thead>
-<tr class="row-odd"><th class="head"><p></p></th>
-<th class="head"><p>(1)</p></th>
-<th class="head"><p>(2)</p></th>
-<th class="head"><p>(3)</p></th>
-<th class="head"><p>(4)</p></th>
+<tr class="row-odd"><th class="head"><p>Income</p></th>
+<th class="head"><p>Bracket</p></th>
+<th class="head"><p>GPT-4o ETI</p></th>
+<th class="head"><p>GPT-4o-mini ETI</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>Constant</p></td>
-<td><p>0.439***</p></td>
-<td><p>0.217***</p></td>
-<td><p>0.292***</p></td>
-<td><p>0.171**</p></td>
+<tr class="row-even"><td><p>$40,000</p></td>
+<td><p>12%</p></td>
+<td><p>0.28</p></td>
+<td><p>0.95</p></td>
 </tr>
-<tr class="row-odd"><td><p></p></td>
-<td><p>(0.056)</p></td>
-<td><p>(0.031)</p></td>
-<td><p>(0.050)</p></td>
-<td><p>(0.070)</p></td>
+<tr class="row-odd"><td><p>$95,000</p></td>
+<td><p>22%</p></td>
+<td><p>0.32</p></td>
+<td><p>1.12</p></td>
 </tr>
-<tr class="row-even"><td><p>Income ($100k)</p></td>
-<td><p>-0.060*</p></td>
-<td><p></p></td>
-<td><p>-0.060*</p></td>
-<td><p>0.036</p></td>
+<tr class="row-even"><td><p>$180,000</p></td>
+<td><p>24%</p></td>
+<td><p>0.41</p></td>
+<td><p>1.38</p></td>
 </tr>
-<tr class="row-odd"><td><p></p></td>
-<td><p>(0.034)</p></td>
-<td><p></p></td>
-<td><p>(0.034)</p></td>
-<td><p>(0.045)</p></td>
-</tr>
-<tr class="row-even"><td><p>|ΔMTR|</p></td>
-<td><p></p></td>
-<td><p>2.455***</p></td>
-<td><p>2.455***</p></td>
-<td><p>4.473***</p></td>
-</tr>
-<tr class="row-odd"><td><p></p></td>
-<td><p></p></td>
-<td><p>(0.481)</p></td>
-<td><p>(0.481)</p></td>
-<td><p>(1.456)</p></td>
-</tr>
-<tr class="row-even"><td><p>Income × |ΔMTR|</p></td>
-<td><p></p></td>
-<td><p></p></td>
-<td><p></p></td>
-<td><p>-1.614*</p></td>
-</tr>
-<tr class="row-odd"><td><p></p></td>
-<td><p></p></td>
-<td><p></p></td>
-<td><p></p></td>
-<td><p>(0.887)</p></td>
-</tr>
-<tr class="row-even"><td><p>Observations</p></td>
-<td><p>15,985</p></td>
-<td><p>15,985</p></td>
-<td><p>15,985</p></td>
-<td><p>15,985</p></td>
-</tr>
-<tr class="row-odd"><td><p>R²</p></td>
-<td><p>0.000</p></td>
-<td><p>0.001</p></td>
-<td><p>0.001</p></td>
-<td><p>0.001</p></td>
+<tr class="row-odd"><td><p>$400,000</p></td>
+<td><p>35%</p></td>
+<td><p>0.52</p></td>
+<td><p>1.67</p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>Note: This uses GPT-4o data. 80.5% of responses show zero ETI.</p>
 </section>
 <section id="non-response-analysis">
 <h2>Non-Response Analysis<a class="headerlink" href="#non-response-analysis" title="Link to this heading">#</a></h2>
@@ -527,27 +480,6 @@
 <li><p>Kleven &amp; Waseem (2013): Many taxpayers don’t respond to tax changes</p></li>
 <li><p>GPT-4o-mini’s low non-response (3.1%) suggests over-optimization</p></li>
 </ul>
-</section>
-<section id="robustness-checks">
-<h2>Robustness Checks<a class="headerlink" href="#robustness-checks" title="Link to this heading">#</a></h2>
-<section id="alternative-prompt-specifications">
-<h3>Alternative Prompt Specifications<a class="headerlink" href="#alternative-prompt-specifications" title="Link to this heading">#</a></h3>
-<p>We tested variations in prompt wording:</p>
-<ol class="arabic simple">
-<li><p><strong>Baseline</strong>: As shown in methods</p></li>
-<li><p><strong>Detailed</strong>: Including information about deductions</p></li>
-<li><p><strong>Simplified</strong>: Only mentioning tax rate change</p></li>
-</ol>
-<p>Results are robust across specifications for GPT-4o but vary for GPT-4o-mini.</p>
-</section>
-<section id="sample-restrictions">
-<h3>Sample Restrictions<a class="headerlink" href="#sample-restrictions" title="Link to this heading">#</a></h3>
-<p>Excluding extreme responses (ETI &gt; 10 or &lt; -10):</p>
-<ul class="simple">
-<li><p>GPT-4o: Mean ETI changes from 0.364 to 0.358</p></li>
-<li><p>GPT-4o-mini: Mean ETI changes from 1.280 to 1.195</p></li>
-</ul>
-</section>
 </section>
 <section id="implications-for-using-llms-in-tax-research">
 <h2>Implications for Using LLMs in Tax Research<a class="headerlink" href="#implications-for-using-llms-in-tax-research" title="Link to this heading">#</a></h2>
@@ -627,13 +559,8 @@
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cross-model-eti-comparison">Cross-Model ETI Comparison</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#key-findings-across-models">Key Findings Across Models</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#response-patterns-by-income-level">Response Patterns by Income Level</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#income-heterogeneity">Income Heterogeneity</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#non-response-analysis">Non-Response Analysis</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#robustness-checks">Robustness Checks</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#alternative-prompt-specifications">Alternative Prompt Specifications</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sample-restrictions">Sample Restrictions</a></li>
-</ul>
-</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implications-for-using-llms-in-tax-research">Implications for Using LLMs in Tax Research</a></li>
 </ul>
   </nav></div>
