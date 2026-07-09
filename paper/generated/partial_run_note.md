@@ -1,0 +1,1 @@
+The partial GPT-4o archive represents 245 scenarios. Of those, 75.9% display the same before-and-after integer rate, compared with 22.4% of the full source sample. Its mean absolute delivered log net-of-tax-rate change is 0.0048, versus 0.0190 overall. The stopped run is therefore not a representative smaller sample and is excluded from outcome comparisons.

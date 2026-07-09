@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this software or archived response corpus, please cite it as below."
+title: "What do language models imply about taxable-income responses?"
+type: software
+version: 0.2.0
+date-released: 2026-07-09
+repository-code: "https://github.com/MaxGhenis/llm-eti"
+url: "https://maxghenis.github.io/llm-eti/"
+license: Unlicense
+authors:
+  - family-names: DeBacker
+    given-names: Jason
+    affiliation: University of South Carolina
+  - family-names: Ghenis
+    given-names: Max
+preferred-citation:
+  type: article
+  title: "What do language models imply about taxable-income responses?"
+  year: 2026
+  authors:
+    - family-names: DeBacker
+      given-names: Jason
+    - family-names: Ghenis
+      given-names: Max

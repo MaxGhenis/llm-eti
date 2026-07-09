@@ -1,0 +1,1 @@
+In **224 of 1,000** source scenarios, distinct continuous rates rendered as the same integer percentage, so the delivered prompt communicated no rate change. The initial displayed marginal rate is negative in **17** scenarios. Five pairs of source rows rendered as identical delivered prompts; all ten are excluded from clean analyses.

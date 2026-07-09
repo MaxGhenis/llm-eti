@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "corpus_created": "2026-06-04/2026-06-08",
+  "results_commit": "b23f2cb882d33f79d706afbdcca836b3905361f8",
+  "source_pull_request": "https://github.com/MaxGhenis/llm-eti/pull/42",
+  "edsl_version": "1.0.7",
+  "responses_requested_per_scenario": 2,
+  "cache": {
+    "first_attempt": true,
+    "parser_retries": false,
+    "per_response_cache_hit_recorded": false
+  },
+  "known_prompt_variants": {
+    "common": "JSON broad_income and taxable_income response prompt in protocols/legacy_tax_prompt.md",
+    "claude-haiku-4-5-20251001": "Added a non-null, whole-dollar formatting suffix",
+    "deepseek-ai/DeepSeek-V3": "Added a non-null, whole-dollar formatting suffix"
+  },
+  "unknown_fields": [
+    "provider decoding parameters",
+    "provider response identifiers",
+    "per-response cache-hit status",
+    "failed attempt payloads",
+    "retry number in final CSV",
+    "immutable provider revision for alias model IDs"
+  ],
+  "files": {
+    "data/scenarios.csv": {
+      "records": 1000,
+      "sha256": "1eb18b348279d310b57e23d8e7f49e1ac5c43c670e9bc9a867c34fffa9ecd116"
+    },
+    "data/responses/gruber_saez_results_claude-haiku-4-5-20251001.csv": {
+      "records": 2000,
+      "sha256": "89682dd74410120cae909390ae9ce99ad286d60a74d6f6a3c563b0d4019670fd"
+    },
+    "data/responses/gruber_saez_results_deepseek-ai_DeepSeek-V3.csv": {
+      "records": 1678,
+      "sha256": "4fb31d898a315cc729bba96df2b0d608f94fb43689d4612b822d3e4137c5a363"
+    },
+    "data/responses/gruber_saez_results_google_gemma-4-26B-A4B-it.csv": {
+      "records": 1974,
+      "sha256": "63039c774b397ff6445d88203f60be32a6819f74a2a3d7bf1af5444334627dc9"
+    },
+    "data/responses/gruber_saez_results_gpt-4o-mini.csv": {
+      "records": 1997,
+      "sha256": "0c454170432c0ebb762142caae75d081a24a4dc1f73e0c629fa8b4c19aea0f15"
+    },
+    "data/responses/gruber_saez_results_gpt-4o.csv": {
+      "records": 446,
+      "sha256": "b65eadbaf517103f8457fca1756434e8e42571b07a370da1ea13d81eccc29aec"
+    }
+  }
+}

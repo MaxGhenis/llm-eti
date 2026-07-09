@@ -1,134 +1,86 @@
-# LLM-ETI: What can LLMs tell us about the ETI?
+# LLM × ETI
 
-This repository contains code and analysis for the paper "What can LLMs tell us about the ETI?" by Jason DeBacker and Max Ghenis.
+Reproducible research for **“What do language models imply about taxable-income
+responses?”** by Jason DeBacker and Max Ghenis.
 
-## Overview
+This project compares archived responses from Claude Haiku 4.5, DeepSeek V3,
+Gemma 4 26B, and GPT-4o mini on a common set of hypothetical tax scenarios. It
+studies model-output distributions; it does **not** treat an LLM completion as
+an estimate of human behavior.
 
-We investigate how Large Language Models (LLMs) perceive and simulate behavioral responses to tax policy changes, specifically measuring the Elasticity of Taxable Income (ETI).
+The publication has three outputs from one Quarto manuscript source:
 
-The current paper includes:
+- a small project microsite;
+- a native web version of the paper; and
+- a compiled PDF with its generated TeX retained for audit, plus a compilable
+  source bundle containing the figures.
 
-1. **Lab Experiment Replication**: Replicating Pfeil et al. (2024) using LLMs instead of human subjects
-2. **Tax Response Survey**: A factorial survey of taxpayer personas and tax shocks
+## Reproduce everything
 
-Exploratory writeups that are not part of the published book live outside the book TOC.
-
-## Quick Start
-
-### Prerequisites
-
-- Python 3.12
-- [uv](https://github.com/astral-sh/uv)
-- Expected Parrot API key (for EDSL)
-
-### Installation
+Prerequisites are [uv](https://docs.astral.sh/uv/), Quarto 1.9.38, and a LaTeX
+distribution.
 
 ```bash
-# Install uv if not already installed
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Install dependencies
-make install
-
-# Set your Expected Parrot API key
-export EXPECTED_PARROT_API_KEY=your-key-here
+git clone https://github.com/MaxGhenis/llm-eti.git
+cd llm-eti
+uv sync --python 3.13 --group dev --frozen
+make publication
 ```
 
-### For Collaborators
+The build validates the frozen inputs, regenerates every number and figure,
+runs tests and static checks, renders the site and web paper, compiles the PDF,
+retains the TeX, checks internal links and file signatures, and fails if tracked
+generated artifacts drift. No model API key is required.
 
-To ensure everyone uses the same environment:
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/MaxGhenis/llm-eti.git
-   cd llm-eti
-   ```
-
-2. **Install dependencies**:
-   ```bash
-   make install
-   source .venv/bin/activate
-   ```
-
-3. **Verify installation**:
-   ```bash
-   python --version  # Should show 3.12.x inside .venv
-   uv --version      # Should show uv version
-   ```
-
-### Run Test Analysis
+Useful narrower targets:
 
 ```bash
-# Quick test with minimal API calls
-make book-test
+make artifacts   # Regenerate tables, figures, and analysis_summary.json
+make test        # Run offline integrity and regression tests
+make lint        # Run Black, Ruff, and mypy checks
+make site        # Render the microsite plus HTML/PDF/TeX paper
+make serve       # Preview _site at http://localhost:8000
 ```
 
-This will:
-1. Run test simulations using gpt-4o-mini
-2. Generate figures, tables, and markdown include fragments
-3. Build the Jupyter Book
-4. Serve locally at http://localhost:8000
+## Reproducibility boundary
 
-## Project Structure
+The analysis starts from `data/scenarios.csv` and five archived response files
+under `data/responses/`. The original runner did not retain the exact
+PolicyEngine-US or upstream dataset revisions used to create the scenario
+sample, nor every provider setting, failed attempt, or cache hit. Those unknowns
+are disclosed rather than reconstructed.
 
-```
-.
-├── book/                    # Published Jupyter Book paper
-│   ├── _config.yml         # Book configuration
-│   ├── results/            # Published results chapters
-│   ├── drafts/             # Unpublished exploratory chapters
-│   ├── generated/          # Generated markdown fragments
-│   └── scripts/            # Data generation scripts
-├── llm_eti/                # Python package and analysis code
-├── results/                # Generated simulation outputs
-├── tests/                  # Regression and integration tests
-└── pyproject.toml          # Project dependencies
-```
+The analysis rebuild is deterministic from the archived CSVs. A future call to
+a moving model endpoint is not expected to reproduce the same text.
 
-## Full Analysis Pipeline
+The Python source distribution intentionally excludes `data/`, rendered site
+output, and generated Quarto support files. This keeps the package artifact
+small and avoids treating archived third-party inputs as Python package data.
+Clone the repository or use its publication/release archive when reproducing
+the paper; the Python sdist alone is not the research-data archive.
 
-To run the complete analysis (warning: expensive API calls!):
+## Repository map
 
-```bash
-# Run full simulations
-make run-simulation-4o  # GPT-4o
-make run-simulation     # GPT-4o-mini
-
-# Build the book
-cd book
-make all
+```text
+index.qmd                    editorial project landing page
+reproduce.qmd                public provenance and build guide
+paper/index.qmd              canonical web/PDF/TeX manuscript
+paper/sections/              manuscript sections
+paper/generated/             derived tables, text, and machine summary
+paper/figures/               derived PNG, SVG, and PDF figures
+data/                        frozen scenario and response inputs
+llm_eti/study2.py            validated analysis library
+scripts/generate_artifacts.py single presentation-artifact generator
+scripts/render_publication.py Quarto build orchestrator
+tests/                       offline integrity and regression tests
 ```
 
-## Jupyter Book Commands
+See [`data/README.md`](data/README.md),
+[`data/run_manifest.json`](data/run_manifest.json), and
+[`NOTICE.md`](NOTICE.md) for provenance and third-party boundaries.
 
-- `make book` - Build the JupyterBook
-- `make book-serve` - Serve locally
-- `make book-pdf` - Generate PDF
-- `make book-test` - Run test pipeline
+## Citation and license
 
-## Development
-
-```bash
-# Format code
-cd book && make format
-
-# Run linters
-cd book && make lint
-
-# Run tests
-cd book && make test
-```
-
-## Citation
-
-```bibtex
-@article{debacker2025llmeti,
-  title={What can LLMs tell us about the ETI?},
-  author={DeBacker, Jason and Ghenis, Max},
-  year={2025}
-}
-```
-
-## License
-
-MIT License - see LICENSE file for details.
+Citation metadata are in [`CITATION.cff`](CITATION.cff). Original code and text
+are released under the [Unlicense](LICENSE); third-party terms may continue to
+apply to model outputs and source-derived data.
