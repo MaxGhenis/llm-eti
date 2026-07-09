@@ -2,9 +2,10 @@ import hashlib
 import json
 from pathlib import Path
 
+import pytest
 from PIL import Image
 
-from scripts.generate_artifacts import main
+from scripts.generate_artifacts import _canonicalize_json, main
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -95,7 +96,20 @@ def test_generator_contains_no_legacy_discovery_or_placeholder_path():
     assert "simulation_4o" not in source
 
 
+def test_json_canonicalization_collapses_platform_noise_and_rejects_nonfinite():
+    assert _canonicalize_json(0.003442486962522846) == _canonicalize_json(
+        0.003442486962522865
+    )
+    assert _canonicalize_json(11.912967805658468) == _canonicalize_json(
+        11.912967805658475
+    )
+    for value in [float("nan"), float("inf"), float("-inf")]:
+        with pytest.raises(ValueError, match="non-finite"):
+            _canonicalize_json(value)
+
+
 def test_artifact_generator_is_byte_deterministic():
+    main()
     paths = [
         *(ROOT / "paper" / "figures").glob("*"),
         ROOT / "assets" / "social-card.png",
