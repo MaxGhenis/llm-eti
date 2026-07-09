@@ -12,6 +12,7 @@ import hashlib
 import json
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -56,6 +57,20 @@ def _write(name: str, content: str) -> None:
     if name.endswith(".html"):
         content = "\n".join(line.lstrip() for line in content.splitlines())
     (GENERATED_DIR / name).write_text(f"{content.rstrip()}\n", encoding="utf-8")
+
+
+def _canonicalize_json(value: Any) -> Any:
+    """Remove immaterial cross-platform floating-point noise from JSON output."""
+
+    if isinstance(value, dict):
+        return {key: _canonicalize_json(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_canonicalize_json(item) for item in value]
+    if isinstance(value, float):
+        if not np.isfinite(value):
+            raise ValueError("Publication JSON cannot contain non-finite numbers")
+        return float(f"{value:.12g}")
+    return value
 
 
 def _fmt_number(value: float, precision: int) -> str:
@@ -867,7 +882,8 @@ def main() -> None:
         "sensitivity": sensitivity.to_dict(orient="records"),
     }
     (GENERATED_DIR / "analysis_summary.json").write_text(
-        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        json.dumps(_canonicalize_json(manifest), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
     )
 
     _plot_completion(completion)

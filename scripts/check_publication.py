@@ -370,6 +370,10 @@ def main() -> None:
             f"Untracked generated publication assets: {untracked_generated}"
         )
 
+    # Numeric and prose artifacts must be byte-stable. Matplotlib's font
+    # rasterization and PDF/SVG geometry vary across operating systems, so the
+    # figures are rebuilt above and validated structurally instead of compared
+    # byte-for-byte with artifacts committed from another platform.
     subprocess.run(
         [
             "git",
@@ -377,8 +381,6 @@ def main() -> None:
             "--exit-code",
             "--",
             "paper/generated",
-            "paper/figures",
-            "assets/social-card.png",
         ],
         cwd=ROOT,
         check=True,
