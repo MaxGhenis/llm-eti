@@ -1,17 +1,30 @@
 """EDSL client for running LLM surveys."""
 
 import ast
+import logging
 import os
+import re
+import time
 from typing import Any, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 from dotenv import load_dotenv
 
 try:
-    from edsl import Agent, Jobs, Model, Question, QuestionNumerical, Survey
-    from edsl.questions import QuestionDict
+    from edsl import (
+        Agent,
+        Jobs,
+        Model,
+        Question,
+        QuestionFreeText,
+        QuestionNumerical,
+        Survey,
+    )
 except ImportError:
     # For testing without EDSL installed
     Question = Survey = Agent = Model = Jobs = None
+    QuestionFreeText = None
     QuestionNumerical = None
 
 
@@ -56,7 +69,7 @@ class EDSLClient:
         mtr_last_pct = int(mtr_last * 100)
         mtr_this_pct = int(mtr_this * 100)
 
-        return f"""You are a taxpayer with the following profile:
+        prompt = f"""You are a taxpayer with the following profile:
 - Last year, your broad income was ${broad_income:,.0f}
 - Last year, your taxable income was ${taxable_income:,.0f}
 - Last year, your marginal tax rate was {mtr_last_pct}%
@@ -70,9 +83,17 @@ how much you work, your charitable contributions, retirement savings, or the
 timing of income realizations like capital gains. What would your broad
 income be this year? And what would your taxable income be?
 
-Respond with exactly two lines:
-BROAD_INCOME: <number>
-TAXABLE_INCOME: <number>"""
+Respond with exactly one JSON object and nothing else:
+{{"broad_income": <number or null>, "taxable_income": <number or null>}}"""
+
+        model_name = self.model.lower()
+        if "deepseek" in model_name or "claude" in model_name:
+            prompt += (
+                "\n\nDo not use null. Return your best numeric estimates even if "
+                "approximate. Use whole-dollar amounts."
+            )
+
+        return prompt
 
     def create_tax_survey(
         self,
@@ -94,17 +115,11 @@ TAXABLE_INCOME: <number>"""
         """
         prompt = self.build_prompt(broad_income, taxable_income, mtr_last, mtr_this)
 
-        # Will use QuestionDict so we can return two values in a structured way
-        # We can't set numerical bounds here, but can clean later
-        q = QuestionDict(
+        # Use free text so we can parse the model response ourselves and keep
+        # the numeric contract in local code instead of relying on QuestionDict.
+        q = QuestionFreeText(
             question_name="income_responses",
             question_text=prompt,
-            answer_keys=["broad_income", "taxable_income"],
-            value_types=[float, float],
-            value_descriptions=[
-                "Your estimate for broad income.",
-                "Your estimate for taxable income.",
-            ],
         )
 
         return Survey(questions=[q])
@@ -244,9 +259,9 @@ TAXABLE_INCOME: <number>"""
             + f"You can earn an income of {labor_endowment * wage_per_unit:.0f}"
             + " cents. \n"
             + "Please indicate whether you want to work for "
-            + f"{labor_endowment * wage_per_unit:.0f} cents or another income: \n"
-            # + "Number of text sequences for this chosen income: "
-            # + {chosen_labor} + "\n"  NOTE: This is in original instructions, but not sure how work with LLM
+            + f"{labor_endowment * wage_per_unit:.0f} cents or another income. "
+            + "Reply with a single integer number of cents (e.g. 340). "
+            + "Do not include any text, units, or explanation — only the number.\n"
         )
 
         question = QuestionNumerical(
@@ -284,6 +299,537 @@ TAXABLE_INCOME: <number>"""
 
         return results
 
+    @staticmethod
+    def _parse_income_response(raw_response: Any) -> Dict[str, Optional[float]]:
+        """Parse EDSL tax response payloads into expected income fields."""
+
+        def empty_response() -> Dict[str, Optional[float]]:
+            return {"broad_income": None, "taxable_income": None}
+
+        def parse_number(value: Any) -> Optional[float]:
+            if value is None or value is False or value is True:
+                return None
+            if isinstance(value, (int, float)):
+                return None if value != value else float(value)
+
+            value_text = str(value).strip()
+            if not value_text or value_text.lower() in {"nan", "none", "null"}:
+                return None
+
+            try:
+                return float(value_text.replace("$", "").replace(",", ""))
+            except ValueError:
+                return None
+
+        def extract_field(text: str, field_name: str) -> Optional[float]:
+            pattern = re.compile(
+                rf'"?{re.escape(field_name)}"?\s*:\s*'
+                r"(?P<value>null|-?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?)",
+                re.IGNORECASE,
+            )
+            match = pattern.search(text)
+            if not match:
+                return None
+            return parse_number(match.group("value"))
+
+        if raw_response is None:
+            return empty_response()
+
+        if isinstance(raw_response, float) and raw_response != raw_response:
+            return empty_response()
+
+        def parse_text_payload(response_text: str) -> Dict[str, Optional[float]]:
+            text = response_text.strip()
+            if not text or text.lower() in {"nan", "none", "null"}:
+                return empty_response()
+
+            # Strip code fences if the model wraps the answer in markdown.
+            if text.startswith("```"):
+                lines = text.splitlines()
+                if lines and lines[0].startswith("```"):
+                    lines = lines[1:]
+                if lines and lines[-1].startswith("```"):
+                    lines = lines[:-1]
+                text = "\n".join(lines).strip()
+
+            candidate_dict = None
+            try:
+                candidate_dict = ast.literal_eval(text)
+            except (ValueError, SyntaxError):
+                try:
+                    import json
+
+                    candidate_dict = json.loads(text)
+                except Exception:
+                    candidate_dict = None
+
+            if isinstance(candidate_dict, dict):
+                if isinstance(candidate_dict.get("answer"), dict):
+                    candidate_dict = candidate_dict["answer"]
+                return {
+                    "broad_income": parse_number(candidate_dict.get("broad_income")),
+                    "taxable_income": parse_number(
+                        candidate_dict.get("taxable_income")
+                    ),
+                }
+
+            broad_income = None
+            taxable_income = None
+            for line in text.splitlines():
+                if ":" not in line:
+                    continue
+                key, value = line.split(":", 1)
+                key = key.strip().lower().replace(" ", "_")
+                value = value.strip()
+                if key in {"broad_income", "broadincome"}:
+                    broad_income = parse_number(value)
+                elif key in {"taxable_income", "taxableincome"}:
+                    taxable_income = parse_number(value)
+
+            if broad_income is None:
+                broad_income = extract_field(text, "broad_income")
+            if taxable_income is None:
+                taxable_income = extract_field(text, "taxable_income")
+
+            return {
+                "broad_income": broad_income,
+                "taxable_income": taxable_income,
+            }
+
+        if isinstance(raw_response, dict):
+            response_dict = raw_response
+            if isinstance(response_dict.get("answer"), dict):
+                response_dict = response_dict["answer"]
+            elif isinstance(response_dict.get("answer"), str):
+                return parse_text_payload(response_dict["answer"])
+            elif isinstance(response_dict.get("raw_model_response"), str):
+                return parse_text_payload(response_dict["raw_model_response"])
+
+            return {
+                "broad_income": parse_number(response_dict.get("broad_income")),
+                "taxable_income": parse_number(response_dict.get("taxable_income")),
+            }
+
+        return parse_text_payload(str(raw_response))
+
+    def _extract_tax_result_from_row(
+        self, scenario: Dict[str, Any], row: Any, attempt_number: int
+    ) -> Optional[Dict[str, Any]]:
+        income_response_raw = row.get("answer.income_responses")
+        raw_model_response = row.get(
+            "raw_model_response.income_responses_raw_model_response"
+        )
+        parsed = self._parse_income_response(
+            income_response_raw
+            if income_response_raw is not None
+            and str(income_response_raw).strip().lower()
+            not in {
+                "nan",
+                "none",
+                "null",
+            }
+            else raw_model_response
+        )
+
+        parsed_broad_income = parsed["broad_income"]
+        parsed_taxable_income = parsed["taxable_income"]
+        if parsed_broad_income is None or parsed_taxable_income is None:
+            return None
+
+        result_dict = scenario.copy()
+        result_dict["broad_income_this"] = parsed_broad_income
+        result_dict["taxable_income_this"] = parsed_taxable_income
+        result_dict["model"] = row.get("model.model", self.model)
+        result_dict["income_response_raw"] = income_response_raw
+        result_dict["raw_model_response"] = raw_model_response
+        result_dict["response_attempt"] = attempt_number
+        result_dict["implied_eti_broad"] = self.calculate_eti(
+            scenario["mtr_last"],
+            scenario["mtr_this"],
+            scenario["broad_income"],
+            parsed_broad_income,
+        )
+        result_dict["implied_eti_taxable"] = self.calculate_eti(
+            scenario["mtr_last"],
+            scenario["mtr_this"],
+            scenario["taxable_income"],
+            parsed_taxable_income,
+        )
+        return result_dict
+
+    def _run_job_with_server_retry(
+        self,
+        job: Any,
+        use_cache: bool,
+        max_server_retries: int = 5,
+        base_wait: float = 30.0,
+    ) -> Any:
+        """Run an EDSL job with exponential backoff for transient server errors (5xx)."""
+        for attempt in range(max_server_retries):
+            try:
+                return job.run(cache=use_cache)
+            except Exception as exc:
+                exc_name = type(exc).__name__
+                exc_str = str(exc)
+                is_server_error = (
+                    "CoopServerResponseError" in exc_name
+                    or any(code in exc_str for code in ("502", "503", "504", "Bad gateway"))
+                )
+                if is_server_error and attempt < max_server_retries - 1:
+                    wait = base_wait * (2**attempt)
+                    logger.warning(
+                        "Server error on attempt %d/%d, retrying in %.0fs: %s",
+                        attempt + 1,
+                        max_server_retries,
+                        wait,
+                        exc,
+                    )
+                    print(
+                        f"\n⚠️  Server error (attempt {attempt + 1}/{max_server_retries}), "
+                        f"retrying in {wait:.0f}s..."
+                    )
+                    time.sleep(wait)
+                else:
+                    raise
+        return None  # unreachable
+
+    def _run_tax_survey_with_retries(
+        self,
+        scenario: Dict[str, Any],
+        n: int,
+        agents: List["Agent"],
+        model: Any,
+        max_attempts: int = 3,
+    ) -> List[Dict[str, Any]]:
+        """Run a tax survey with retries and return only valid response rows."""
+        all_results: List[Dict[str, Any]] = []
+        attempts = 0
+
+        while attempts < max_attempts and len(all_results) < n:
+            attempts += 1
+            remaining = n - len(all_results)
+            attempt_agents = agents[:remaining]
+            job = Jobs(
+                survey=self.create_tax_survey(**scenario),
+                agents=attempt_agents,
+                models=[model],
+            )
+            try:
+                results = self._run_job_with_server_retry(
+                    job, use_cache=self.use_cache if attempts == 1 else False
+                )
+            except Exception as exc:
+                logger.error(
+                    "Tax survey failed after server retries (attempt=%d/%d): %s",
+                    attempts,
+                    max_attempts,
+                    exc,
+                )
+                continue
+            if results is None:
+                continue
+
+            df = results.to_pandas()
+            if df.empty:
+                continue
+
+            df.to_csv(
+                f"edsl_output_tax_{scenario.get('mtr_this', 'round' + str(scenario.get('round_num', 'unknown')))}.csv",
+                index=False,
+            )
+
+            for _, row in df.iterrows():
+                result_dict = self._extract_tax_result_from_row(
+                    scenario, row, attempt_number=attempts
+                )
+                if result_dict is not None:
+                    all_results.append(result_dict)
+                if len(all_results) >= n:
+                    break
+
+        return all_results
+
+    @staticmethod
+    def _is_truthy(value: Any) -> bool:
+        if value is None:
+            return False
+        if isinstance(value, str):
+            return value.strip().lower() in {"true", "1", "yes"}
+
+        try:
+            if value != value:
+                return False
+            return bool(value)
+        except (TypeError, ValueError):
+            return False
+
+    @classmethod
+    def _has_validated_answers(cls, df: Any) -> Optional[bool]:
+        validation_columns = [
+            column for column in df.columns if column.startswith("validated.")
+        ]
+        if not validation_columns:
+            return None
+
+        values = df[validation_columns].to_numpy().ravel()
+        return any(cls._is_truthy(value) for value in values)
+
+    def _get_edsl_run_details(self, results: Any) -> Dict[str, Any]:
+        details = {
+            "job_uuid": getattr(results, "job_uuid", None),
+            "results_uuid": getattr(results, "results_uuid", None),
+        }
+        job_uuid = details["job_uuid"]
+        if not job_uuid:
+            return details
+
+        try:
+            from edsl.coop import Coop
+
+            job_status = Coop(api_key=self.api_key).new_remote_inference_get(job_uuid)
+        except Exception as exc:
+            details["remote_status"] = f"unavailable ({type(exc).__name__}: {exc})"
+            return details
+
+        latest_details = job_status.get("latest_job_run_details", {}) or {}
+        interview_details = latest_details.get("interview_details", {}) or {}
+
+        details.update(
+            {
+                "remote_status": job_status.get("status"),
+                "failure_reason": latest_details.get("failure_reason"),
+                "failure_description": latest_details.get("failure_description"),
+                "error_report_url": latest_details.get("error_report_url"),
+                "total_interviews": interview_details.get("total_interviews"),
+                "completed_interviews": interview_details.get("completed_interviews"),
+                "interviews_with_exceptions": interview_details.get(
+                    "interviews_with_exceptions"
+                ),
+            }
+        )
+        return details
+
+    def _raise_if_no_usable_edsl_results(
+        self, df: Any, results: Any, survey_type: str, scenario: Dict[str, Any]
+    ) -> None:
+        if df.empty:
+            details = self._get_edsl_run_details(results)
+            raise RuntimeError(
+                self._format_edsl_failure_message(
+                    "EDSL returned an empty results table",
+                    details,
+                    survey_type,
+                    scenario,
+                    row_count=0,
+                )
+            )
+
+        if survey_type == "tax":
+            return
+
+        has_validated_answers = self._has_validated_answers(df)
+        if has_validated_answers is not False:
+            return
+
+        details = self._get_edsl_run_details(results)
+        raise RuntimeError(
+            self._format_edsl_failure_message(
+                "EDSL returned no validated answers",
+                details,
+                survey_type,
+                scenario,
+                row_count=len(df),
+            )
+        )
+
+    def _format_edsl_failure_message(
+        self,
+        reason: str,
+        details: Dict[str, Any],
+        survey_type: str,
+        scenario: Dict[str, Any],
+        row_count: int,
+    ) -> str:
+        parts = [
+            reason,
+            f"survey_type={survey_type}",
+            f"model={self.model}",
+            f"rows={row_count}",
+        ]
+
+        for key in (
+            "job_uuid",
+            "results_uuid",
+            "remote_status",
+            "failure_reason",
+            "failure_description",
+            "total_interviews",
+            "completed_interviews",
+            "interviews_with_exceptions",
+            "error_report_url",
+        ):
+            value = details.get(key)
+            if value is not None:
+                parts.append(f"{key}={value}")
+
+        if "mtr_this" in scenario:
+            parts.append(f"mtr_this={scenario['mtr_this']}")
+        elif "round_num" in scenario:
+            parts.append(f"round_num={scenario['round_num']}")
+
+        return "; ".join(parts)
+
+    @staticmethod
+    def _parse_lab_income_response(row: Any) -> Optional[float]:
+        """Extract a numeric income value from a lab experiment result row.
+
+        Tries the validated answer first, then falls back to the raw model
+        response, applying string-to-number coercion (strip $, commas, etc.)
+        and a regex scan for the first number in the string.
+        """
+
+        def try_float(value: Any) -> Optional[float]:
+            if value is None:
+                return None
+            try:
+                val = float(str(value).strip().replace("$", "").replace(",", ""))
+                return None if val != val else val  # guard NaN
+            except (TypeError, ValueError):
+                return None
+
+        # Primary: validated/parsed answer from QuestionNumerical
+        answer = row.get("answer.income_response")
+        parsed = try_float(answer)
+        if parsed is not None:
+            return parsed
+
+        # Fallback: raw model response text
+        raw = row.get("raw_model_response.income_response_raw_model_response")
+        if raw is not None:
+            raw_str = str(raw).strip()
+            parsed = try_float(raw_str)
+            if parsed is not None:
+                return parsed
+            # Last resort: find the first integer/decimal in the string
+            match = re.search(r"-?\d+(?:\.\d+)?", raw_str)
+            if match:
+                return try_float(match.group())
+
+        return None
+
+    def _run_lab_survey_with_retries(
+        self,
+        scenario: Dict[str, Any],
+        n: int,
+        agents: List["Agent"],
+        model: Any,
+        max_attempts: int = 3,
+    ) -> List[Dict[str, Any]]:
+        """Run a lab survey with retries, returning n result dicts.
+
+        Retries up to max_attempts times to collect n valid (numeric) responses.
+        If fewer than n valid responses are obtained after all attempts, failure
+        records (income=None, parse_failed=True) are appended so the caller
+        always receives exactly n records.
+        """
+        all_results: List[Dict[str, Any]] = []
+        attempts = 0
+        last_raw = None
+
+        while attempts < max_attempts and len(all_results) < n:
+            attempts += 1
+            remaining = n - len(all_results)
+            attempt_agents = agents[:remaining]
+
+            survey = self.create_lab_experiment_survey(**scenario)
+            job = Jobs(survey=survey, agents=attempt_agents, models=[model])
+            try:
+                results = self._run_job_with_server_retry(
+                    job, use_cache=self.use_cache if attempts == 1 else False
+                )
+            except Exception as exc:
+                logger.error(
+                    "Lab survey failed after server retries "
+                    "(round=%s, attempt=%d/%d): %s",
+                    scenario.get("round_num"),
+                    attempts,
+                    max_attempts,
+                    exc,
+                )
+                continue
+
+            if results is None:
+                logger.warning(
+                    "Lab survey returned no Results object "
+                    "(round=%s, attempt=%d/%d)",
+                    scenario.get("round_num"),
+                    attempts,
+                    max_attempts,
+                )
+                continue
+
+            df = results.to_pandas()
+            if df.empty:
+                logger.warning(
+                    "Lab survey returned empty DataFrame "
+                    "(round=%s, attempt=%d/%d)",
+                    scenario.get("round_num"),
+                    attempts,
+                    max_attempts,
+                )
+                continue
+
+            df.to_csv(
+                f"edsl_output_lab_round{scenario.get('round_num', 'unknown')}.csv",
+                index=False,
+            )
+
+            for _, row in df.iterrows():
+                raw = row.get("answer.income_response")
+                last_raw = raw
+                income = self._parse_lab_income_response(row)
+
+                if income is not None:
+                    result_dict = scenario.copy()
+                    result_dict["income"] = income
+                    result_dict["response_raw"] = raw
+                    result_dict["model"] = row.get("model.model", self.model)
+                    result_dict["response_attempt"] = attempts
+                    result_dict["parse_failed"] = False
+                    all_results.append(result_dict)
+                else:
+                    logger.warning(
+                        "Non-numeric income from lab response "
+                        "(round=%s, attempt=%d/%d, raw=%r)",
+                        scenario.get("round_num"),
+                        attempts,
+                        max_attempts,
+                        raw,
+                    )
+
+                if len(all_results) >= n:
+                    break
+
+        # Pad with failure records if we couldn't collect n valid results
+        if len(all_results) < n:
+            logger.error(
+                "Lab survey: only %d/%d valid results after %d attempts (round=%s)",
+                len(all_results),
+                n,
+                attempts,
+                scenario.get("round_num"),
+            )
+            for _ in range(n - len(all_results)):
+                failure_dict = scenario.copy()
+                failure_dict["income"] = None
+                failure_dict["response_raw"] = last_raw
+                failure_dict["model"] = self.model
+                failure_dict["response_attempt"] = attempts
+                failure_dict["parse_failed"] = True
+                all_results.append(failure_dict)
+
+        return all_results
+
     def run_batch_surveys(
         self,
         scenarios: List[Dict[str, Any]],
@@ -305,13 +851,29 @@ TAXABLE_INCOME: <number>"""
 
         for scenario in scenarios:
             if survey_type == "tax":
-                survey = self.create_tax_survey(**scenario)
-            else:  # lab
-                survey = self.create_lab_experiment_survey(**scenario)
+                agents = [
+                    Agent(name=f"Respondent_{i + 1}", instruction=agent_instruction)
+                    for i in range(n)
+                ]
+
+                if self.model.startswith("gemini-"):
+                    model = Model(self.model, service_name="google")
+                else:
+                    model = Model(self.model)
+
+                all_results.extend(
+                    self._run_tax_survey_with_retries(
+                        scenario=scenario,
+                        n=n,
+                        agents=agents,
+                        model=model,
+                    )
+                )
+                continue
 
             # Create multiple agents for batch processing
             agents = [
-                Agent(name=f"Respondent_{i+1}", instruction=agent_instruction)
+                Agent(name=f"Respondent_{i + 1}", instruction=agent_instruction)
                 for i in range(n)
             ]
 
@@ -321,71 +883,14 @@ TAXABLE_INCOME: <number>"""
             else:
                 model = Model(self.model)
 
-            # Run all agents at once
-            job = Jobs(survey=survey, agents=agents, models=[model])
-            results = job.run(cache=self.use_cache)
-
-            # Extract results to DataFrame
-            df = results.to_pandas()
-            if survey_type == "tax":
-                df.to_csv(
-                    f"edsl_output_{survey_type}_{scenario.get('mtr_this', 'round' + str(scenario.get('round_num', 'unknown')))}.csv",
-                    index=False,
+            all_results.extend(
+                self._run_lab_survey_with_retries(
+                    scenario=scenario,
+                    n=n,
+                    agents=agents,
+                    model=model,
                 )
-            else:
-                df.to_csv(
-                    f"edsl_output_{survey_type}_round{scenario.get('round_num', 'unknown')}.csv",
-                    index=False,
-                )
-
-            # Process each response
-            if survey_type == "tax":
-                for idx, row in df.iterrows():
-                    result_dict = scenario.copy()
-                    try:
-                        income_response_dict = ast.literal_eval(
-                            row["answer.income_responses"]
-                        )
-                    except ValueError:
-                        income_response_dict = {
-                            "broad_income": None,
-                            "taxable_income": None,
-                        }
-                    result_dict["broad_income_this"] = income_response_dict[
-                        "broad_income"
-                    ]
-                    result_dict["taxable_income_this"] = income_response_dict[
-                        "taxable_income"
-                    ]
-                    result_dict["model"] = row.get("model.model", self.model)
-                    # save income response in case need to parse later
-                    result_dict["income_response_raw"] = row["answer.income_responses"]
-
-                    parsed_broad_income = income_response_dict["broad_income"]
-                    parsed_table_income = income_response_dict["taxable_income"]
-
-                    # Calculate ETI for tax surveys
-                    result_dict["implied_eti_broad"] = self.calculate_eti(
-                        scenario["mtr_last"],
-                        scenario["mtr_this"],
-                        scenario["broad_income"],
-                        parsed_broad_income,
-                    )
-                    result_dict["implied_eti_taxable"] = self.calculate_eti(
-                        scenario["mtr_last"],
-                        scenario["mtr_this"],
-                        scenario["taxable_income"],
-                        parsed_table_income,
-                    )
-            else:  # lab experiment replication
-                for idx, row in df.iterrows():
-                    result_dict = scenario.copy()
-                    result_dict["income"] = row.get("answer.income_response")
-                    # save income response in case need to parse later
-                    result_dict["response_raw"] = row["answer.income_response"]
-                    result_dict["model"] = row.get("model.model", self.model)
-
-                all_results.append(result_dict)
+            )
 
         return all_results
 

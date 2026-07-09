@@ -67,56 +67,50 @@ class TaxSimulation:
         """
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        try:
-            # Create scenario for EDSL
-            scenario = {
-                "broad_income": row["broad_income"],
-                "taxable_income": row["taxable_income"],
-                "mtr_last": row["mtr"],
-                "mtr_this": row["mtr_prime"],
-            }
+        # Create scenario for EDSL
+        scenario = {
+            "broad_income": row["broad_income"],
+            "taxable_income": row["taxable_income"],
+            "mtr_last": row["mtr"],
+            "mtr_this": row["mtr_prime"],
+        }
 
-            # Run survey with EDSL
-            results = self.client.run_batch_surveys(
-                [scenario],
-                n=self.params.responses_per_household,
-                survey_type="tax",
+        # Run survey with EDSL
+        results = self.client.run_batch_surveys(
+            [scenario],
+            n=self.params.responses_per_household,
+            survey_type="tax",
+        )
+
+        # Format results to match existing structure
+        formatted_results = []
+        for i, result in enumerate(results):
+            formatted_results.append(
+                {
+                    "timestamp": timestamp,
+                    "tax_unit_id": row.get("tax_unit_id"),
+                    "filing_status": row.get("filing_status"),
+                    "broad_income": row["broad_income"],
+                    "taxable_income": row["taxable_income"],
+                    "mtr": row["mtr"],
+                    "mtr_prime": row["mtr_prime"],
+                    "response_number": i + 1,
+                    "taxable_income_this": result.get("taxable_income_this"),
+                    "broad_income_this": result.get("broad_income_this"),
+                    "implied_eti_taxable": result.get("implied_eti_taxable"),
+                    "implied_eti_broad": result.get("implied_eti_broad"),
+                    "model": result.get("model", self.client.model),
+                    "income_response_raw": result.get("income_response_raw"),
+                }
             )
 
-            # Format results to match existing structure
-            formatted_results = []
-            for i, result in enumerate(results):
-                formatted_results.append(
-                    {
-                        "timestamp": timestamp,
-                        "tax_unit_id": row.get("tax_unit_id"),
-                        "filing_status": row.get("filing_status"),
-                        "broad_income": row["broad_income"],
-                        "taxable_income": row["taxable_income"],
-                        "mtr": row["mtr"],
-                        "mtr_prime": row["mtr_prime"],
-                        "response_number": i + 1,
-                        "taxable_income_this": result.get("taxable_income_this"),
-                        "broad_income_this": result.get("broad_income_this"),
-                        "implied_eti_taxable": result.get("implied_eti_taxable"),
-                        "implied_eti_broad": result.get("implied_eti_broad"),
-                        "model": result.get("model", self.client.model),
-                        "income_response_raw": result.get("income_response_raw"),
-                    }
-                )
-
-            return formatted_results
-
-        except Exception as e:
-            import traceback
-
+        if not formatted_results:
             print(
-                f"\nError in simulation for income {row['broad_income']}, rate {row['mtr_prime']}:"
+                "Warning: skipping household with no valid tax responses "
+                f"for income {row['broad_income']} and rate {row['mtr_prime']}"
             )
-            print(f"Error type: {type(e).__name__}")
-            print(f"Error message: {str(e)}")
-            traceback.print_exc()
-            return []
+
+        return formatted_results
 
     def run_bulk_simulation(self, csv_path: Path) -> pd.DataFrame:
         """Run simulations for all households in the CSV.
@@ -170,6 +164,7 @@ class LabExperimentSimulation:
         subjects_per_treatment: int = 100,
         low_rate: float = 25.0,
         high_rate: float = 50.0,
+        checkpoint_path: Optional[Path] = None,
     ) -> pd.DataFrame:
         """Run the full lab experiment simulation.
 
@@ -191,69 +186,125 @@ class LabExperimentSimulation:
         instructions = self.client.create_instructions_text(
             rounds=rounds, wage_per_unit=self.config["wage_per_unit"]
         )
-        all_results = []
 
-        for treatment_label in treatments:
+        # Load checkpoint if it exists
+        all_results: List[Dict] = []
+        completed_set: set = set()
+        if checkpoint_path is not None and Path(checkpoint_path).exists():
             try:
-                treatment = Treatment.from_label(treatment_label)
-            except ValueError:
-                print(f"Warning: Unknown treatment '{treatment_label}', skipping")
-                continue
+                existing_df = pd.read_csv(checkpoint_path)
+                if not existing_df.empty:
+                    all_results = existing_df.to_dict("records")
+                    for row in all_results:
+                        completed_set.add(
+                            (str(row["treatment"]), int(row["subject_id"]), int(row["round"]))
+                        )
+                    print(
+                        f"Resuming from checkpoint: {len(all_results)} results loaded "
+                        f"({len(completed_set)} (treatment, subject, round) tuples completed)"
+                    )
+            except Exception as e:
+                print(f"Warning: Could not load checkpoint {checkpoint_path}: {e}")
+                all_results = []
+                completed_set = set()
 
-            for subject_id in range(subjects_per_treatment):
-                # Random labor endowments for each round
-                labor_endowments = np.random.randint(
-                    int(self.config["labor_endowment_min"]),
-                    int(self.config["labor_endowment_max"]) + 1,
-                    size=rounds,
-                )
+        total_sims = len(treatments) * subjects_per_treatment * rounds
+        with tqdm(total=total_sims, desc="Lab experiment") as pbar:
+            for treatment_label in treatments:
+                try:
+                    treatment = Treatment.from_label(treatment_label)
+                except ValueError:
+                    print(f"Warning: Unknown treatment '{treatment_label}', skipping")
+                    pbar.update(rounds * subjects_per_treatment)
+                    continue
 
-                for round_idx in range(rounds):
-                    round_num = round_idx + 1  # 1-based round number
+                # Compute output label once per treatment (doesn't vary by round)
+                output_label = treatment.label.replace(
+                    "Flat25", f"Flat{int(low_rate)}"
+                ).replace("Flat50", f"Flat{int(high_rate)}")
 
-                    # Get tax schedule for this round
-                    schedule = treatment.get_schedule_for_round(round_num, rounds)
-
-                    scenario = {
-                        "round_num": round_num,
-                        "tax_schedule": schedule.value,
-                        "labor_endowment": int(labor_endowments[round_idx]),
-                        "wage_per_unit": self.config["wage_per_unit"],
-                        "rounds": rounds,
-                        "low_rate": low_rate,
-                        "high_rate": high_rate,
-                    }
-
-                    # Run survey
-                    results = self.client.run_batch_surveys(
-                        [scenario],
-                        n=1,
-                        survey_type="lab",
-                        agent_instruction=instructions,
+                for subject_id in range(subjects_per_treatment):
+                    # Deterministic seed per (treatment, subject) for reproducible endowments
+                    seed = abs(hash(treatment_label)) % (2**32) + subject_id
+                    rng = np.random.default_rng(seed)
+                    labor_endowments = rng.integers(
+                        int(self.config["labor_endowment_min"]),
+                        int(self.config["labor_endowment_max"]) + 1,
+                        size=rounds,
                     )
 
-                    if results:
-                        result = results[0]
-                        income_choice = result.get("income", 0)
+                    for round_idx in range(rounds):
+                        round_num = round_idx + 1  # 1-based round number
 
-                        # Relabel treatment to reflect actual rates used
-                        output_label = treatment.label.replace(
-                            "Flat25", f"Flat{int(low_rate)}"
-                        ).replace("Flat50", f"Flat{int(high_rate)}")
+                        # Skip rounds already saved to checkpoint
+                        if (output_label, subject_id, round_num) in completed_set:
+                            pbar.update(1)
+                            continue
 
-                        all_results.append(
-                            {
+                        completed = pbar.n
+                        remaining = total_sims - completed
+                        pbar.set_description(
+                            f"Treatment {treatment_label} | "
+                            f"Subject {subject_id + 1}/{subjects_per_treatment} | "
+                            f"Round {round_num}/{rounds} | "
+                            f"{remaining} remaining"
+                        )
+
+                        # Get tax schedule for this round
+                        schedule = treatment.get_schedule_for_round(round_num, rounds)
+
+                        scenario = {
+                            "round_num": round_num,
+                            "tax_schedule": schedule.value,
+                            "labor_endowment": int(labor_endowments[round_idx]),
+                            "wage_per_unit": self.config["wage_per_unit"],
+                            "rounds": rounds,
+                            "low_rate": low_rate,
+                            "high_rate": high_rate,
+                        }
+
+                        # Run survey
+                        results = self.client.run_batch_surveys(
+                            [scenario],
+                            n=1,
+                            survey_type="lab",
+                            agent_instruction=instructions,
+                        )
+
+                        if results:
+                            result = results[0]
+                            income_choice = result.get("income")
+
+                            row_data = {
                                 "treatment": output_label,
                                 "subject_id": subject_id,
                                 "round": round_num,
                                 "tax_schedule": schedule.value,
-                                "labor_endowment": labor_endowments[round_idx],
-                                "labor_supply": income_choice
-                                / self.config["wage_per_unit"],
+                                "labor_endowment": int(labor_endowments[round_idx]),
+                                "labor_supply": (
+                                    income_choice / self.config["wage_per_unit"]
+                                    if income_choice is not None
+                                    else None
+                                ),
                                 "income": income_choice,
                                 "post_reform": round_num > rounds // 2,
                                 "model": result.get("model", self.client.model),
+                                "response_error": result.get("parse_failed", False),
                             }
-                        )
+                            all_results.append(row_data)
+                            completed_set.add((output_label, subject_id, round_num))
+
+                            # Append to checkpoint immediately so progress survives crashes
+                            if checkpoint_path is not None:
+                                checkpoint_df = pd.DataFrame([row_data])
+                                write_header = not Path(checkpoint_path).exists()
+                                checkpoint_df.to_csv(
+                                    checkpoint_path,
+                                    mode="a",
+                                    header=write_header,
+                                    index=False,
+                                )
+
+                        pbar.update(1)
 
         return pd.DataFrame(all_results)
