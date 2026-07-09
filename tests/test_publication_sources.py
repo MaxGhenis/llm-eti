@@ -14,6 +14,8 @@ def test_package_version_matches_citation():
 def test_only_canonical_manuscript_and_pipeline_remain():
     assert (ROOT / "paper" / "index.qmd").exists()
     assert (ROOT / "_quarto.yml").exists()
+    paper_config = (ROOT / "paper" / "_quarto.yml").read_text()
+    assert "render:\n    - index.qmd" in paper_config
     assert not (ROOT / "book").exists()
     assert not (ROOT / "results").exists()
     assert not (ROOT / "llm_eti" / "paper_results.py").exists()
