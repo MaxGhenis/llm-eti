@@ -52,9 +52,11 @@ analysis, or forecast a person or population.
 4. **Cross-model outcome selection.** The common comparison panel requires
    positive answers from every model. Model-specific clean-pair sensitivities
    address but do not remove that design tradeoff.
-5. **Delivered-value rounding.** More than one fifth of source scenarios display
-   no integer rate change. A prospective design should use prespecified,
-   meaningful changes.
+5. **Delivered-value rounding.** In {{< var same_rate_count >}} of
+   {{< var scenario_count >}} source scenarios ({{< var same_rate_share >}}),
+   distinct continuous rates render as the same integer percentage, so the
+   delivered prompt displays no rate change. A prospective design should use
+   prespecified, meaningful changes.
 6. **Boundary and tail behavior.** Zero-dollar and extreme responses make mean
    slopes transformation- and trimming-sensitive.
 7. **No human benchmark.** The archive cannot establish whether any model

@@ -20,6 +20,7 @@ PUBLIC_PAPER_DIR = SITE_DIR / "paper"
 DOWNLOADS_DIR = SITE_DIR / "downloads"
 PAPER_URL = "https://maxghenis.github.io/llm-eti/paper/"
 SITEMAP_NAMESPACE = "http://www.sitemaps.org/schemas/sitemap/0.9"
+REQUIRED_QUARTO_VERSION = "1.9.38"
 
 
 def _sha256(path: Path) -> str:
@@ -40,7 +41,9 @@ def _find_quarto() -> str:
         return str(path)
     quarto = shutil.which("quarto")
     if quarto is None:
-        raise SystemExit("Quarto is required; expected version 1.9.38.")
+        raise SystemExit(
+            f"Quarto is required; expected version {REQUIRED_QUARTO_VERSION}."
+        )
     return quarto
 
 
@@ -116,11 +119,11 @@ def main() -> None:
         capture_output=True,
         text=True,
     ).stdout.strip()
-    if quarto_version != "1.9.38":
+    if quarto_version != REQUIRED_QUARTO_VERSION:
         if os.environ.get("ALLOW_QUARTO_VERSION_MISMATCH") != "1":
             raise SystemExit(
-                f"Publication rendering requires Quarto 1.9.38, found "
-                f"{quarto_version}. Set ALLOW_QUARTO_VERSION_MISMATCH=1 to "
+                f"Publication rendering requires Quarto {REQUIRED_QUARTO_VERSION}, "
+                f"found {quarto_version}. Set ALLOW_QUARTO_VERSION_MISMATCH=1 to "
                 "explicitly opt out."
             )
         print(f"Warning: rendering with opted-out Quarto {quarto_version}.")

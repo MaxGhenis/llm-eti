@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from PIL import Image
 
-from scripts.generate_artifacts import _canonicalize_json, main
+from scripts.generate_artifacts import _canonicalize_json, _fmt_pct, main
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -19,12 +19,15 @@ def test_artifact_generator_is_complete_and_has_no_fallbacks():
         "abstract.md",
         "boundary_outputs.md",
         "completion.md",
+        "completion_figure.md",
         "design_diagnostics.md",
+        "feature_figure.html",
         "hero_metrics.html",
         "key_findings.md",
         "main_narrative.md",
         "model_provenance.md",
         "partial_run_note.md",
+        "patterns_figure.md",
         "primary_panel.md",
         "recovery_diagnostics.md",
         "response_diagnostics.md",
@@ -34,6 +37,7 @@ def test_artifact_generator_is_complete_and_has_no_fallbacks():
         "same_rate_check.md",
         "scenario_sample.md",
         "slope_results.md",
+        "slopes_figure.md",
         "sensitivity.md",
         "sensitivity_narrative.md",
         "treatment_diagnostics.md",
@@ -71,6 +75,10 @@ def test_artifact_generator_is_complete_and_has_no_fallbacks():
         else:
             assert path.read_bytes().startswith(b"%PDF-")
 
+    variables = (ROOT / "paper" / "_variables.yml").read_text()
+    assert "same_rate_count:" in variables
+    assert "same_rate_share:" in variables
+
     summary = json.loads((generated / "analysis_summary.json").read_text())
     assert summary["primary_analysis_scenario_count"] == 603
     assert summary["archived_response_row_count"] == 8_095
@@ -106,6 +114,11 @@ def test_json_canonicalization_collapses_platform_noise_and_rejects_nonfinite():
     for value in [float("nan"), float("inf"), float("-inf")]:
         with pytest.raises(ValueError, match="non-finite"):
             _canonicalize_json(value)
+
+
+def test_percent_formatter_renders_missing_values_as_em_dash():
+    assert _fmt_pct(0.5) == "50.0%"
+    assert _fmt_pct(float("nan")) == "—"
 
 
 def test_artifact_generator_is_byte_deterministic():

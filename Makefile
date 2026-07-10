@@ -13,13 +13,13 @@ test:
 	$(UV) run pytest --cov=llm_eti --cov-report=term-missing
 
 format:
-	$(UV) run black llm_eti scripts tests
-	$(UV) run ruff check --fix llm_eti scripts tests
+	$(UV) run black .
+	$(UV) run ruff check --fix .
 
 lint:
-	$(UV) run black --check llm_eti scripts tests
-	$(UV) run ruff check llm_eti scripts tests
-	$(UV) run mypy llm_eti scripts tests --ignore-missing-imports
+	$(UV) run black --check .
+	$(UV) run ruff check .
+	$(UV) run mypy . --ignore-missing-imports
 
 site: artifacts
 	$(PYTHON) scripts/render_publication.py

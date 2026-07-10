@@ -10,6 +10,12 @@ on:
 permissions:
   contents: read
 
+# Newest-wins per ref: without this, two close pushes can finish building out
+# of order and the older run's Pages deploy would land last.
+concurrency:
+  group: publication-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   python-compatibility:
     name: Test (Python 3.12)
@@ -70,6 +76,11 @@ jobs:
           version: "0.11.28"
           enable-cache: true
           cache-dependency-glob: uv.lock
+
+      - name: Install poppler-utils for the PDF accessibility gate
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends poppler-utils
 
       - name: Set up Quarto and TinyTeX
         uses: quarto-dev/quarto-actions/setup@8a96df13519ee81fd526f2dfca5962811136661b # v2.2.0

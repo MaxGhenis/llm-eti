@@ -18,6 +18,17 @@ publication does not call a model API or download a contemporary dataset.
 The `income_response_raw` field may contain quoted newlines. Use an RFC
 4180-compatible CSV parser; physical line counts are not record counts.
 
+## Float-encoding caveat
+
+`scenarios.csv` stores the scenario key columns with up to 17 significant
+digits, while the response CSVs store the same values with 16; the two
+encodings are one unit in the last place apart as exact IEEE doubles.
+`llm_eti.study2` pins pandas' default `float_precision="high"` parser, under
+which both files parse to identical float64 keys, and validates the join.
+Reading either file with `float_precision="round_trip"` or another
+correctly-rounding parser leaves roughly half of the response rows unmatched
+and aborts the merge with a validation error.
+
 ## Analysis rules
 
 `llm_eti.study2` joins each response to its source scenario and reconstructs the

@@ -19,6 +19,7 @@ import numpy as np
 import pandas as pd
 
 from llm_eti.study2 import (
+    CLEAN_PAIRS_SPECIFICATION,
     MODEL_SPECS,
     completion_summary,
     load_study2_data,
@@ -42,11 +43,11 @@ RUST = "#c86b4a"
 STONE = "#a7aaa3"
 PAPER = "#f4f0e6"
 MODEL_COLORS = {
-    "Claude Haiku 4.5": "#176b63",
-    "DeepSeek V3": "#4d8e86",
-    "Gemma 4 26B": "#c86b4a",
-    "GPT-4o mini": "#795b8f",
-    "GPT-4o (partial run)": "#a7aaa3",
+    "claude_haiku_4_5": "#176b63",
+    "deepseek_v3": "#4d8e86",
+    "gemma_4_26b": "#c86b4a",
+    "gpt_4o_mini": "#795b8f",
+    "gpt_4o": "#a7aaa3",
 }
 FIGURE_TIMESTAMP = datetime(2026, 7, 9, tzinfo=UTC)
 plt.rcParams["svg.hashsalt"] = "llm-eti-0.2.0"
@@ -54,8 +55,6 @@ plt.rcParams["svg.hashsalt"] = "llm-eti-0.2.0"
 
 def _write(name: str, content: str) -> None:
     GENERATED_DIR.mkdir(parents=True, exist_ok=True)
-    if name.endswith(".html"):
-        content = "\n".join(line.lstrip() for line in content.splitlines())
     (GENERATED_DIR / name).write_text(f"{content.rstrip()}\n", encoding="utf-8")
 
 
@@ -98,14 +97,16 @@ def _fmt_iqr(row: pd.Series) -> str:
     return f"{values[0]:.2f} [{values[1]:.2f}, {values[2]:.2f}]"
 
 
+def _fmt_pct(value: float) -> str:
+    """Format a share as a percentage, rendering missing values as an em dash."""
+
+    return "—" if pd.isna(value) else f"{value:.1%}"
+
+
 def _completion_table(completion: pd.DataFrame) -> str:
     table = completion.copy()
-    table["Scenario coverage"] = table["scenario_completion_rate"].map(
-        lambda value: f"{value:.1%}"
-    )
-    table["Unique-response coverage"] = table["response_completion_rate"].map(
-        lambda value: f"{value:.1%}"
-    )
+    table["Scenario coverage"] = table["scenario_completion_rate"].map(_fmt_pct)
+    table["Unique-response coverage"] = table["response_completion_rate"].map(_fmt_pct)
     table = table.rename(
         columns={
             "model": "Model",
@@ -137,9 +138,9 @@ def _main_results_tables(summary: pd.DataFrame) -> tuple[str, str]:
         lambda row: _fmt_ci(row, "broad_"), axis=1
     )
     table["Median ratio [IQR]"] = table.apply(_fmt_iqr, axis=1)
-    table["Unchanged"] = table["unchanged_share"].map(lambda value: f"{value:.1%}")
+    table["Unchanged"] = table["unchanged_share"].map(_fmt_pct)
     table["Directional among changes"] = table["directional_consistency_nonzero"].map(
-        lambda value: f"{value:.1%}"
+        _fmt_pct
     )
     table = table.rename(columns={"model": "Model", "n_scenarios": "Scenarios"})
     slopes = table[
@@ -328,7 +329,7 @@ def _save_figure(fig: plt.Figure, name: str, *, transparent: bool = False) -> No
 def _plot_completion(completion: pd.DataFrame) -> None:
     fig, ax = plt.subplots(figsize=(9.2, 4.8))
     values = completion["scenario_completion_rate"] * 100
-    colors = [MODEL_COLORS[model] for model in completion["model"]]
+    colors = [MODEL_COLORS[key] for key in completion["model_key"]]
     bars = ax.barh(completion["model"], values, color=colors, height=0.58)
     ax.bar_label(
         bars,
@@ -383,7 +384,9 @@ def _plot_slopes(summary: pd.DataFrame) -> None:
     _save_figure(fig, "model_response_slopes.png")
 
 
-def _plot_response_patterns(results: pd.DataFrame, analysis_ids: set[str]) -> None:
+def _response_pattern_shares(
+    results: pd.DataFrame, analysis_ids: set[str]
+) -> pd.DataFrame:
     sample = results[
         results["primary_model"]
         & results["scenario_id"].isin(analysis_ids)
@@ -399,7 +402,11 @@ def _plot_response_patterns(results: pd.DataFrame, analysis_ids: set[str]) -> No
         / sample.groupby("model_display").size()
     ).unstack(fill_value=0)
     order = [spec.display_name for spec in MODEL_SPECS if spec.primary]
-    shares = shares.reindex(order).iloc[::-1]
+    return shares.reindex(order)
+
+
+def _plot_response_patterns(results: pd.DataFrame, analysis_ids: set[str]) -> None:
+    shares = _response_pattern_shares(results, analysis_ids).iloc[::-1]
     categories = ["Unchanged", "Directionally consistent", "Opposite direction"]
     colors = ["#c7cbc4", TEAL, RUST]
 
@@ -474,6 +481,8 @@ def _plot_social_card(summary: pd.DataFrame) -> None:
 
 
 def _hero_metrics(summary: pd.DataFrame, analysis_count: int) -> str:
+    # HTML artifacts are emitted flush-left: Quarto includes treat lines
+    # indented by four or more spaces as CommonMark code blocks.
     rows = []
     maximum = max(0.8, float(summary["slope"].max()))
     for row in summary.itertuples(index=False):
@@ -482,11 +491,11 @@ def _hero_metrics(summary: pd.DataFrame, analysis_count: int) -> str:
             "\n".join(
                 [
                     '<div class="slope-row">',
-                    f'  <div class="slope-model"><span>{row.model}</span><strong>{row.slope:.2f}</strong></div>',
-                    '  <div class="slope-track" aria-hidden="true">',
-                    f'    <span style="width: {width:.1f}%"></span>',
-                    "  </div>",
-                    f'  <div class="slope-ci">95% CI {row.slope_ci_lower:.2f} to {row.slope_ci_upper:.2f}</div>',
+                    f'<div class="slope-model"><span>{row.model}</span><strong>{row.slope:.2f}</strong></div>',
+                    '<div class="slope-track" aria-hidden="true">',
+                    f'<span style="width: {width:.1f}%"></span>',
+                    "</div>",
+                    f'<div class="slope-ci">95% CI {row.slope_ci_lower:.2f} to {row.slope_ci_upper:.2f}</div>',
                     "</div>",
                 ]
             )
@@ -494,12 +503,12 @@ def _hero_metrics(summary: pd.DataFrame, analysis_count: int) -> str:
     return "\n".join(
         [
             '<div class="hero-result" aria-label="Primary taxable-income response slopes by model">',
-            '  <div class="hero-result-heading">',
-            "    <span>Model-implied taxable-income slope</span>",
-            f"    <span>{analysis_count:,} common scenarios</span>",
-            "  </div>",
+            '<div class="hero-result-heading">',
+            "<span>Model-implied taxable-income slope</span>",
+            f"<span>{analysis_count:,} common scenarios</span>",
+            "</div>",
             *rows,
-            '  <p class="hero-result-note">Ordinary-log OLS with an intercept; 95% intervals cluster by year and source tax unit.</p>',
+            '<p class="hero-result-note">Ordinary-log OLS with an intercept; 95% intervals cluster by year and source tax unit.</p>',
             "</div>",
         ]
     )
@@ -512,15 +521,16 @@ def _sample_flow(total: int, balanced: int, identified: int, primary: int) -> st
         (identified, "Displayed rate change", "Integer rates differ"),
         (primary, "Primary log panel", "Every output is positive"),
     ]
+    # Flush-left for the same Quarto-include reason as ``_hero_metrics``.
     items = []
     for number, label, note in steps:
         items.append(
             "\n".join(
                 [
                     '<li class="flow-step" data-reveal>',
-                    f"  <strong>{number:,}</strong>",
-                    f"  <span>{label}</span>",
-                    f"  <small>{note}</small>",
+                    f"<strong>{number:,}</strong>",
+                    f"<span>{label}</span>",
+                    f"<small>{note}</small>",
                     "</li>",
                 ]
             )
@@ -529,6 +539,68 @@ def _sample_flow(total: int, balanced: int, identified: int, primary: int) -> st
         '<ol class="sample-flow" aria-label="Primary sample construction">\n'
         + "\n".join(items)
         + "\n</ol>"
+    )
+
+
+def _figure_block(path: str, caption: str, label: str, alt: str) -> str:
+    return f'![{caption}]({path}){{#{label} fig-alt="{alt}"}}'
+
+
+def _completion_alt(completion: pd.DataFrame, scenario_count: int) -> str:
+    coverage = ", ".join(
+        f"{row.model} {row.scenario_completion_rate:.1%}"
+        for row in completion.itertuples(index=False)
+    )
+    return (
+        f"Horizontal bars show the share of the {scenario_count:,} source "
+        f"scenarios with an archived response: {coverage}."
+    )
+
+
+def _slopes_alt(summary: pd.DataFrame) -> str:
+    ordered = summary.sort_values("slope", ascending=False)
+    taxable = ", ".join(
+        f"{row.model} {row.slope:.2f}" for row in ordered.itertuples(index=False)
+    )
+    broad = ", ".join(
+        f"{row.model} {row.broad_slope:.2f}" for row in ordered.itertuples(index=False)
+    )
+    return (
+        "A dot-and-interval plot shows model-specific taxable-income slopes "
+        f"({taxable}) and broad-income slopes ({broad}), each with cluster-robust "
+        "95 percent confidence intervals."
+    )
+
+
+def _patterns_alt(shares: pd.DataFrame) -> str:
+    unchanged_shares = shares.get(
+        "Unchanged", pd.Series(0.0, index=shares.index, dtype=float)
+    )
+    unchanged = ", ".join(
+        f"{model} {share:.1%}" for model, share in unchanged_shares.items()
+    )
+    return (
+        "Stacked horizontal bars show the share of individual responses leaving "
+        f"taxable income unchanged ({unchanged}), with the remainder split "
+        "between directionally consistent and opposite-direction changes."
+    )
+
+
+def _write_variables(scenarios: pd.DataFrame, same_rate_count: int) -> None:
+    """Publish prose-facing values for Quarto ``{{< var >}}`` references."""
+
+    same_rate_share = same_rate_count / len(scenarios)
+    (ROOT / "paper" / "_variables.yml").write_text(
+        "\n".join(
+            [
+                "# Generated by scripts/generate_artifacts.py; do not edit.",
+                f'scenario_count: "{len(scenarios):,}"',
+                f'same_rate_count: "{same_rate_count:,}"',
+                f'same_rate_share: "{same_rate_share:.1%}"',
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
     )
 
 
@@ -553,9 +625,14 @@ def main() -> None:
     same_rate_count = int((~scenarios["displayed_rate_change"]).sum())
     negative_rate_count = int(scenarios["prompt_mtr"].lt(0).sum())
     source_record_count = int(completion["source_records"].sum())
+    duplicate_prompt_rows = int(scenarios["duplicate_delivered_prompt"].sum())
+    duplicate_prompt_pairs = duplicate_prompt_rows // 2
     duplicate_cells = int(results["ambiguous_rerun"].sum())
     duplicate_scenarios = int(
         results.loc[results["ambiguous_rerun"], "scenario_id"].nunique()
+    )
+    rerun_models = sorted(
+        results.loc[results["ambiguous_rerun"], "model_display"].unique()
     )
 
     _write("completion.md", _completion_table(completion))
@@ -593,20 +670,27 @@ def main() -> None:
             "distinct continuous rates rendered as the same integer percentage, so "
             "the delivered prompt communicated no rate change. The initial displayed "
             f"marginal rate is negative in **{negative_rate_count:,}** scenarios. "
-            "Five pairs of source rows rendered as identical delivered prompts; all "
-            "ten are excluded from clean analyses."
+            f"**{duplicate_prompt_pairs} pairs** of source rows rendered as "
+            f"identical delivered prompts; all **{duplicate_prompt_rows}** affected "
+            "rows are excluded from clean analyses."
         ),
     )
+    if duplicate_cells:
+        rerun_note = (
+            f"In {', '.join(rerun_models)}, **{duplicate_scenarios} scenarios** "
+            f"contain **{duplicate_cells} duplicated scenario–response cells** "
+            f"(**{duplicate_cells * 2} raw rows**); the first timestamped row in "
+            "each cell is retained and flagged, and every affected scenario is "
+            "excluded from common-panel analysis."
+        )
+    else:
+        rerun_note = "No duplicated scenario–response cells were found."
     _write(
         "recovery_diagnostics.md",
         (
-            f"The five response files contain **{source_record_count:,} archived "
-            f"rows**. Deduplication leaves **{len(results):,} unique analysis rows**. "
-            f"In DeepSeek, **{duplicate_scenarios} scenarios** contain "
-            f"**{duplicate_cells} duplicated scenario–response cells** "
-            f"(**{duplicate_cells * 2} raw rows**); the first timestamped row in each "
-            "cell is retained and flagged, and every affected scenario is excluded "
-            "from common-panel analysis."
+            f"The {len(MODEL_SPECS)} response files contain "
+            f"**{source_record_count:,} archived rows**. Deduplication leaves "
+            f"**{len(results):,} unique analysis rows**. " + rerun_note
         ),
     )
     _write(
@@ -657,18 +741,20 @@ def main() -> None:
     )
     placebo_table["Taxable income unchanged"] = placebo_table[
         "Taxable income unchanged"
-    ].map(lambda value: f"{value:.1%}")
+    ].map(_fmt_pct)
     _write("same_rate_check.md", placebo_table.to_markdown(index=False))
 
+    (partial_spec,) = [spec for spec in MODEL_SPECS if not spec.primary]
     partial = (
-        results[results["model_key"].eq("gpt_4o")]
+        results[results["model_key"].eq(partial_spec.key)]
         .sort_values("response_number")
         .drop_duplicates("scenario_id")
     )
     _write(
         "partial_run_note.md",
         (
-            f"The partial GPT-4o archive represents {partial['scenario_id'].nunique():,} "
+            f"The {partial_spec.display_name} archive represents "
+            f"{partial['scenario_id'].nunique():,} "
             f"scenarios. Of those, {(~partial['displayed_rate_change']).mean():.1%} "
             "display the same before-and-after integer rate, compared with "
             f"{(~scenarios['displayed_rate_change']).mean():.1%} of the full source "
@@ -730,7 +816,7 @@ def main() -> None:
         "At least one repeat changes",
         "Both repeats change",
     ]:
-        friction[column] = friction[column].map(lambda value: f"{value:.1%}")
+        friction[column] = friction[column].map(_fmt_pct)
     _write("response_friction.md", friction.to_markdown(index=False))
 
     boundary = results[
@@ -818,13 +904,13 @@ def main() -> None:
         "sensitivity_narrative.md",
         (
             "The model-specific clean-pair samples produce taxable-income slopes of "
-            f"**{sensitivity_slope('claude_haiku_4_5', 'All clean completed pairs, intercept'):.2f}** "
+            f"**{sensitivity_slope('claude_haiku_4_5', CLEAN_PAIRS_SPECIFICATION):.2f}** "
             "for Claude, "
-            f"**{sensitivity_slope('deepseek_v3', 'All clean completed pairs, intercept'):.2f}** "
+            f"**{sensitivity_slope('deepseek_v3', CLEAN_PAIRS_SPECIFICATION):.2f}** "
             "for DeepSeek, "
-            f"**{sensitivity_slope('gemma_4_26b', 'All clean completed pairs, intercept'):.2f}** "
+            f"**{sensitivity_slope('gemma_4_26b', CLEAN_PAIRS_SPECIFICATION):.2f}** "
             "for Gemma, and "
-            f"**{sensitivity_slope('gpt_4o_mini', 'All clean completed pairs, intercept'):.2f}** "
+            f"**{sensitivity_slope('gpt_4o_mini', CLEAN_PAIRS_SPECIFICATION):.2f}** "
             "for GPT-4o mini. Year-stratified estimates are reported because the "
             "source composition and DeepSeek coverage differ sharply by year; they "
             "are exploratory selection checks rather than prespecified subgroup "
@@ -866,6 +952,49 @@ def main() -> None:
             len(scenarios), len(balanced_ids), len(identified_ids), len(analysis_ids)
         ),
     )
+    _write(
+        "completion_figure.md",
+        _figure_block(
+            "figures/completion_by_model.png",
+            "Archived parseable-response coverage by model. The gray GPT-4o bar "
+            "denotes the partial run, which is excluded from outcome comparisons.",
+            "fig-completion",
+            _completion_alt(completion, len(scenarios)),
+        ),
+    )
+    _write(
+        "slopes_figure.md",
+        _figure_block(
+            "figures/model_response_slopes.png",
+            "Taxable- and broad-income log-response slopes with cluster-robust "
+            "95 percent confidence intervals on the primary panel.",
+            "fig-response-slopes",
+            _slopes_alt(summary),
+        ),
+    )
+    _write(
+        "patterns_figure.md",
+        _figure_block(
+            "figures/response_patterns.png",
+            "Distribution of unchanged, directionally consistent, and "
+            "opposite-direction individual responses in the primary panel.",
+            "fig-response-patterns",
+            _patterns_alt(_response_pattern_shares(results, analysis_ids)),
+        ),
+    )
+    _write(
+        "feature_figure.html",
+        "\n".join(
+            [
+                '<img src="paper/figures/model_response_slopes.svg" '
+                f'alt="{_slopes_alt(summary)}">',
+                "<figcaption>Common primary panel. Points show model-specific OLS "
+                "slopes; lines show cluster-robust 95% confidence "
+                "intervals.</figcaption>",
+            ]
+        ),
+    )
+    _write_variables(scenarios, same_rate_count)
 
     manifest = {
         "analysis": "llm_eti.study2",

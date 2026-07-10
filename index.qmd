@@ -55,8 +55,7 @@ toc: false
 <p>That mixture makes averages and medians tell different stories. A familiar-looking mean is therefore a property of the model, prompt, cleaning rule, and summary—not a validation against human behavior.</p>
 </div>
 <figure class="feature-figure" data-reveal>
-<img src="paper/figures/model_response_slopes.svg" alt="Taxable and broad income response slopes by model. Claude has the largest taxable and broad income slopes; other models have smaller taxable slopes and broad income slopes near zero.">
-<figcaption>Common primary panel. Points show model-specific OLS slopes; lines show cluster-robust 95% confidence intervals.</figcaption>
+{{< include paper/generated/feature_figure.html >}}
 </figure>
 </div>
 </section>

@@ -31,6 +31,7 @@ DELIVERED_PROMPT_KEY = [
     "prompt_mtr_prime",
 ]
 EXPECTED_RESPONSES_PER_SCENARIO = 2
+CLEAN_PAIRS_SPECIFICATION = "All clean completed pairs, intercept"
 
 
 @dataclass(frozen=True)
@@ -79,6 +80,12 @@ def _require_columns(df: pd.DataFrame, columns: Iterable[str], source: Path) -> 
         raise ValueError(f"{source} is missing required columns: {missing}")
 
 
+def _cluster_id(frame: pd.DataFrame) -> pd.Series:
+    """Build the year × source-tax-unit key used for cluster-robust inference."""
+
+    return frame["year"].astype(str) + "-" + frame["tax_unit_id"].astype(str)
+
+
 def prompt_income(value: float) -> float:
     """Return the whole-dollar income shown by ``f'{value:,.0f}'``."""
 
@@ -94,7 +101,14 @@ def prompt_rate(value: float) -> float:
 def load_scenarios(path: Path) -> pd.DataFrame:
     """Load the immutable PolicyEngine-derived scenario sample."""
 
-    scenarios = pd.read_csv(path)
+    # The frozen scenario file encodes the float key columns with one more
+    # significant digit than the response CSVs; the two encodings are one unit
+    # in the last place apart as exact doubles.  The merge in
+    # ``load_model_results`` matches only because pandas' default "high"
+    # parser rounds both encodings onto the same float64, so that parser is
+    # pinned here and there; ``float_precision="round_trip"`` leaves roughly
+    # half of the response rows unmatched.
+    scenarios = pd.read_csv(path, float_precision="high")
     required = ["year", "household_weight", *SCENARIO_KEY]
     _require_columns(scenarios, required, path)
 
@@ -146,7 +160,8 @@ def load_model_results(
     """Load, validate, deduplicate, and align one model's result file."""
 
     source = data_dir / spec.filename
-    results = pd.read_csv(source)
+    # Pinned to match ``load_scenarios``; see the float-encoding note there.
+    results = pd.read_csv(source, float_precision="high")
     source_record_count = len(results)
     required = [
         "timestamp",
@@ -177,12 +192,13 @@ def load_model_results(
         raise ValueError(f"{unmatched.sum()} rows in {source} do not match a scenario")
     results = results.drop(columns="_merge")
 
+    results["clean_row"] = (
+        ~results["duplicate_delivered_prompt"] & ~results["ambiguous_rerun"]
+    )
     results["model_key"] = spec.key
     results["model_display"] = spec.display_name
     results["primary_model"] = spec.primary
-    results["cluster_id"] = (
-        results["year"].astype(str) + "-" + results["tax_unit_id"].astype(str)
-    )
+    results["cluster_id"] = _cluster_id(results)
     results["valid_income_response"] = (
         results["taxable_income_this"].ge(0)
         & results["broad_income_this"].ge(0)
@@ -252,8 +268,7 @@ def completed_scenario_ids(
     eligible = results[
         results["model_key"].isin(requested)
         & results["valid_income_response"]
-        & ~results["duplicate_delivered_prompt"]
-        & ~results["ambiguous_rerun"]
+        & results["clean_row"]
     ]
     by_model = eligible.groupby(["scenario_id", "model_key"])[
         "response_number"
@@ -284,10 +299,13 @@ def primary_analysis_scenario_ids(results: pd.DataFrame) -> set[str]:
     positive_counts = primary.groupby("scenario_id")["positive_income_response"].agg(
         ["sum", "size"]
     )
+    required_rows = (
+        sum(spec.primary for spec in MODEL_SPECS) * EXPECTED_RESPONSES_PER_SCENARIO
+    )
     return set(
         positive_counts[
             positive_counts["sum"].eq(positive_counts["size"])
-            & positive_counts["size"].eq(8)
+            & positive_counts["size"].eq(required_rows)
         ].index
     )
 
@@ -298,8 +316,7 @@ def clean_positive_pair_ids(results: pd.DataFrame, model_key: str) -> set[str]:
     eligible = results[
         results["model_key"].eq(model_key)
         & results["positive_income_response"]
-        & ~results["duplicate_delivered_prompt"]
-        & ~results["ambiguous_rerun"]
+        & results["clean_row"]
     ]
     counts = eligible.groupby("scenario_id").agg(
         records=("response_number", "size"),
@@ -321,7 +338,7 @@ def collapse_repetitions(
 
     valid = results[results["valid_income_response"]].copy()
     if clean_only:
-        valid = valid[~valid["duplicate_delivered_prompt"] & ~valid["ambiguous_rerun"]]
+        valid = valid[valid["clean_row"]]
     group_columns = [
         "model_key",
         "model_display",
@@ -349,9 +366,7 @@ def collapse_repetitions(
             directionally_consistent=("directionally_consistent", "mean"),
         )
         .assign(
-            cluster_id=lambda df: df["year"].astype(str)
-            + "-"
-            + df["tax_unit_id"].astype(str),
+            cluster_id=_cluster_id,
             prompt_implied_eti=lambda df: np.where(
                 df["displayed_rate_change"],
                 df["log_taxable_income_change"] / df["log_net_of_tax_change"],
@@ -577,7 +592,7 @@ def sensitivity_summary(
                 "log_taxable_income_change",
             ),
             (
-                "All clean completed pairs, intercept",
+                CLEAN_PAIRS_SPECIFICATION,
                 model_all_positive,
                 True,
                 "log_taxable_income_change",

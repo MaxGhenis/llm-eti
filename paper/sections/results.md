@@ -11,7 +11,7 @@ describe these counts as archive coverage rather than success rates.
 
 : Archived scenario and unique parseable-response coverage by model, relative to the 1,000-scenario source archive. {#tbl-completion}
 
-![Archived parseable-response coverage by model. The gray GPT-4o bar denotes the partial run, which is excluded from outcome comparisons.](figures/completion_by_model.png){#fig-completion fig-alt="Horizontal bars show scenario coverage: Claude 100 percent, GPT-4o mini and Gemma near 100 percent, DeepSeek 83.5 percent, and the partial GPT-4o run 24.5 percent."}
+{{< include generated/completion_figure.md >}}
 
 {{< include generated/partial_run_note.md >}}
 
@@ -27,7 +27,7 @@ describe these counts as archive coverage rather than success rates.
 
 : Model-specific taxable- and broad-income slopes on the primary panel. {#tbl-slope-results}
 
-![Taxable- and broad-income log-response slopes with cluster-robust 95 percent confidence intervals on the primary panel.](figures/model_response_slopes.png){#fig-response-slopes fig-alt="A horizontal dot and interval plot shows Claude with the largest taxable-income slope, followed by DeepSeek, GPT-4o mini, and Gemma. Claude also has the largest broad-income slope; the others are much closer to zero."}
+{{< include generated/slopes_figure.md >}}
 
 {{< include generated/main_narrative.md >}}
 
@@ -39,7 +39,7 @@ describe these counts as archive coverage rather than success rates.
 
 {{< include generated/key_findings.md >}}
 
-![Distribution of unchanged, directionally consistent, and opposite-direction individual responses in the primary panel.](figures/response_patterns.png){#fig-response-patterns fig-alt="Stacked horizontal bars show that Claude changes income in most responses, DeepSeek does so about half the time, and Gemma and GPT-4o mini usually copy the baseline."}
+{{< include generated/patterns_figure.md >}}
 
 ```{=latex}
 \clearpage

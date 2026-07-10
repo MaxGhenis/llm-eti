@@ -14,12 +14,12 @@ from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
+from render_publication import PAPER_URL, REQUIRED_QUARTO_VERSION, SITEMAP_NAMESPACE
+
 ROOT = Path(__file__).resolve().parents[1]
 PAPER = ROOT / "paper"
 SITE = ROOT / "_site"
-PAPER_URL = "https://maxghenis.github.io/llm-eti/paper/"
 SOCIAL_IMAGE_URL = "https://maxghenis.github.io/llm-eti/assets/social-card.png"
-SITEMAP_NAMESPACE = "http://www.sitemaps.org/schemas/sitemap/0.9"
 
 
 class _LocalReferenceParser(HTMLParser):
@@ -107,6 +107,11 @@ def main() -> None:
         PAPER / "generated" / "slope_results.md",
         PAPER / "generated" / "sensitivity.md",
         PAPER / "generated" / "year_coverage.md",
+        PAPER / "generated" / "completion_figure.md",
+        PAPER / "generated" / "slopes_figure.md",
+        PAPER / "generated" / "patterns_figure.md",
+        PAPER / "generated" / "feature_figure.html",
+        PAPER / "_variables.yml",
         PAPER / "figures" / "completion_by_model.png",
         PAPER / "figures" / "completion_by_model.svg",
         PAPER / "figures" / "completion_by_model.pdf",
@@ -131,7 +136,15 @@ def main() -> None:
         raise SystemExit("The publication PDF is empty or has an invalid signature")
 
     pdfinfo = shutil.which("pdfinfo")
-    if pdfinfo:
+    if pdfinfo is None:
+        if os.environ.get("ALLOW_MISSING_PDFINFO") != "1":
+            raise SystemExit(
+                "pdfinfo (poppler-utils) is required to verify PDF accessibility "
+                "tagging; install it or set ALLOW_MISSING_PDFINFO=1 to skip "
+                "explicitly."
+            )
+        print("Warning: pdfinfo is unavailable; skipping the PDF tagging check.")
+    else:
         pdf_metadata = subprocess.run(
             [pdfinfo, os.fspath(pdf)],
             check=True,
@@ -173,6 +186,7 @@ def main() -> None:
         "Placeholder for:",
         "No ETI data available",
         "Run full simulations to generate",
+        "?var:",
     ]
     searchable = [
         *(PAPER / "generated").glob("*"),
@@ -248,10 +262,10 @@ def main() -> None:
     publication_manifest = json.loads(
         (SITE / "downloads" / "publication_manifest.json").read_text()
     )
-    if publication_manifest.get("quarto_version") != "1.9.38":
+    if publication_manifest.get("quarto_version") != REQUIRED_QUARTO_VERSION:
         raise SystemExit(
-            "Publication manifest must record Quarto 1.9.38; found "
-            f"{publication_manifest.get('quarto_version')!r}"
+            f"Publication manifest must record Quarto {REQUIRED_QUARTO_VERSION}; "
+            f"found {publication_manifest.get('quarto_version')!r}"
         )
 
     paper_html = (SITE / "paper" / "index.html").read_text(encoding="utf-8")
@@ -332,6 +346,7 @@ def main() -> None:
     generated_paths = [
         *sorted(path for path in (PAPER / "generated").glob("*") if path.is_file()),
         *sorted(path for path in (PAPER / "figures").glob("*") if path.is_file()),
+        PAPER / "_variables.yml",
         ROOT / "assets" / "social-card.png",
     ]
     relative_generated_paths = [
@@ -357,6 +372,7 @@ def main() -> None:
             "--",
             "paper/generated",
             "paper/figures",
+            "paper/_variables.yml",
             "assets/social-card.png",
         ],
         cwd=ROOT,
@@ -381,6 +397,7 @@ def main() -> None:
             "--exit-code",
             "--",
             "paper/generated",
+            "paper/_variables.yml",
         ],
         cwd=ROOT,
         check=True,
