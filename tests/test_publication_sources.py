@@ -1,7 +1,10 @@
+import csv
 import hashlib
 import json
 import re
 from pathlib import Path
+
+import pandas as pd
 
 import llm_eti
 
@@ -103,6 +106,51 @@ def test_historical_parser_archive_is_verbatim_and_provenanced():
     assert manifest["historical_parser"]["excerpt_sha256"] == (
         "7c274bd9d6796aef6c60473f8800a1a8ed9ebc1345db7c58e3742611ee02f399"
     )
+
+
+def test_data_dictionary_documents_every_frozen_csv_column():
+    readme = (ROOT / "data" / "README.md").read_text()
+    scenario_path = ROOT / "data" / "scenarios.csv"
+    response_paths = sorted((ROOT / "data" / "responses").glob("*.csv"))
+
+    with scenario_path.open(newline="") as scenario_file:
+        scenario_columns = next(csv.reader(scenario_file))
+    with response_paths[0].open(newline="") as response_file:
+        response_columns = next(csv.reader(response_file))
+
+    for column in [*scenario_columns, *response_columns]:
+        assert f"`{column}`" in readme
+    for path in response_paths:
+        with path.open(newline="") as response_file:
+            assert next(csv.reader(response_file)) == response_columns
+        filing_status = pd.read_csv(path, usecols=["filing_status"])["filing_status"]
+        assert filing_status.isna().all()
+
+    for statement in [
+        "Timezone-naive collection string",
+        "Blank in all 8,095 archived response rows",
+        "archived raw answer",
+        "parsed numeric fields",
+        "Deprecated legacy derivative",
+    ]:
+        assert statement in readme
+
+
+def test_declarations_state_no_human_participation():
+    declarations = (ROOT / "paper" / "sections" / "declarations.md").read_text()
+    normalized = " ".join(declarations.split())
+    assert "Human-subjects statement" in declarations
+    assert "No human participants were recruited" in declarations
+    assert (
+        "Human-subjects review and participant consent were therefore not applicable"
+        in normalized
+    )
+
+
+def test_argyle_reference_uses_corrected_doi():
+    references = (ROOT / "paper" / "references.bib").read_text()
+    assert "10.1017/pan.2023.2" in references
+    assert "10.1017/pan.2022.37" not in references
 
 
 def test_publication_is_offline_and_has_no_model_secret_workflow():

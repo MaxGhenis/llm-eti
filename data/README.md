@@ -18,6 +18,46 @@ publication does not call a model API or download a contemporary dataset.
 The `income_response_raw` field may contain quoted newlines. Use an RFC
 4180-compatible CSV parser; physical line counts are not record counts.
 
+## Column dictionary
+
+### Scenario file
+
+| Column | Type or units | Scope and meaning |
+|---|---|---|
+| `year` | Calendar year | PolicyEngine source year. It forms part of the source-record and regression-cluster scope. |
+| `tax_unit_id` | Integer identifier | Identifier inherited from the source file. It is scoped to `year`, is not a publication scenario ID, and can recur because the generator sampled with replacement. |
+| `household_weight` | Source survey weight | Estimated households represented by the source household. The generator used it as a sampling probability; the sampled analysis rows themselves receive equal weight. |
+| `broad_income` | Annual US dollars | Unrounded source tax-unit broad income before the hypothetical rate change. |
+| `taxable_income` | Annual US dollars | Unrounded source tax-unit taxable income before the hypothetical rate change. |
+| `mtr` | Rate as a decimal fraction | Unrounded initial combined tax-only marginal rate; `0.25` denotes 25%. |
+| `mtr_prime` | Rate as a decimal fraction | Unrounded hypothetical marginal rate supplied to the prompt renderer; `0.25` denotes 25%. |
+
+### Response files
+
+| Column | Type or units | Scope and meaning |
+|---|---|---|
+| `timestamp` | `YYYY-MM-DD HH:MM:SS` | Timezone-naive collection string. The direct runner used host-local `datetime.now()` without recording the host timezone; the DeepSeek recovery script rendered file times in `America/New_York`. The archive therefore does not support a common timezone conversion. |
+| `tax_unit_id` | Numeric source identifier | Source identifier serialized as a number. It is not unique by itself; the analysis recovers `year` by joining the full scenario key to `scenarios.csv`. |
+| `filing_status` | Empty field | Blank in all 8,095 archived response rows; it carries no filing-status information. |
+| `broad_income` | Annual US dollars | Unrounded source broad income copied into the response row; a raw scenario input, not a model output. |
+| `taxable_income` | Annual US dollars | Unrounded source taxable income copied into the response row; a raw scenario input, not a model output. |
+| `mtr` | Rate as a decimal fraction | Unrounded initial source marginal rate copied into the response row. |
+| `mtr_prime` | Rate as a decimal fraction | Unrounded hypothetical source marginal rate copied into the response row. |
+| `response_number` | Integer index | Requested response 1 or 2 within a model–scenario cell. It is not a globally unique response ID. |
+| `taxable_income_this` | Annual US dollars | Parsed taxable-income model output recovered from `income_response_raw`; zero-dollar values occur. |
+| `broad_income_this` | Annual US dollars | Parsed broad-income model output recovered from `income_response_raw`; zero-dollar values occur. |
+| `implied_eti_taxable` | Dimensionless ratio | Deprecated legacy derivative computed from unrounded source values. The publication never analyzes this column. |
+| `implied_eti_broad` | Dimensionless ratio | Deprecated legacy derivative computed from unrounded source values. The publication never analyzes this column. |
+| `model` | String identifier | Model identifier stored by the runner. Some values are provider aliases rather than immutable model revisions. |
+| `income_response_raw` | Raw text | Archived model answer before local field extraction. It can contain exact JSON, Python-style objects, Markdown fences, prose, quoted newlines, or other recoverable formatting. |
+
+`income_response_raw` is the archived raw answer, whereas the two `*_this`
+columns are its parsed numeric fields. Unsuccessful attempts were not retained,
+so the response files cannot be used to estimate an overall parser-attempt
+success rate. The analysis reconstructs the whole-dollar incomes and integer
+rates delivered to the models rather than treating the copied, higher-precision
+scenario fields as prompt text.
+
 ## Float-encoding caveat
 
 `scenarios.csv` stores the scenario key columns with up to 17 significant
