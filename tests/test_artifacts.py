@@ -17,6 +17,7 @@ def test_artifact_generator_is_complete_and_has_no_fallbacks():
     figures = ROOT / "paper" / "figures"
     required_text = [
         "abstract.md",
+        "boundary_by_direction.md",
         "boundary_outputs.md",
         "completion.md",
         "completion_figure.md",
@@ -29,6 +30,8 @@ def test_artifact_generator_is_complete_and_has_no_fallbacks():
         "partial_run_note.md",
         "patterns_figure.md",
         "primary_panel.md",
+        "positivity_selection_balance.md",
+        "positivity_selection_narrative.md",
         "recovery_diagnostics.md",
         "response_diagnostics.md",
         "response_friction.md",

@@ -2,6 +2,118 @@
   "analysis": "llm_eti.study2",
   "archived_response_row_count": 8095,
   "balanced_primary_scenario_count": 821,
+  "boundary_incidence": [
+    {
+      "affected_scenarios": 0,
+      "direction": "Tax decrease",
+      "model_display": "Claude Haiku 4.5",
+      "model_key": "claude_haiku_4_5",
+      "nonpositive_records": 0,
+      "response_records": 604,
+      "scenarios": 302,
+      "zero_broad_records": 0,
+      "zero_taxable_records": 0
+    },
+    {
+      "affected_scenarios": 0,
+      "direction": "Tax increase",
+      "model_display": "Claude Haiku 4.5",
+      "model_key": "claude_haiku_4_5",
+      "nonpositive_records": 0,
+      "response_records": 660,
+      "scenarios": 330,
+      "zero_broad_records": 0,
+      "zero_taxable_records": 0
+    },
+    {
+      "affected_scenarios": 0,
+      "direction": "Tax decrease",
+      "model_display": "DeepSeek V3",
+      "model_key": "deepseek_v3",
+      "nonpositive_records": 0,
+      "response_records": 604,
+      "scenarios": 302,
+      "zero_broad_records": 0,
+      "zero_taxable_records": 0
+    },
+    {
+      "affected_scenarios": 0,
+      "direction": "Tax increase",
+      "model_display": "DeepSeek V3",
+      "model_key": "deepseek_v3",
+      "nonpositive_records": 0,
+      "response_records": 660,
+      "scenarios": 330,
+      "zero_broad_records": 0,
+      "zero_taxable_records": 0
+    },
+    {
+      "affected_scenarios": 2,
+      "direction": "Tax decrease",
+      "model_display": "Gemma 4 26B",
+      "model_key": "gemma_4_26b",
+      "nonpositive_records": 3,
+      "response_records": 604,
+      "scenarios": 302,
+      "zero_broad_records": 0,
+      "zero_taxable_records": 3
+    },
+    {
+      "affected_scenarios": 10,
+      "direction": "Tax increase",
+      "model_display": "Gemma 4 26B",
+      "model_key": "gemma_4_26b",
+      "nonpositive_records": 16,
+      "response_records": 660,
+      "scenarios": 330,
+      "zero_broad_records": 0,
+      "zero_taxable_records": 16
+    },
+    {
+      "affected_scenarios": 3,
+      "direction": "Tax decrease",
+      "model_display": "GPT-4o mini",
+      "model_key": "gpt_4o_mini",
+      "nonpositive_records": 5,
+      "response_records": 604,
+      "scenarios": 302,
+      "zero_broad_records": 1,
+      "zero_taxable_records": 5
+    },
+    {
+      "affected_scenarios": 22,
+      "direction": "Tax increase",
+      "model_display": "GPT-4o mini",
+      "model_key": "gpt_4o_mini",
+      "nonpositive_records": 32,
+      "response_records": 660,
+      "scenarios": 330,
+      "zero_broad_records": 0,
+      "zero_taxable_records": 32
+    },
+    {
+      "affected_scenarios": 4,
+      "direction": "Tax decrease",
+      "model_display": "Any primary model",
+      "model_key": "any_primary",
+      "nonpositive_records": 8,
+      "response_records": 2416,
+      "scenarios": 302,
+      "zero_broad_records": 1,
+      "zero_taxable_records": 8
+    },
+    {
+      "affected_scenarios": 25,
+      "direction": "Tax increase",
+      "model_display": "Any primary model",
+      "model_key": "any_primary",
+      "nonpositive_records": 48,
+      "response_records": 2640,
+      "scenarios": 330,
+      "zero_broad_records": 0,
+      "zero_taxable_records": 48
+    }
+  ],
   "completion": [
     {
       "complete_pairs": 1000,
@@ -70,6 +182,52 @@
     }
   ],
   "deduplicated_analysis_row_count": 8087,
+  "direction_symmetry": [
+    {
+      "model": "Claude Haiku 4.5",
+      "model_key": "claude_haiku_4_5",
+      "n_clusters": 600,
+      "n_scenarios": 603,
+      "p_value": 0.593230914919,
+      "slope_difference": -0.077485665584,
+      "slope_difference_se": 0.145060807802,
+      "tax_cut_slope": 0.525752464841,
+      "tax_increase_slope": 0.448266799257
+    },
+    {
+      "model": "DeepSeek V3",
+      "model_key": "deepseek_v3",
+      "n_clusters": 600,
+      "n_scenarios": 603,
+      "p_value": 0.00336627397314,
+      "slope_difference": 0.364235227323,
+      "slope_difference_se": 0.124221340427,
+      "tax_cut_slope": 0.174989505415,
+      "tax_increase_slope": 0.539224732738
+    },
+    {
+      "model": "Gemma 4 26B",
+      "model_key": "gemma_4_26b",
+      "n_clusters": 600,
+      "n_scenarios": 603,
+      "p_value": 0.985433522278,
+      "slope_difference": 0.00684160923133,
+      "slope_difference_se": 0.374731024875,
+      "tax_cut_slope": 0.416069547046,
+      "tax_increase_slope": 0.422911156277
+    },
+    {
+      "model": "GPT-4o mini",
+      "model_key": "gpt_4o_mini",
+      "n_clusters": 600,
+      "n_scenarios": 603,
+      "p_value": 0.216194948045,
+      "slope_difference": 0.251955112665,
+      "slope_difference_se": 0.203730230341,
+      "tax_cut_slope": 0.325100554393,
+      "tax_increase_slope": 0.577055667059
+    }
+  ],
   "identified_balanced_scenario_count": 632,
   "main_results": [
     {
@@ -176,6 +334,38 @@
   "primary_analysis_scenario_count": 603,
   "primary_cluster_count": 600,
   "scenario_count": 1000,
+  "selection_balance": [
+    {
+      "median_absolute_rate_change": 0.01,
+      "median_broad_income": 76500.0,
+      "median_initial_mtr": 0.29,
+      "median_new_mtr": 0.29,
+      "median_taxable_income": 53616.0,
+      "n_scenarios": 603,
+      "sample": "Retained",
+      "tax_increase_count": 305,
+      "tax_increase_share": 0.505804311774,
+      "year_2023_count": 396,
+      "year_2023_share": 0.65671641791,
+      "year_2024_count": 207,
+      "year_2024_share": 0.34328358209
+    },
+    {
+      "median_absolute_rate_change": 0.02,
+      "median_broad_income": 23010.0,
+      "median_initial_mtr": 0.13,
+      "median_new_mtr": 0.16,
+      "median_taxable_income": 6150.0,
+      "n_scenarios": 29,
+      "sample": "Omitted",
+      "tax_increase_count": 25,
+      "tax_increase_share": 0.862068965517,
+      "year_2023_count": 17,
+      "year_2023_share": 0.586206896552,
+      "year_2024_count": 12,
+      "year_2024_share": 0.413793103448
+    }
+  ],
   "sensitivity": [
     {
       "intercept": -0.00569376644966,
@@ -190,6 +380,48 @@
       "slope_ci_upper": 0.771190363042,
       "slope_se": 0.0298721999682,
       "specification": "Balanced, intercept"
+    },
+    {
+      "intercept": 0.000669062841719,
+      "intercept_se": 0.00356447934353,
+      "model": "Claude Haiku 4.5",
+      "model_key": "claude_haiku_4_5",
+      "n_clusters": 297,
+      "n_scenarios": 298,
+      "r_squared": 0.081816749928,
+      "slope": 0.525752464841,
+      "slope_ci_lower": 0.337166478052,
+      "slope_ci_upper": 0.71433845163,
+      "slope_se": 0.096219108247,
+      "specification": "Primary positive-output panel, tax cuts only"
+    },
+    {
+      "intercept": -0.0134965694462,
+      "intercept_se": 0.00229833225781,
+      "model": "Claude Haiku 4.5",
+      "model_key": "claude_haiku_4_5",
+      "n_clusters": 304,
+      "n_scenarios": 305,
+      "r_squared": 0.0882366864414,
+      "slope": 0.448266799257,
+      "slope_ci_lower": 0.235498982413,
+      "slope_ci_upper": 0.661034616101,
+      "slope_se": 0.108557003354,
+      "specification": "Primary positive-output panel, tax increases only"
+    },
+    {
+      "intercept": -0.00521593147708,
+      "intercept_se": 0.000928029609605,
+      "model": "Claude Haiku 4.5",
+      "model_key": "claude_haiku_4_5",
+      "n_clusters": 600,
+      "n_scenarios": 603,
+      "r_squared": 0.465579174725,
+      "slope": 0.719465771349,
+      "slope_ci_lower": 0.64662779515,
+      "slope_ci_upper": 0.792303747547,
+      "slope_se": 0.0371629156317,
+      "specification": "Primary positive-output panel, equal total weight by year"
     },
     {
       "intercept": -0.0067513693376,
@@ -304,6 +536,20 @@
       "specification": "Balanced, 1% winsorized outcome"
     },
     {
+      "intercept": -0.00704169758842,
+      "intercept_se": 0.00101348779804,
+      "model": "Claude Haiku 4.5",
+      "model_key": "claude_haiku_4_5",
+      "n_clusters": 629,
+      "n_scenarios": 632,
+      "r_squared": 0.406894222029,
+      "slope": 0.747499161319,
+      "slope_ci_lower": 0.675551452782,
+      "slope_ci_upper": 0.819446869857,
+      "slope_se": 0.0367086890907,
+      "specification": "Identified balanced panel, proportional changes, zeros included"
+    },
+    {
       "intercept": -0.00738383848885,
       "intercept_se": 0.00111840571497,
       "model": "Claude Haiku 4.5",
@@ -330,6 +576,48 @@
       "slope_ci_upper": 0.473316975829,
       "slope_se": 0.0321867205356,
       "specification": "Balanced, intercept"
+    },
+    {
+      "intercept": 0.00203566002703,
+      "intercept_se": 0.0010578097895,
+      "model": "DeepSeek V3",
+      "model_key": "deepseek_v3",
+      "n_clusters": 297,
+      "n_scenarios": 298,
+      "r_squared": 0.0219419704056,
+      "slope": 0.174989505415,
+      "slope_ci_lower": 0.0629500701261,
+      "slope_ci_upper": 0.287028940704,
+      "slope_se": 0.0571640275908,
+      "specification": "Primary positive-output panel, tax cuts only"
+    },
+    {
+      "intercept": -0.00197657779788,
+      "intercept_se": 0.00208902972419,
+      "model": "DeepSeek V3",
+      "model_key": "deepseek_v3",
+      "n_clusters": 304,
+      "n_scenarios": 305,
+      "r_squared": 0.147751267784,
+      "slope": 0.539224732738,
+      "slope_ci_lower": 0.323076806037,
+      "slope_ci_upper": 0.755372659438,
+      "slope_se": 0.110281580889,
+      "specification": "Primary positive-output panel, tax increases only"
+    },
+    {
+      "intercept": -0.00440428535165,
+      "intercept_se": 0.000684504025039,
+      "model": "DeepSeek V3",
+      "model_key": "deepseek_v3",
+      "n_clusters": 600,
+      "n_scenarios": 603,
+      "r_squared": 0.347979898122,
+      "slope": 0.418892717662,
+      "slope_ci_lower": 0.350989157352,
+      "slope_ci_upper": 0.486796277973,
+      "slope_se": 0.0346453102436,
+      "specification": "Primary positive-output panel, equal total weight by year"
     },
     {
       "intercept": -0.00477390736871,
@@ -444,6 +732,20 @@
       "specification": "Balanced, 1% winsorized outcome"
     },
     {
+      "intercept": -0.00476029188414,
+      "intercept_se": 0.000661719669273,
+      "model": "DeepSeek V3",
+      "model_key": "deepseek_v3",
+      "n_clusters": 629,
+      "n_scenarios": 632,
+      "r_squared": 0.331111676575,
+      "slope": 0.4146352916,
+      "slope_ci_lower": 0.354947549231,
+      "slope_ci_upper": 0.474323033968,
+      "slope_se": 0.0304534893698,
+      "specification": "Identified balanced panel, proportional changes, zeros included"
+    },
+    {
       "intercept": -0.004883415279,
       "intercept_se": 0.000695500334126,
       "model": "DeepSeek V3",
@@ -470,6 +772,48 @@
       "slope_ci_upper": 0.536650581071,
       "slope_se": 0.140424945346,
       "specification": "Balanced, intercept"
+    },
+    {
+      "intercept": -0.00286390629604,
+      "intercept_se": 0.00165003060946,
+      "model": "Gemma 4 26B",
+      "model_key": "gemma_4_26b",
+      "n_clusters": 297,
+      "n_scenarios": 298,
+      "r_squared": 0.00292008943062,
+      "slope": 0.416069547046,
+      "slope_ci_lower": -0.121657851911,
+      "slope_ci_upper": 0.953796946003,
+      "slope_se": 0.274355755105,
+      "specification": "Primary positive-output panel, tax cuts only"
+    },
+    {
+      "intercept": 0.00714384970208,
+      "intercept_se": 0.00512212673837,
+      "model": "Gemma 4 26B",
+      "model_key": "gemma_4_26b",
+      "n_clusters": 304,
+      "n_scenarios": 305,
+      "r_squared": 0.0268604717696,
+      "slope": 0.422911156277,
+      "slope_ci_lower": -0.077373478032,
+      "slope_ci_upper": 0.923195790586,
+      "slope_se": 0.255251952717,
+      "specification": "Primary positive-output panel, tax increases only"
+    },
+    {
+      "intercept": 0.00368149708828,
+      "intercept_se": 0.0044485985393,
+      "model": "Gemma 4 26B",
+      "model_key": "gemma_4_26b",
+      "n_clusters": 600,
+      "n_scenarios": 603,
+      "r_squared": 0.00912221202778,
+      "slope": 0.323063993041,
+      "slope_ci_lower": -0.0668089362472,
+      "slope_ci_upper": 0.71293692233,
+      "slope_se": 0.198918415014,
+      "specification": "Primary positive-output panel, equal total weight by year"
     },
     {
       "intercept": -0.0010797302709,
@@ -584,6 +928,20 @@
       "specification": "Balanced, 1% winsorized outcome"
     },
     {
+      "intercept": -0.000132534133607,
+      "intercept_se": 0.0164277148445,
+      "model": "Gemma 4 26B",
+      "model_key": "gemma_4_26b",
+      "n_clusters": 629,
+      "n_scenarios": 632,
+      "r_squared": 0.00705752597915,
+      "slope": 1.23293943628,
+      "slope_ci_lower": -0.151472208651,
+      "slope_ci_upper": 2.61735108121,
+      "slope_se": 0.706345451166,
+      "specification": "Identified balanced panel, proportional changes, zeros included"
+    },
+    {
       "intercept": -0.117858144078,
       "intercept_se": 0.0363347845634,
       "model": "Gemma 4 26B",
@@ -610,6 +968,48 @@
       "slope_ci_upper": 0.446941735067,
       "slope_se": 0.0459478591271,
       "specification": "Balanced, intercept"
+    },
+    {
+      "intercept": -0.0060930894149,
+      "intercept_se": 0.00322084335953,
+      "model": "GPT-4o mini",
+      "model_key": "gpt_4o_mini",
+      "n_clusters": 297,
+      "n_scenarios": 298,
+      "r_squared": 0.0647198357055,
+      "slope": 0.325100554393,
+      "slope_ci_lower": 0.023290200501,
+      "slope_ci_upper": 0.626910908286,
+      "slope_se": 0.153987703995,
+      "specification": "Primary positive-output panel, tax cuts only"
+    },
+    {
+      "intercept": -0.000568181437949,
+      "intercept_se": 0.00278334616701,
+      "model": "GPT-4o mini",
+      "model_key": "gpt_4o_mini",
+      "n_clusters": 304,
+      "n_scenarios": 305,
+      "r_squared": 0.0643935736488,
+      "slope": 0.577055667059,
+      "slope_ci_lower": 0.315606215971,
+      "slope_ci_upper": 0.838505118147,
+      "slope_se": 0.133395028251,
+      "specification": "Primary positive-output panel, tax increases only"
+    },
+    {
+      "intercept": -0.00658493741059,
+      "intercept_se": 0.000935788226008,
+      "model": "GPT-4o mini",
+      "model_key": "gpt_4o_mini",
+      "n_clusters": 600,
+      "n_scenarios": 603,
+      "r_squared": 0.16131925624,
+      "slope": 0.348442388308,
+      "slope_ci_lower": 0.261722378975,
+      "slope_ci_upper": 0.435162397641,
+      "slope_se": 0.0442457157464,
+      "specification": "Primary positive-output panel, equal total weight by year"
     },
     {
       "intercept": -0.00578441349252,
@@ -722,6 +1122,20 @@
       "slope_ci_upper": 0.405080485047,
       "slope_se": 0.0347017967711,
       "specification": "Balanced, 1% winsorized outcome"
+    },
+    {
+      "intercept": -0.03477133264,
+      "intercept_se": 0.00597620855874,
+      "model": "GPT-4o mini",
+      "model_key": "gpt_4o_mini",
+      "n_clusters": 629,
+      "n_scenarios": 632,
+      "r_squared": 0.0468274127158,
+      "slope": 1.18144890979,
+      "slope_ci_lower": 0.758846425359,
+      "slope_ci_upper": 1.60405139421,
+      "slope_se": 0.215617474484,
+      "specification": "Identified balanced panel, proportional changes, zeros included"
     },
     {
       "intercept": -0.253658768827,

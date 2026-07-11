@@ -21,11 +21,17 @@ import pandas as pd
 from llm_eti.study2 import (
     CLEAN_PAIRS_SPECIFICATION,
     MODEL_SPECS,
+    TAX_CUT_SPECIFICATION,
+    TAX_INCREASE_SPECIFICATION,
+    boundary_incidence_summary,
+    collapse_repetitions,
     completion_summary,
+    direction_symmetry_test,
     load_study2_data,
     model_summary,
     primary_analysis_scenario_ids,
     primary_balanced_scenario_ids,
+    selection_balance_summary,
     sensitivity_summary,
 )
 
@@ -176,6 +182,141 @@ def _sensitivity_table(sensitivity: pd.DataFrame) -> str:
         table[["Model", "Specification", "Scenarios", "Slope (95% CI)"]].to_markdown(
             index=False
         )
+    )
+
+
+def _fmt_count_share(count: int, total: int) -> str:
+    """Format an incidence count with an explicit denominator and share."""
+
+    return f"{count:,}/{total:,} ({count / total:.1%})"
+
+
+def _boundary_direction_table(incidence: pd.DataFrame) -> str:
+    """Format zero and nonpositive-output incidence by model and direction."""
+
+    table = incidence.copy()
+    model_order = [
+        *(spec.display_name for spec in MODEL_SPECS if spec.primary),
+        "Any primary model",
+    ]
+    table["model_display"] = pd.Categorical(
+        table["model_display"], categories=model_order, ordered=True
+    )
+    table["direction"] = pd.Categorical(
+        table["direction"],
+        categories=["Tax increase", "Tax decrease"],
+        ordered=True,
+    )
+    table = table.sort_values(["model_display", "direction"])
+    table["Zero taxable responses"] = table.apply(
+        lambda row: _fmt_count_share(
+            int(row["zero_taxable_records"]), int(row["response_records"])
+        ),
+        axis=1,
+    )
+    table["Zero broad-income responses"] = table.apply(
+        lambda row: _fmt_count_share(
+            int(row["zero_broad_records"]), int(row["response_records"])
+        ),
+        axis=1,
+    )
+    table["Any nonpositive response"] = table.apply(
+        lambda row: _fmt_count_share(
+            int(row["nonpositive_records"]), int(row["response_records"])
+        ),
+        axis=1,
+    )
+    table["Affected scenarios"] = table.apply(
+        lambda row: _fmt_count_share(
+            int(row["affected_scenarios"]), int(row["scenarios"])
+        ),
+        axis=1,
+    )
+    table = table.rename(columns={"model_display": "Model", "direction": "Direction"})
+    return str(
+        table[
+            [
+                "Model",
+                "Direction",
+                "Zero taxable responses",
+                "Zero broad-income responses",
+                "Any nonpositive response",
+                "Affected scenarios",
+            ]
+        ].to_markdown(index=False)
+    )
+
+
+def _selection_balance_table(balance: pd.DataFrame) -> str:
+    """Format covariate balance around the all-positive selection step."""
+
+    by_sample = balance.set_index("sample")
+    rows = []
+
+    def add_row(covariate: str, retained: str, omitted: str) -> None:
+        rows.append({"Covariate": covariate, "Retained": retained, "Omitted": omitted})
+
+    retained = by_sample.loc["Retained"]
+    omitted = by_sample.loc["Omitted"]
+    add_row(
+        "Scenarios",
+        f"{int(retained['n_scenarios']):,}",
+        f"{int(omitted['n_scenarios']):,}",
+    )
+    for label, column in [
+        ("Median displayed broad income", "median_broad_income"),
+        ("Median displayed taxable income", "median_taxable_income"),
+    ]:
+        add_row(
+            label,
+            f"${retained[column]:,.0f}",
+            f"${omitted[column]:,.0f}",
+        )
+    for label, column in [
+        ("Median initial displayed MTR", "median_initial_mtr"),
+        ("Median new displayed MTR", "median_new_mtr"),
+        ("Median absolute displayed rate change", "median_absolute_rate_change"),
+    ]:
+        add_row(label, f"{retained[column]:.0%}", f"{omitted[column]:.0%}")
+    for label, count_column, share_column in [
+        ("Tax increase", "tax_increase_count", "tax_increase_share"),
+        ("2023", "year_2023_count", "year_2023_share"),
+        ("2024", "year_2024_count", "year_2024_share"),
+    ]:
+        add_row(
+            label,
+            f"{int(retained[count_column]):,} ({retained[share_column]:.1%})",
+            f"{int(omitted[count_column]):,} ({omitted[share_column]:.1%})",
+        )
+    add_row(
+        "Tax decrease",
+        (
+            f"{int(retained['n_scenarios'] - retained['tax_increase_count']):,} "
+            f"({1 - retained['tax_increase_share']:.1%})"
+        ),
+        (
+            f"{int(omitted['n_scenarios'] - omitted['tax_increase_count']):,} "
+            f"({1 - omitted['tax_increase_share']:.1%})"
+        ),
+    )
+    order = [
+        "Scenarios",
+        "Median displayed broad income",
+        "Median displayed taxable income",
+        "Median initial displayed MTR",
+        "Median new displayed MTR",
+        "Median absolute displayed rate change",
+        "Tax increase",
+        "Tax decrease",
+        "2023",
+        "2024",
+    ]
+    return str(
+        pd.DataFrame(rows)
+        .set_index("Covariate")
+        .loc[order]
+        .reset_index()
+        .to_markdown(index=False)
     )
 
 
@@ -502,13 +643,13 @@ def _hero_metrics(summary: pd.DataFrame, analysis_count: int) -> str:
         )
     return "\n".join(
         [
-            '<div class="hero-result" aria-label="Primary taxable-income response slopes by model">',
+            '<div class="hero-result" aria-label="Taxable-income response slopes by model on the primary positive-output panel">',
             '<div class="hero-result-heading">',
             "<span>Model-implied taxable-income slope</span>",
-            f"<span>{analysis_count:,} common scenarios</span>",
+            f"<span>{analysis_count:,} common positive-output scenarios</span>",
             "</div>",
             *rows,
-            '<p class="hero-result-note">Ordinary-log OLS with an intercept; 95% intervals cluster by year and source tax unit.</p>',
+            '<p class="hero-result-note">Conditional on positive broad- and taxable-income outputs in all eight model–response cells. Ordinary-log OLS with an intercept; 95% intervals cluster by year and source tax unit.</p>',
             "</div>",
         ]
     )
@@ -519,7 +660,7 @@ def _sample_flow(total: int, balanced: int, identified: int, primary: int) -> st
         (total, "Archived scenarios", "Frozen PolicyEngine-derived input"),
         (balanced, "Clean four-model panel", "Two responses per model"),
         (identified, "Displayed rate change", "Integer rates differ"),
-        (primary, "Primary log panel", "Every output is positive"),
+        (primary, "Primary positive-output log panel", "Every output is positive"),
     ]
     # Flush-left for the same Quarto-include reason as ``_hero_metrics``.
     items = []
@@ -566,7 +707,9 @@ def _slopes_alt(summary: pd.DataFrame) -> str:
         f"{row.model} {row.broad_slope:.2f}" for row in ordered.itertuples(index=False)
     )
     return (
-        "A dot-and-interval plot shows model-specific taxable-income slopes "
+        "On the common panel conditional on positive broad- and taxable-income "
+        "outputs in all eight model-response cells, a dot-and-interval plot shows "
+        "model-specific taxable-income slopes "
         f"({taxable}) and broad-income slopes ({broad}), each with cluster-robust "
         "95 percent confidence intervals."
     )
@@ -621,6 +764,27 @@ def main() -> None:
     completion = completion_summary(scenarios, results)
     summary = model_summary(results, scenario_ids=analysis_ids)
     sensitivity = sensitivity_summary(results, analysis_ids, identified_ids)
+    boundary_incidence = boundary_incidence_summary(results, identified_ids)
+    selection_balance = selection_balance_summary(
+        scenarios, identified_ids, analysis_ids
+    )
+    collapsed = collapse_repetitions(results)
+    symmetry_rows = []
+    for spec in MODEL_SPECS:
+        if not spec.primary:
+            continue
+        model_panel = collapsed[
+            collapsed["model_key"].eq(spec.key)
+            & collapsed["scenario_id"].isin(analysis_ids)
+        ]
+        symmetry_rows.append(
+            {
+                "model_key": spec.key,
+                "model": spec.display_name,
+                **direction_symmetry_test(model_panel),
+            }
+        )
+    direction_symmetry = pd.DataFrame(symmetry_rows)
 
     same_rate_count = int((~scenarios["displayed_rate_change"]).sum())
     negative_rate_count = int(scenarios["prompt_mtr"].lt(0).sum())
@@ -649,6 +813,11 @@ def main() -> None:
     _write("slope_results.md", slope_results)
     _write("response_diagnostics.md", response_diagnostics)
     _write("sensitivity.md", _sensitivity_table(sensitivity))
+    _write("boundary_by_direction.md", _boundary_direction_table(boundary_incidence))
+    _write(
+        "positivity_selection_balance.md",
+        _selection_balance_table(selection_balance),
+    )
     year_counts = scenarios.groupby("year").size().to_dict()
     _write(
         "scenario_sample.md",
@@ -854,6 +1023,33 @@ def main() -> None:
     )
     _write("boundary_outputs.md", boundary_table.to_markdown(index=False))
 
+    balance_by_sample = selection_balance.set_index("sample")
+    retained = balance_by_sample.loc["Retained"]
+    omitted = balance_by_sample.loc["Omitted"]
+    tax_increase_total = int(selection_balance["tax_increase_count"].sum())
+    tax_decrease_total = len(identified_ids) - tax_increase_total
+    omitted_tax_increases = int(omitted["tax_increase_count"])
+    omitted_tax_decreases = int(omitted["n_scenarios"] - omitted_tax_increases)
+    _write(
+        "positivity_selection_narrative.md",
+        (
+            "Within the rate-identified balanced panel, every recorded "
+            "nonpositive income value is zero rather than negative. The "
+            "all-eight-cell positivity rule omits "
+            f"**{omitted_tax_increases} of {tax_increase_total} tax-increase "
+            f"scenarios ({omitted_tax_increases / tax_increase_total:.1%})** and "
+            f"**{omitted_tax_decreases} of {tax_decrease_total} tax-decrease "
+            f"scenarios ({omitted_tax_decreases / tax_decrease_total:.1%})**. "
+            f"The {int(omitted['n_scenarios'])} omitted scenarios have median "
+            "displayed broad and taxable incomes of "
+            f"**${omitted['median_broad_income']:,.0f}** and "
+            f"**${omitted['median_taxable_income']:,.0f}**, compared with "
+            f"**${retained['median_broad_income']:,.0f}** and "
+            f"**${retained['median_taxable_income']:,.0f}** among the "
+            f"{int(retained['n_scenarios'])} retained scenarios."
+        ),
+    )
+
     by_key = summary.set_index("model_key")
     claude = by_key.loc["claude_haiku_4_5"]
     deepseek = by_key.loc["deepseek_v3"]
@@ -862,7 +1058,9 @@ def main() -> None:
     _write(
         "main_narrative.md",
         (
-            "Claude Haiku 4.5 has a taxable-income slope of "
+            "Conditional on positive broad- and taxable-income outputs in all "
+            "eight model–response cells, Claude Haiku 4.5 has a taxable-income "
+            "slope of "
             f"**{claude['slope']:.2f}** (95% CI "
             f"{claude['slope_ci_lower']:.2f} to {claude['slope_ci_upper']:.2f}), "
             "and DeepSeek V3 has a slope of "
@@ -896,6 +1094,7 @@ def main() -> None:
         ),
     )
     sensitivity_index = sensitivity.set_index(["model_key", "specification"])
+    symmetry_index = direction_symmetry.set_index("model_key")
 
     def sensitivity_slope(model_key: str, specification: str) -> float:
         return float(sensitivity_index.loc[(model_key, specification), "slope"])
@@ -914,9 +1113,17 @@ def main() -> None:
             "for GPT-4o mini. Year-stratified estimates are reported because the "
             "source composition and DeepSeek coverage differ sharply by year; they "
             "are exploratory selection checks rather than prespecified subgroup "
-            "tests. The zero-inclusive log(1 + income) specification is a "
-            "unit-dependent boundary stress test and is not interpreted as an "
-            "elasticity."
+            "tests. On the primary positive-output panel, DeepSeek's tax-cut-only "
+            "slope is "
+            f"**{sensitivity_slope('deepseek_v3', TAX_CUT_SPECIFICATION):.3f}** "
+            "and its tax-increase-only slope is "
+            f"**{sensitivity_slope('deepseek_v3', TAX_INCREASE_SPECIFICATION):.3f}**; "
+            "a fully interacted direction test gives "
+            f"**p = {symmetry_index.loc['deepseek_v3', 'p_value']:.4f}**. "
+            "The equal-year-weight rows give each source year the same total "
+            "regression weight. The proportional-change rows are scale-free and "
+            "retain zero outputs. The log(1 + dollar income) rows also retain zeros "
+            "but depend on the dollar unit and are not interpreted as elasticities."
         ),
     )
     _write(
@@ -931,8 +1138,9 @@ def main() -> None:
             f"scenarios; {len(identified_ids):,} display a nonzero change in the "
             f"integer marginal tax rate, and {len(analysis_ids):,} also have positive "
             "outputs from every model and repetition. After reconstructing the values "
-            "actually shown to each model, model-specific taxable-income response "
-            f"slopes range from {summary['slope'].min():.2f} to "
+            "actually shown to each model, taxable-income response slopes on this "
+            "conditional positive-output panel range from "
+            f"{summary['slope'].min():.2f} to "
             f"{summary['slope'].max():.2f}, while median scenario ratios range from "
             f"{summary['median_implied_eti'].min():.2f} to "
             f"{summary['median_implied_eti'].max():.2f}. Model distributions differ "
@@ -967,7 +1175,8 @@ def main() -> None:
         _figure_block(
             "figures/model_response_slopes.png",
             "Taxable- and broad-income log-response slopes with cluster-robust "
-            "95 percent confidence intervals on the primary panel.",
+            "95 percent confidence intervals, conditional on positive broad- and "
+            "taxable-income outputs in all eight model–response cells.",
             "fig-response-slopes",
             _slopes_alt(summary),
         ),
@@ -988,9 +1197,10 @@ def main() -> None:
             [
                 '<img src="paper/figures/model_response_slopes.svg" '
                 f'alt="{_slopes_alt(summary)}">',
-                "<figcaption>Common primary panel. Points show model-specific OLS "
-                "slopes; lines show cluster-robust 95% confidence "
-                "intervals.</figcaption>",
+                "<figcaption>Common panel conditional on positive broad- and "
+                "taxable-income outputs in all eight model–response cells. Points "
+                "show model-specific OLS slopes; lines show cluster-robust 95% "
+                "confidence intervals.</figcaption>",
             ]
         ),
     )
@@ -1009,6 +1219,9 @@ def main() -> None:
         "completion": completion.to_dict(orient="records"),
         "main_results": summary.to_dict(orient="records"),
         "sensitivity": sensitivity.to_dict(orient="records"),
+        "direction_symmetry": direction_symmetry.to_dict(orient="records"),
+        "boundary_incidence": boundary_incidence.to_dict(orient="records"),
+        "selection_balance": selection_balance.to_dict(orient="records"),
     }
     (GENERATED_DIR / "analysis_summary.json").write_text(
         json.dumps(_canonicalize_json(manifest), indent=2, sort_keys=True) + "\n",

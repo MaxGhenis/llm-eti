@@ -21,11 +21,11 @@ describe these counts as archive coverage rather than success rates.
 \clearpage
 ```
 
-## Main response slopes
+## Main response slopes conditional on positive outputs
 
 {{< include generated/slope_results.md >}}
 
-: Model-specific taxable- and broad-income slopes on the primary panel. {#tbl-slope-results}
+: Model-specific taxable- and broad-income slopes conditional on positive broad- and taxable-income outputs in all eight model-by-repetition cells. {#tbl-slope-results}
 
 {{< include generated/slopes_figure.md >}}
 
@@ -75,6 +75,16 @@ taxable-income output and reports the exclusions explicitly.
 {{< include generated/boundary_outputs.md >}}
 
 : Nonpositive outputs in the rate-identified clean panel before the primary positivity restriction. {#tbl-boundary-outputs}
+
+{{< include generated/boundary_by_direction.md >}}
+
+: Zero and nonpositive-output incidence by model and treatment direction in the 632-scenario rate-identified balanced panel. {#tbl-boundary-by-direction}
+
+{{< include generated/positivity_selection_narrative.md >}}
+
+{{< include generated/positivity_selection_balance.md >}}
+
+: Scenario covariates retained and omitted by the 632-to-603 all-positive selection step. {#tbl-positivity-selection-balance}
 
 ## Sensitivity
 

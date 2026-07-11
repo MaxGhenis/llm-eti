@@ -102,6 +102,9 @@ def main() -> None:
     required = [
         PAPER / "generated" / "analysis_summary.json",
         PAPER / "generated" / "abstract.md",
+        PAPER / "generated" / "boundary_by_direction.md",
+        PAPER / "generated" / "positivity_selection_balance.md",
+        PAPER / "generated" / "positivity_selection_narrative.md",
         PAPER / "generated" / "main_narrative.md",
         PAPER / "generated" / "primary_panel.md",
         PAPER / "generated" / "slope_results.md",

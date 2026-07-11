@@ -142,6 +142,15 @@ sensitivity.
 Other exploratory specifications use a regression through the origin; exclude
 negative initial marginal rates; require at least a two-percentage-point
 displayed rate change; use only the first requested response; winsorize the log
-outcome at the 1st and 99th percentiles; estimate 2023 and 2024 separately; and
-apply $\log(1+z)$ to retain zero-dollar outputs. The last is a unit-dependent
-boundary stress test, not an elasticity transformation.
+outcome at the 1st and 99th percentiles; and estimate 2023 and 2024 separately.
+Direction-split regressions give tax increases and tax cuts separate intercepts
+and slopes; a fully interacted regression tests equality of those slopes. An
+equal-year-weight regression assigns each source year the same total weight.
+
+Two specifications retain zero-dollar outputs on the 632-scenario identified
+balanced panel. The first regresses the proportional income change
+$(z_1-z_0)/z_0$ on the proportional net-of-tax-rate change
+$[(1-\tau_1)/(1-\tau_0)]-1$; both quantities are scale-free. The second applies
+$\log(1+z)$ to dollar income and uses the ordinary log net-of-tax-rate change.
+The latter depends on the dollar unit and is a boundary stress test, not an
+elasticity transformation.

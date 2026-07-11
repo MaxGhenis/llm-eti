@@ -5,13 +5,22 @@ import numpy as np
 import pytest
 
 from llm_eti.study2 import (
+    EQUAL_YEAR_WEIGHT_SPECIFICATION,
+    LOG1P_SPECIFICATION,
+    PROPORTIONAL_CHANGE_SPECIFICATION,
+    TAX_CUT_SPECIFICATION,
+    TAX_INCREASE_SPECIFICATION,
+    boundary_incidence_summary,
     clean_positive_pair_ids,
+    collapse_repetitions,
     completion_summary,
+    direction_symmetry_test,
     model_summary,
     primary_analysis_scenario_ids,
     primary_balanced_scenario_ids,
     prompt_income,
     prompt_rate,
+    selection_balance_summary,
     sensitivity_summary,
 )
 
@@ -207,3 +216,158 @@ def test_two_point_rate_change_sensitivity(study_data):
     assert rows.loc["deepseek_v3", "slope"] == pytest.approx(0.397, abs=0.001)
     assert rows.loc["gemma_4_26b", "slope"] == pytest.approx(0.289, abs=0.001)
     assert rows.loc["gpt_4o_mini", "slope"] == pytest.approx(0.378, abs=0.001)
+
+
+@pytest.mark.parametrize(
+    ("model_key", "tax_cut", "tax_increase", "equal_year", "proportional"),
+    [
+        (
+            "claude_haiku_4_5",
+            (0.525752, 0.337166, 0.714338),
+            (0.448267, 0.235499, 0.661035),
+            (0.719466, 0.646628, 0.792304),
+            (0.747499, 0.675551, 0.819447),
+        ),
+        (
+            "deepseek_v3",
+            (0.174990, 0.062950, 0.287029),
+            (0.539225, 0.323077, 0.755373),
+            (0.418893, 0.350989, 0.486796),
+            (0.414635, 0.354948, 0.474323),
+        ),
+        (
+            "gemma_4_26b",
+            (0.416070, -0.121658, 0.953797),
+            (0.422911, -0.077373, 0.923196),
+            (0.323064, -0.066809, 0.712937),
+            (1.232939, -0.151472, 2.617351),
+        ),
+        (
+            "gpt_4o_mini",
+            (0.325101, 0.023290, 0.626911),
+            (0.577056, 0.315606, 0.838505),
+            (0.348442, 0.261722, 0.435162),
+            (1.181449, 0.758846, 1.604051),
+        ),
+    ],
+)
+def test_additive_direction_scale_and_year_sensitivities(
+    study_data, model_key, tax_cut, tax_increase, equal_year, proportional
+):
+    scenarios, results = study_data
+    analysis_ids = primary_analysis_scenario_ids(results)
+    identified_ids = set(
+        scenarios.loc[
+            scenarios["scenario_id"].isin(primary_balanced_scenario_ids(results))
+            & scenarios["displayed_rate_change"],
+            "scenario_id",
+        ]
+    )
+    rows = sensitivity_summary(results, analysis_ids, identified_ids).set_index(
+        ["model_key", "specification"]
+    )
+
+    expected = {
+        TAX_CUT_SPECIFICATION: (298, 297, tax_cut),
+        TAX_INCREASE_SPECIFICATION: (305, 304, tax_increase),
+        EQUAL_YEAR_WEIGHT_SPECIFICATION: (603, 600, equal_year),
+        PROPORTIONAL_CHANGE_SPECIFICATION: (632, 629, proportional),
+    }
+    for label, (n_scenarios, n_clusters, estimates) in expected.items():
+        row = rows.loc[(model_key, label)]
+        assert row["n_scenarios"] == n_scenarios
+        assert row["n_clusters"] == n_clusters
+        assert row["slope"] == pytest.approx(estimates[0], abs=1e-6)
+        assert row["slope_ci_lower"] == pytest.approx(estimates[1], abs=1e-6)
+        assert row["slope_ci_upper"] == pytest.approx(estimates[2], abs=1e-6)
+
+    log1p = rows.loc[(model_key, LOG1P_SPECIFICATION)]
+    assert log1p["n_scenarios"] == 632
+    assert log1p["n_clusters"] == 629
+
+
+def test_deepseek_direction_symmetry_test(study_data):
+    _, results = study_data
+    model = collapse_repetitions(results)
+    model = model[
+        model["model_key"].eq("deepseek_v3")
+        & model["scenario_id"].isin(primary_analysis_scenario_ids(results))
+    ]
+    test = direction_symmetry_test(model)
+
+    assert test["n_scenarios"] == 603
+    assert test["n_clusters"] == 600
+    assert test["tax_cut_slope"] == pytest.approx(0.174990, abs=1e-6)
+    assert test["tax_increase_slope"] == pytest.approx(0.539225, abs=1e-6)
+    assert test["slope_difference"] == pytest.approx(0.364235, abs=1e-6)
+    assert test["p_value"] == pytest.approx(0.00336627, abs=1e-8)
+
+
+def test_boundary_incidence_by_model_and_direction(study_data):
+    scenarios, results = study_data
+    identified_ids = set(
+        scenarios.loc[
+            scenarios["scenario_id"].isin(primary_balanced_scenario_ids(results))
+            & scenarios["displayed_rate_change"],
+            "scenario_id",
+        ]
+    )
+    incidence = boundary_incidence_summary(results, identified_ids).set_index(
+        ["model_key", "direction"]
+    )
+
+    expected = {
+        ("claude_haiku_4_5", "Tax decrease"): (604, 0, 302, 0),
+        ("claude_haiku_4_5", "Tax increase"): (660, 0, 330, 0),
+        ("deepseek_v3", "Tax decrease"): (604, 0, 302, 0),
+        ("deepseek_v3", "Tax increase"): (660, 0, 330, 0),
+        ("gemma_4_26b", "Tax decrease"): (604, 3, 302, 2),
+        ("gemma_4_26b", "Tax increase"): (660, 16, 330, 10),
+        ("gpt_4o_mini", "Tax decrease"): (604, 5, 302, 3),
+        ("gpt_4o_mini", "Tax increase"): (660, 32, 330, 22),
+        ("any_primary", "Tax decrease"): (2_416, 8, 302, 4),
+        ("any_primary", "Tax increase"): (2_640, 48, 330, 25),
+    }
+    for key, values in expected.items():
+        row = incidence.loc[key]
+        assert (
+            tuple(
+                int(row[column])
+                for column in [
+                    "response_records",
+                    "nonpositive_records",
+                    "scenarios",
+                    "affected_scenarios",
+                ]
+            )
+            == values
+        )
+
+
+def test_retained_vs_omitted_selection_balance(study_data):
+    scenarios, results = study_data
+    balanced_ids = primary_balanced_scenario_ids(results)
+    analysis_ids = primary_analysis_scenario_ids(results)
+    identified_ids = set(
+        scenarios.loc[
+            scenarios["scenario_id"].isin(balanced_ids)
+            & scenarios["displayed_rate_change"],
+            "scenario_id",
+        ]
+    )
+    balance = selection_balance_summary(
+        scenarios, identified_ids, analysis_ids
+    ).set_index("sample")
+
+    retained = balance.loc["Retained"]
+    omitted = balance.loc["Omitted"]
+    assert retained["n_scenarios"] == 603
+    assert omitted["n_scenarios"] == 29
+    assert retained["median_broad_income"] == 76_500
+    assert omitted["median_broad_income"] == 23_010
+    assert retained["median_taxable_income"] == 53_616
+    assert omitted["median_taxable_income"] == 6_150
+    assert retained["tax_increase_count"] == 305
+    assert omitted["tax_increase_count"] == 25
+    assert retained["year_2023_count"] == 396
+    assert omitted["year_2023_count"] == 17

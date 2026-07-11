@@ -51,7 +51,9 @@ analysis, or forecast a person or population.
    not eliminate this selection.
 4. **Cross-model outcome selection.** The common comparison panel requires
    positive answers from every model. Model-specific clean-pair sensitivities
-   address but do not remove that design tradeoff.
+   address but do not remove that design tradeoff. The retained-versus-omitted
+   table shows that exclusions are concentrated among tax-increase scenarios
+   and lower-income baselines.
 5. **Delivered-value rounding.** In {{< var same_rate_count >}} of
    {{< var scenario_count >}} source scenarios ({{< var same_rate_share >}}),
    distinct continuous rates render as the same integer percentage, so the

@@ -32,6 +32,15 @@ DELIVERED_PROMPT_KEY = [
 ]
 EXPECTED_RESPONSES_PER_SCENARIO = 2
 CLEAN_PAIRS_SPECIFICATION = "All clean completed pairs, intercept"
+TAX_CUT_SPECIFICATION = "Primary positive-output panel, tax cuts only"
+TAX_INCREASE_SPECIFICATION = "Primary positive-output panel, tax increases only"
+EQUAL_YEAR_WEIGHT_SPECIFICATION = (
+    "Primary positive-output panel, equal total weight by year"
+)
+PROPORTIONAL_CHANGE_SPECIFICATION = (
+    "Identified balanced panel, proportional changes, zeros included"
+)
+LOG1P_SPECIFICATION = "Boundary stress test including zeros (log1p)"
 
 
 @dataclass(frozen=True)
@@ -130,6 +139,9 @@ def load_scenarios(path: Path) -> pd.DataFrame:
     scenarios["log_net_of_tax_change"] = np.log(
         (1 - scenarios["prompt_mtr_prime"]) / (1 - scenarios["prompt_mtr"])
     )
+    scenarios["proportional_net_of_tax_change"] = np.expm1(
+        scenarios["log_net_of_tax_change"]
+    )
     scenarios["displayed_rate_change"] = (
         scenarios["prompt_mtr"] != scenarios["prompt_mtr_prime"]
     )
@@ -224,6 +236,11 @@ def load_model_results(
         results["valid_income_response"],
         np.log1p(results["taxable_income_this"])
         - np.log1p(results["prompt_taxable_income"]),
+        np.nan,
+    )
+    results["proportional_taxable_income_change"] = np.where(
+        results["valid_income_response"],
+        results["taxable_income_this"] / results["prompt_taxable_income"] - 1,
         np.nan,
     )
     results["taxable_income_unchanged"] = np.isclose(
@@ -352,6 +369,7 @@ def collapse_repetitions(
         "prompt_taxable_income",
         "displayed_rate_change",
         "log_net_of_tax_change",
+        "proportional_net_of_tax_change",
     ]
     return (
         valid.groupby(group_columns, as_index=False, dropna=False)
@@ -361,6 +379,10 @@ def collapse_repetitions(
             log_taxable_income_change=("log_taxable_income_change", "mean"),
             log_broad_income_change=("log_broad_income_change", "mean"),
             log1p_taxable_income_change=("log1p_taxable_income_change", "mean"),
+            proportional_taxable_income_change=(
+                "proportional_taxable_income_change",
+                "mean",
+            ),
             repetitions=("response_number", "nunique"),
             taxable_income_unchanged=("taxable_income_unchanged", "mean"),
             directionally_consistent=("directionally_consistent", "mean"),
@@ -380,7 +402,9 @@ def fit_log_response(
     data: pd.DataFrame,
     *,
     outcome: str = "log_taxable_income_change",
+    predictor: str = "log_net_of_tax_change",
     include_intercept: bool = True,
+    weight_column: str | None = None,
 ) -> dict[str, float | int]:
     """Estimate a model-implied response slope with cluster-robust inference.
 
@@ -389,28 +413,41 @@ def fit_log_response(
     HC3 fallback is retained for standalone frames without a ``cluster_id``.
     """
 
-    sample = data[
+    eligible = (
         data["displayed_rate_change"]
         & data[outcome].notna()
         & np.isfinite(data[outcome])
-        & np.isfinite(data["log_net_of_tax_change"])
-    ]
+        & data[predictor].notna()
+        & np.isfinite(data[predictor])
+    )
+    if weight_column is not None:
+        eligible &= (
+            data[weight_column].notna()
+            & np.isfinite(data[weight_column])
+            & data[weight_column].gt(0)
+        )
+    sample = data[eligible]
     if len(sample) < 3:
         raise ValueError("At least three identified scenarios are required")
 
-    x = sample[["log_net_of_tax_change"]]
+    x = sample[[predictor]]
     if include_intercept:
         x = sm.add_constant(x, has_constant="add")
+    estimator = (
+        sm.OLS(sample[outcome], x)
+        if weight_column is None
+        else sm.WLS(sample[outcome], x, weights=sample[weight_column])
+    )
     if "cluster_id" in sample:
-        fit = sm.OLS(sample[outcome], x).fit(
+        fit = estimator.fit(
             cov_type="cluster",
             cov_kwds={"groups": sample["cluster_id"], "use_correction": True},
         )
     else:
-        fit = sm.OLS(sample[outcome], x).fit(cov_type="HC3")
-    slope = float(fit.params["log_net_of_tax_change"])
-    slope_se = float(fit.bse["log_net_of_tax_change"])
-    ci = fit.conf_int().loc["log_net_of_tax_change"]
+        fit = estimator.fit(cov_type="HC3")
+    slope = float(fit.params[predictor])
+    slope_se = float(fit.bse[predictor])
+    ci = fit.conf_int().loc[predictor]
     intercept = float(fit.params.get("const", 0.0))
     intercept_se = float(fit.bse.get("const", 0.0))
     return {
@@ -428,6 +465,193 @@ def fit_log_response(
             else int(len(sample))
         ),
     }
+
+
+def direction_symmetry_test(data: pd.DataFrame) -> dict[str, float | int]:
+    """Test equality of tax-cut and tax-increase slopes on one model panel."""
+
+    sample = data[
+        data["displayed_rate_change"]
+        & data["log_taxable_income_change"].notna()
+        & np.isfinite(data["log_taxable_income_change"])
+        & np.isfinite(data["log_net_of_tax_change"])
+    ].copy()
+    if len(sample) < 6:
+        raise ValueError("At least six identified scenarios are required")
+
+    sample["tax_increase"] = sample["prompt_mtr_prime"].gt(sample["prompt_mtr"])
+    sample["direction_interaction"] = (
+        sample["log_net_of_tax_change"] * sample["tax_increase"]
+    )
+    x = sm.add_constant(
+        sample[
+            ["log_net_of_tax_change", "tax_increase", "direction_interaction"]
+        ].astype(float),
+        has_constant="add",
+    )
+    estimator = sm.OLS(sample["log_taxable_income_change"], x)
+    if "cluster_id" in sample:
+        fit = estimator.fit(
+            cov_type="cluster",
+            cov_kwds={"groups": sample["cluster_id"], "use_correction": True},
+            use_t=False,
+        )
+    else:
+        fit = estimator.fit(cov_type="HC3", use_t=False)
+
+    tax_cut_slope = float(fit.params["log_net_of_tax_change"])
+    difference = float(fit.params["direction_interaction"])
+    return {
+        "n_scenarios": int(len(sample)),
+        "n_clusters": (
+            int(sample["cluster_id"].nunique())
+            if "cluster_id" in sample
+            else int(len(sample))
+        ),
+        "tax_cut_slope": tax_cut_slope,
+        "tax_increase_slope": tax_cut_slope + difference,
+        "slope_difference": difference,
+        "slope_difference_se": float(fit.bse["direction_interaction"]),
+        "p_value": float(fit.pvalues["direction_interaction"]),
+    }
+
+
+def boundary_incidence_summary(
+    results: pd.DataFrame, identified_balanced_ids: set[str]
+) -> pd.DataFrame:
+    """Summarize zero and nonpositive outputs by model and tax direction."""
+
+    sample = results[
+        results["primary_model"]
+        & results["scenario_id"].isin(identified_balanced_ids)
+        & results["valid_income_response"]
+    ].copy()
+    sample["direction"] = np.where(
+        sample["prompt_mtr_prime"].gt(sample["prompt_mtr"]),
+        "Tax increase",
+        "Tax decrease",
+    )
+    sample["nonpositive_output"] = sample["taxable_income_this"].le(0) | sample[
+        "broad_income_this"
+    ].le(0)
+
+    records = (
+        sample.groupby(["model_key", "model_display", "direction"], as_index=False)
+        .agg(
+            response_records=("scenario_id", "size"),
+            zero_taxable_records=(
+                "taxable_income_this",
+                lambda values: int(values.eq(0).sum()),
+            ),
+            zero_broad_records=(
+                "broad_income_this",
+                lambda values: int(values.eq(0).sum()),
+            ),
+            nonpositive_records=("nonpositive_output", "sum"),
+        )
+        .astype(
+            {
+                "response_records": int,
+                "zero_taxable_records": int,
+                "zero_broad_records": int,
+                "nonpositive_records": int,
+            }
+        )
+    )
+    scenarios = (
+        sample.groupby(
+            ["model_key", "model_display", "direction", "scenario_id"],
+            as_index=False,
+        )["nonpositive_output"]
+        .any()
+        .groupby(["model_key", "model_display", "direction"], as_index=False)
+        .agg(
+            scenarios=("scenario_id", "size"),
+            affected_scenarios=("nonpositive_output", "sum"),
+        )
+        .astype({"scenarios": int, "affected_scenarios": int})
+    )
+    by_model = records.merge(
+        scenarios,
+        on=["model_key", "model_display", "direction"],
+        validate="one_to_one",
+    )
+    overall_records = (
+        sample.groupby("direction", as_index=False)
+        .agg(
+            response_records=("scenario_id", "size"),
+            zero_taxable_records=(
+                "taxable_income_this",
+                lambda values: int(values.eq(0).sum()),
+            ),
+            zero_broad_records=(
+                "broad_income_this",
+                lambda values: int(values.eq(0).sum()),
+            ),
+            nonpositive_records=("nonpositive_output", "sum"),
+        )
+        .astype(
+            {
+                "response_records": int,
+                "zero_taxable_records": int,
+                "zero_broad_records": int,
+                "nonpositive_records": int,
+            }
+        )
+    )
+    overall_scenarios = (
+        sample.groupby(["direction", "scenario_id"], as_index=False)[
+            "nonpositive_output"
+        ]
+        .any()
+        .groupby("direction", as_index=False)
+        .agg(
+            scenarios=("scenario_id", "size"),
+            affected_scenarios=("nonpositive_output", "sum"),
+        )
+        .astype({"scenarios": int, "affected_scenarios": int})
+    )
+    overall = overall_records.merge(
+        overall_scenarios, on="direction", validate="one_to_one"
+    ).assign(model_key="any_primary", model_display="Any primary model")
+    return pd.concat([by_model, overall[by_model.columns]], ignore_index=True)
+
+
+def selection_balance_summary(
+    scenarios: pd.DataFrame,
+    identified_balanced_ids: set[str],
+    analysis_ids: set[str],
+) -> pd.DataFrame:
+    """Compare scenarios retained and omitted by the all-positive restriction."""
+
+    sample = scenarios[scenarios["scenario_id"].isin(identified_balanced_ids)].copy()
+    sample["sample"] = np.where(
+        sample["scenario_id"].isin(analysis_ids), "Retained", "Omitted"
+    )
+    sample["tax_increase"] = sample["prompt_mtr_prime"].gt(sample["prompt_mtr"])
+    rows = []
+    for label in ["Retained", "Omitted"]:
+        group = sample[sample["sample"].eq(label)]
+        rows.append(
+            {
+                "sample": label,
+                "n_scenarios": int(len(group)),
+                "median_broad_income": float(group["prompt_broad_income"].median()),
+                "median_taxable_income": float(group["prompt_taxable_income"].median()),
+                "median_initial_mtr": float(group["prompt_mtr"].median()),
+                "median_new_mtr": float(group["prompt_mtr_prime"].median()),
+                "median_absolute_rate_change": float(
+                    (group["prompt_mtr_prime"] - group["prompt_mtr"]).abs().median()
+                ),
+                "tax_increase_count": int(group["tax_increase"].sum()),
+                "tax_increase_share": float(group["tax_increase"].mean()),
+                "year_2023_count": int(group["year"].eq(2023).sum()),
+                "year_2023_share": float(group["year"].eq(2023).mean()),
+                "year_2024_count": int(group["year"].eq(2024).sum()),
+                "year_2024_share": float(group["year"].eq(2024).mean()),
+            }
+        )
+    return pd.DataFrame(rows)
 
 
 def completion_summary(scenarios: pd.DataFrame, results: pd.DataFrame) -> pd.DataFrame:
@@ -543,12 +767,22 @@ def sensitivity_summary(
             model_clean["scenario_id"].isin(clean_positive_pair_ids(results, spec.key))
         ]
         model_balanced = model_clean[model_clean["scenario_id"].isin(analysis_ids)]
+        model_balanced = model_balanced.copy()
+        model_balanced["equal_year_weight"] = 1 / model_balanced.groupby("year")[
+            "scenario_id"
+        ].transform("size")
         model_2023 = model_balanced[model_balanced["year"].eq(2023)]
         model_2024 = model_balanced[model_balanced["year"].eq(2024)]
         model_with_zeros = model_clean[
             model_clean["scenario_id"].isin(identified_balanced_ids)
         ]
         positive_rate = model_balanced[model_balanced["prompt_mtr"].ge(0)]
+        tax_cuts = model_balanced[
+            model_balanced["prompt_mtr_prime"].lt(model_balanced["prompt_mtr"])
+        ]
+        tax_increases = model_balanced[
+            model_balanced["prompt_mtr_prime"].gt(model_balanced["prompt_mtr"])
+        ]
         two_point_change = model_balanced[
             (model_balanced["prompt_mtr_prime"] - model_balanced["prompt_mtr"])
             .abs()
@@ -566,71 +800,134 @@ def sensitivity_summary(
             "log_taxable_income_change"
         ].clip(lower, upper)
 
-        specifications: list[tuple[str, pd.DataFrame, bool, str]] = [
+        specifications: list[tuple[str, pd.DataFrame, bool, str, str, str | None]] = [
             (
                 "Balanced, intercept",
                 model_balanced,
                 True,
                 "log_taxable_income_change",
+                "log_net_of_tax_change",
+                None,
+            ),
+            (
+                TAX_CUT_SPECIFICATION,
+                tax_cuts,
+                True,
+                "log_taxable_income_change",
+                "log_net_of_tax_change",
+                None,
+            ),
+            (
+                TAX_INCREASE_SPECIFICATION,
+                tax_increases,
+                True,
+                "log_taxable_income_change",
+                "log_net_of_tax_change",
+                None,
+            ),
+            (
+                EQUAL_YEAR_WEIGHT_SPECIFICATION,
+                model_balanced,
+                True,
+                "log_taxable_income_change",
+                "log_net_of_tax_change",
+                "equal_year_weight",
             ),
             (
                 "Balanced, 2023 only",
                 model_2023,
                 True,
                 "log_taxable_income_change",
+                "log_net_of_tax_change",
+                None,
             ),
             (
                 "Balanced, 2024 only",
                 model_2024,
                 True,
                 "log_taxable_income_change",
+                "log_net_of_tax_change",
+                None,
             ),
             (
                 "Balanced, through origin",
                 model_balanced,
                 False,
                 "log_taxable_income_change",
+                "log_net_of_tax_change",
+                None,
             ),
             (
                 CLEAN_PAIRS_SPECIFICATION,
                 model_all_positive,
                 True,
                 "log_taxable_income_change",
+                "log_net_of_tax_change",
+                None,
             ),
             (
                 "Balanced, nonnegative initial MTR",
                 positive_rate,
                 True,
                 "log_taxable_income_change",
+                "log_net_of_tax_change",
+                None,
             ),
             (
                 "Balanced, at least 2-point rate change",
                 two_point_change,
                 True,
                 "log_taxable_income_change",
+                "log_net_of_tax_change",
+                None,
             ),
             (
                 "Balanced, first response only",
                 first_response,
                 True,
                 "log_taxable_income_change",
+                "log_net_of_tax_change",
+                None,
             ),
             (
                 "Balanced, 1% winsorized outcome",
                 winsorized,
                 True,
                 "log_taxable_income_change",
+                "log_net_of_tax_change",
+                None,
             ),
             (
-                "Boundary stress test including zeros (log1p)",
+                PROPORTIONAL_CHANGE_SPECIFICATION,
+                model_with_zeros,
+                True,
+                "proportional_taxable_income_change",
+                "proportional_net_of_tax_change",
+                None,
+            ),
+            (
+                LOG1P_SPECIFICATION,
                 model_with_zeros,
                 True,
                 "log1p_taxable_income_change",
+                "log_net_of_tax_change",
+                None,
             ),
         ]
-        for label, sample, include_intercept, outcome in specifications:
+        for (
+            label,
+            sample,
+            include_intercept,
+            outcome,
+            predictor,
+            weight_column,
+        ) in specifications:
             fit = fit_log_response(
-                sample, include_intercept=include_intercept, outcome=outcome
+                sample,
+                include_intercept=include_intercept,
+                outcome=outcome,
+                predictor=predictor,
+                weight_column=weight_column,
             )
             rows.append(
                 {
