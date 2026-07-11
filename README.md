@@ -53,11 +53,12 @@ are disclosed rather than reconstructed.
 The analysis rebuild is deterministic from the archived CSVs. A future call to
 a moving model endpoint is not expected to reproduce the same text.
 
-The Python source distribution intentionally excludes `data/`, rendered site
-output, and generated Quarto support files. This keeps the package artifact
-small and avoids treating archived third-party inputs as Python package data.
-Clone the repository or use its publication/release archive when reproducing
-the paper; the Python sdist alone is not the research-data archive.
+The Python source distribution is a minimal library artifact containing
+`llm_eti` and the required package, readme, license, and notice files. It omits
+the research data, tests, paper and site sources, assets, protocols, automation,
+and CI configuration. Clone the repository or use its publication/release
+archive when reproducing the paper; the Python sdist alone is not the
+research-data archive.
 
 ## Repository map
 

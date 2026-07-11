@@ -2,6 +2,7 @@ import csv
 import hashlib
 import json
 import re
+import tomllib
 from pathlib import Path
 
 import pandas as pd
@@ -194,3 +195,26 @@ def test_verification_jobs_pin_runner_and_check_lock_before_sync():
         assert "runs-on: ubuntu-24.04" in job
         assert job.count("uv lock --check") == 1
         assert job.index("uv lock --check") < job.index("uv sync")
+
+
+def test_sdist_and_wheel_smoke_gate_enforce_the_package_boundary():
+    configuration = tomllib.loads((ROOT / "pyproject.toml").read_text())
+    sdist = configuration["tool"]["hatch"]["build"]["targets"]["sdist"]
+    assert sdist == {
+        "only-include": [
+            "llm_eti",
+            "pyproject.toml",
+            "README.md",
+            "LICENSE",
+            "NOTICE.md",
+        ]
+    }
+    workflow = (ROOT / ".github" / "workflows" / "publication.yml").read_text()
+    for command in [
+        "uv build --no-sources --clear",
+        "Unexpected sdist paths",
+        "uv venv --python 3.12",
+        "uv pip install",
+        "import llm_eti; print(llm_eti.__version__)",
+    ]:
+        assert command in workflow

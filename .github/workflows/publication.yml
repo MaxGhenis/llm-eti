@@ -52,6 +52,49 @@ jobs:
       - name: Run the offline test suite
         run: uv run --python 3.12 pytest -q
 
+      - name: Build and smoke-test distributions
+        run: |
+          uv build --no-sources --clear
+          uv run --python 3.12 python - <<'PY'
+          import tarfile
+          from pathlib import Path
+
+          (sdist,) = Path("dist").glob("*.tar.gz")
+          with tarfile.open(sdist) as archive:
+              members = {
+                  Path(name).parts[1]
+                  for name in archive.getnames()
+                  if len(Path(name).parts) > 1
+          }
+          allowed = {
+              ".gitignore",
+              "LICENSE",
+              "NOTICE.md",
+              "PKG-INFO",
+              "README.md",
+              "llm_eti",
+              "pyproject.toml",
+          }
+          required = {
+              "LICENSE",
+              "NOTICE.md",
+              "README.md",
+              "llm_eti",
+              "pyproject.toml",
+          }
+          if unexpected := members - allowed:
+              raise SystemExit(f"Unexpected sdist paths: {sorted(unexpected)}")
+          if missing := required - members:
+              raise SystemExit(f"Missing sdist paths: {sorted(missing)}")
+          PY
+          uv venv --python 3.12 "${RUNNER_TEMP}/llm-eti-wheel-smoke"
+          uv pip install \
+            --python "${RUNNER_TEMP}/llm-eti-wheel-smoke/bin/python" \
+            dist/*.whl
+          cd "${RUNNER_TEMP}"
+          "${RUNNER_TEMP}/llm-eti-wheel-smoke/bin/python" -I -c \
+            "import llm_eti; print(llm_eti.__version__)"
+
   build:
     name: Build and verify
     runs-on: ubuntu-24.04

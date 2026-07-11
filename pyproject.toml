@@ -36,10 +36,12 @@ build-backend = "hatchling.build"
 packages = ["llm_eti"]
 
 [tool.hatch.build.targets.sdist]
-exclude = [
-    "data/**",
-    "_site/**",
-    "paper/site_libs/**",
+only-include = [
+    "llm_eti",
+    "pyproject.toml",
+    "README.md",
+    "LICENSE",
+    "NOTICE.md",
 ]
 
 [tool.ruff]
