@@ -442,9 +442,10 @@ def fit_log_response(
         fit = estimator.fit(
             cov_type="cluster",
             cov_kwds={"groups": sample["cluster_id"], "use_correction": True},
+            use_t=False,
         )
     else:
-        fit = estimator.fit(cov_type="HC3")
+        fit = estimator.fit(cov_type="HC3", use_t=False)
     slope = float(fit.params[predictor])
     slope_se = float(fit.bse[predictor])
     ci = fit.conf_int().loc[predictor]
@@ -654,6 +655,41 @@ def selection_balance_summary(
     return pd.DataFrame(rows)
 
 
+def same_rate_summary(
+    results: pd.DataFrame, balanced_scenario_ids: set[str]
+) -> pd.DataFrame:
+    """Summarize same-rate stability at response and scenario-pair levels."""
+
+    sample = results[
+        results["primary_model"]
+        & results["scenario_id"].isin(balanced_scenario_ids)
+        & ~results["displayed_rate_change"]
+        & results["valid_income_response"]
+    ]
+    rows = []
+    for model_key, model in sample.groupby("model_key", sort=False):
+        pairs = model.groupby("scenario_id").agg(
+            responses=("response_number", "nunique"),
+            both_unchanged=("taxable_income_unchanged", "all"),
+        )
+        pairs = pairs[pairs["responses"].eq(EXPECTED_RESPONSES_PER_SCENARIO)]
+        rows.append(
+            {
+                "model_key": model_key,
+                "model": model["model_display"].iloc[0],
+                "response_records": int(len(model)),
+                "unchanged_responses": int(model["taxable_income_unchanged"].sum()),
+                "unchanged_response_share": float(
+                    model["taxable_income_unchanged"].mean()
+                ),
+                "scenario_pairs": int(len(pairs)),
+                "both_unchanged_pairs": int(pairs["both_unchanged"].sum()),
+                "both_unchanged_pair_share": float(pairs["both_unchanged"].mean()),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 def completion_summary(scenarios: pd.DataFrame, results: pd.DataFrame) -> pd.DataFrame:
     """Summarize archived run completion without hiding failed scenarios."""
 
@@ -729,6 +765,12 @@ def model_summary(
                 "broad_slope_se": broad_fit["slope_se"],
                 "broad_slope_ci_lower": broad_fit["slope_ci_lower"],
                 "broad_slope_ci_upper": broad_fit["slope_ci_upper"],
+                "broad_intercept": broad_fit["intercept"],
+                "broad_intercept_se": broad_fit["intercept_se"],
+                "broad_r_squared": broad_fit["r_squared"],
+                "broad_n_scenarios": broad_fit["n_scenarios"],
+                "broad_n_clusters": broad_fit["n_clusters"],
+                "mean_implied_eti": float(eti.mean()),
                 "median_implied_eti": float(eti.median()),
                 "eti_q25": float(eti.quantile(0.25)),
                 "eti_q75": float(eti.quantile(0.75)),

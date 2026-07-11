@@ -32,6 +32,7 @@ def test_artifact_generator_is_complete_and_has_no_fallbacks():
         "primary_panel.md",
         "positivity_selection_balance.md",
         "positivity_selection_narrative.md",
+        "regression_details.md",
         "recovery_diagnostics.md",
         "response_diagnostics.md",
         "response_friction.md",
@@ -81,6 +82,23 @@ def test_artifact_generator_is_complete_and_has_no_fallbacks():
     variables = (ROOT / "paper" / "_variables.yml").read_text()
     assert "same_rate_count:" in variables
     assert "same_rate_share:" in variables
+
+    key_findings = (generated / "key_findings.md").read_text()
+    for reported_mean in ["**0.84**", "**0.46**", "**0.15**", "**0.32**"]:
+        assert reported_mean in key_findings
+
+    same_rate = (generated / "same_rate_check.md").read_text()
+    for level in [
+        "Unchanged response records",
+        "Pairs with both responses unchanged",
+        "354/378",
+        "173/189",
+    ]:
+        assert level in same_rate
+
+    regression_details = (generated / "regression_details.md").read_text()
+    for field in ["Clusters", "Intercept SE", "R²", "600"]:
+        assert field in regression_details
 
     summary = json.loads((generated / "analysis_summary.json").read_text())
     assert summary["primary_analysis_scenario_count"] == 603

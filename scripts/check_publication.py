@@ -107,6 +107,7 @@ def main() -> None:
         PAPER / "generated" / "positivity_selection_narrative.md",
         PAPER / "generated" / "main_narrative.md",
         PAPER / "generated" / "primary_panel.md",
+        PAPER / "generated" / "regression_details.md",
         PAPER / "generated" / "slope_results.md",
         PAPER / "generated" / "sensitivity.md",
         PAPER / "generated" / "year_coverage.md",

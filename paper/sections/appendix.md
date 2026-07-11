@@ -35,3 +35,9 @@ Two responses were requested per scenario. The first request used EDSL 1.0.7's
 universal cache; parser retries disabled that cache and allowed up to three
 attempts. Provider decoding parameters, failed-attempt rows, response IDs, and
 per-response cache-hit status were not retained.
+
+## Full primary regression results
+
+{{< include generated/regression_details.md >}}
+
+: Primary taxable- and broad-income regressions. Standard errors and 95% confidence intervals use the stated one-way cluster-robust covariance estimator; clusters are source year by tax-unit identifier. {#tbl-regression-details}

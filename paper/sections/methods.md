@@ -109,9 +109,12 @@ $$
 $$
 
 The paper calls $\beta_m$ a *model-implied log-response slope*. OLS includes an
-intercept. Confidence intervals cluster by source year and tax-unit identifier,
-because a source tax unit can appear more than once. The same specification is
-estimated for broad income.
+intercept. We fit the regressions with Statsmodels and use its one-way
+cluster-robust covariance estimator (`cov_type="cluster"`). Groups are the
+interaction of source year and tax-unit identifier because a source tax unit
+can appear more than once. The covariance uses `use_correction=True`; inference
+uses `use_t=False`, so 95% confidence intervals use standard-normal critical
+values. The same specification is estimated for broad income.
 
 {{< include generated/primary_panel.md >}}
 
@@ -121,10 +124,12 @@ baseline to the nearest dollar, and directional consistency among nonzero
 responses. The paired requested responses are not treated as independent
 taxpayers or assumed to be independent model draws.
 
-The confidence intervals quantify cluster-robust sampling uncertainty
-conditional on this archived scenario sample and the stated covariance
-estimator. They do not incorporate prompt choice, model-version uncertainty,
-provider changes, or uncertainty about a population of people.
+The confidence intervals quantify working-model regression uncertainty
+conditional on the archived scenarios and outputs, the linear specification,
+and the stated covariance estimator. They are not design-based uncertainty
+intervals for a randomly sampled population. They do not incorporate prompt
+choice, model-version uncertainty, provider changes, or uncertainty about a
+population of people.
 
 ## Primary panel and exploratory sensitivities
 

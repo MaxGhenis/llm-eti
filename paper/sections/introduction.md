@@ -40,6 +40,6 @@ Our contribution is methodological. We:
    figure, web page, TeX source, and PDF.
 
 The models produce sharply different response distributions and substantial
-mean–median divergence. We interpret that instability as evidence about the
-measurement properties of LLM elicitation—not as evidence about taxpayer
-behavior.
+scenario-ratio mean–median divergence. We interpret that instability as
+evidence about the measurement properties of LLM elicitation—not as evidence
+about taxpayer behavior.

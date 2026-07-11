@@ -231,6 +231,11 @@
   "identified_balanced_scenario_count": 632,
   "main_results": [
     {
+      "broad_intercept": -0.00309881342909,
+      "broad_intercept_se": 0.000384203923321,
+      "broad_n_clusters": 600,
+      "broad_n_scenarios": 603,
+      "broad_r_squared": 0.611191150839,
       "broad_slope": 0.424497053612,
       "broad_slope_ci_lower": 0.398850232726,
       "broad_slope_ci_upper": 0.450143874498,
@@ -240,6 +245,7 @@
       "eti_q75": 1.1473598789,
       "intercept": -0.00569376644966,
       "intercept_se": 0.000887112598357,
+      "mean_implied_eti": 0.841222677674,
       "mean_repetitions": 2.0,
       "median_implied_eti": 0.814611500688,
       "model": "Claude Haiku 4.5",
@@ -256,6 +262,11 @@
       "zero_taxable_income_share": 0.0
     },
     {
+      "broad_intercept": -3.92141245169e-06,
+      "broad_intercept_se": 2.4110290264e-06,
+      "broad_n_clusters": 600,
+      "broad_n_scenarios": 603,
+      "broad_r_squared": 0.00512291061429,
       "broad_slope": 0.000146380210703,
       "broad_slope_ci_lower": -0.000109124006992,
       "broad_slope_ci_upper": 0.000401884428397,
@@ -265,6 +276,7 @@
       "eti_q75": 0.751879880793,
       "intercept": -0.00451574103739,
       "intercept_se": 0.000669347499455,
+      "mean_implied_eti": 0.457632448497,
       "mean_repetitions": 2.0,
       "median_implied_eti": 0.370812265656,
       "model": "DeepSeek V3",
@@ -281,6 +293,11 @@
       "zero_taxable_income_share": 0.0
     },
     {
+      "broad_intercept": -0.000187950636398,
+      "broad_intercept_se": 8.63206530086e-05,
+      "broad_n_clusters": 600,
+      "broad_n_scenarios": 603,
+      "broad_r_squared": 0.0523200761173,
       "broad_slope": 0.0178503733052,
       "broad_slope_ci_lower": 0.00344248696252,
       "broad_slope_ci_upper": 0.0322582596479,
@@ -290,6 +307,7 @@
       "eti_q75": 0.0,
       "intercept": 0.00222038846811,
       "intercept_se": 0.00314279983933,
+      "mean_implied_eti": 0.147433975324,
       "mean_repetitions": 2.0,
       "median_implied_eti": 0.0,
       "model": "Gemma 4 26B",
@@ -306,6 +324,11 @@
       "zero_taxable_income_share": 0.0
     },
     {
+      "broad_intercept": -0.00148656453257,
+      "broad_intercept_se": 0.000321929217657,
+      "broad_n_clusters": 600,
+      "broad_n_scenarios": 603,
+      "broad_r_squared": 0.0339250622403,
       "broad_slope": 0.0516190644417,
       "broad_slope_ci_lower": 0.0266643594218,
       "broad_slope_ci_upper": 0.0765737694615,
@@ -315,6 +338,7 @@
       "eti_q75": 0.397700044103,
       "intercept": -0.00633829772297,
       "intercept_se": 0.000940514006698,
+      "mean_implied_eti": 0.319714791777,
       "mean_repetitions": 2.0,
       "median_implied_eti": 0.0,
       "model": "GPT-4o mini",
@@ -333,6 +357,48 @@
   ],
   "primary_analysis_scenario_count": 603,
   "primary_cluster_count": 600,
+  "same_rate": [
+    {
+      "both_unchanged_pair_share": 1.0,
+      "both_unchanged_pairs": 189,
+      "model": "Claude Haiku 4.5",
+      "model_key": "claude_haiku_4_5",
+      "response_records": 378,
+      "scenario_pairs": 189,
+      "unchanged_response_share": 1.0,
+      "unchanged_responses": 378
+    },
+    {
+      "both_unchanged_pair_share": 0.915343915344,
+      "both_unchanged_pairs": 173,
+      "model": "DeepSeek V3",
+      "model_key": "deepseek_v3",
+      "response_records": 378,
+      "scenario_pairs": 189,
+      "unchanged_response_share": 0.936507936508,
+      "unchanged_responses": 354
+    },
+    {
+      "both_unchanged_pair_share": 0.989417989418,
+      "both_unchanged_pairs": 187,
+      "model": "Gemma 4 26B",
+      "model_key": "gemma_4_26b",
+      "response_records": 378,
+      "scenario_pairs": 189,
+      "unchanged_response_share": 0.994708994709,
+      "unchanged_responses": 376
+    },
+    {
+      "both_unchanged_pair_share": 0.973544973545,
+      "both_unchanged_pairs": 184,
+      "model": "GPT-4o mini",
+      "model_key": "gpt_4o_mini",
+      "response_records": 378,
+      "scenario_pairs": 189,
+      "unchanged_response_share": 0.97619047619,
+      "unchanged_responses": 369
+    }
+  ],
   "scenario_count": 1000,
   "selection_balance": [
     {

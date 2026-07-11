@@ -20,6 +20,7 @@ from llm_eti.study2 import (
     primary_balanced_scenario_ids,
     prompt_income,
     prompt_rate,
+    same_rate_summary,
     selection_balance_summary,
     sensitivity_summary,
 )
@@ -135,6 +136,102 @@ def test_primary_slopes_reproduce_audit(
     assert row["directional_consistency_nonzero"] == pytest.approx(
         directional, abs=5e-4
     )
+
+
+@pytest.mark.parametrize(
+    (
+        "model_key",
+        "mean_ratio",
+        "intercept",
+        "r_squared",
+        "broad_intercept",
+        "broad_r_squared",
+    ),
+    [
+        (
+            "claude_haiku_4_5",
+            0.841222677674,
+            -0.005693766450,
+            0.457020003664,
+            -0.003098813429,
+            0.611191150839,
+        ),
+        (
+            "deepseek_v3",
+            0.457632448497,
+            -0.004515741037,
+            0.329012305894,
+            -0.000003921412,
+            0.005122910614,
+        ),
+        (
+            "gemma_4_26b",
+            0.147433975324,
+            0.002220388468,
+            0.008497440974,
+            -0.000187950636,
+            0.052320076117,
+        ),
+        (
+            "gpt_4o_mini",
+            0.319714791777,
+            -0.006338297723,
+            0.159530637999,
+            -0.001486564533,
+            0.033925062240,
+        ),
+    ],
+)
+def test_primary_regression_diagnostics_and_ratio_means(
+    study_data,
+    model_key,
+    mean_ratio,
+    intercept,
+    r_squared,
+    broad_intercept,
+    broad_r_squared,
+):
+    _, results = study_data
+    summary = model_summary(
+        results, scenario_ids=primary_analysis_scenario_ids(results)
+    ).set_index("model_key")
+    row = summary.loc[model_key]
+
+    assert row["mean_implied_eti"] == pytest.approx(mean_ratio, abs=1e-12)
+    assert row["intercept"] == pytest.approx(intercept, abs=1e-12)
+    assert row["r_squared"] == pytest.approx(r_squared, abs=1e-12)
+    assert row["broad_intercept"] == pytest.approx(broad_intercept, abs=1e-12)
+    assert row["broad_r_squared"] == pytest.approx(broad_r_squared, abs=1e-12)
+    assert row["broad_n_scenarios"] == 603
+    assert row["broad_n_clusters"] == 600
+
+
+def test_same_rate_summary_labels_response_and_pair_levels(study_data):
+    _, results = study_data
+    summary = same_rate_summary(
+        results, primary_balanced_scenario_ids(results)
+    ).set_index("model_key")
+
+    expected = {
+        "claude_haiku_4_5": (378, 378, 189, 189),
+        "deepseek_v3": (378, 354, 189, 173),
+        "gemma_4_26b": (378, 376, 189, 187),
+        "gpt_4o_mini": (378, 369, 189, 184),
+    }
+    for model_key, counts in expected.items():
+        row = summary.loc[model_key]
+        assert (
+            tuple(
+                int(row[column])
+                for column in [
+                    "response_records",
+                    "unchanged_responses",
+                    "scenario_pairs",
+                    "both_unchanged_pairs",
+                ]
+            )
+            == counts
+        )
 
 
 def test_same_displayed_rate_has_no_prompt_implied_ratio(study_data):

@@ -61,7 +61,7 @@ the supplied baseline.
 
 {{< include generated/same_rate_check.md >}}
 
-: Taxable-income stability among same-rate scenarios in the clean four-model panel. {#tbl-same-rate-check}
+: Response-level and scenario-pair taxable-income stability among same-rate scenarios in the clean four-model panel. Pair-level stability requires both requested responses to equal the displayed baseline to the nearest dollar. {#tbl-same-rate-check}
 
 ```{=latex}
 \clearpage

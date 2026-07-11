@@ -31,6 +31,7 @@ from llm_eti.study2 import (
     model_summary,
     primary_analysis_scenario_ids,
     primary_balanced_scenario_ids,
+    same_rate_summary,
     selection_balance_summary,
     sensitivity_summary,
 )
@@ -144,6 +145,9 @@ def _main_results_tables(summary: pd.DataFrame) -> tuple[str, str]:
         lambda row: _fmt_ci(row, "broad_"), axis=1
     )
     table["Median ratio [IQR]"] = table.apply(_fmt_iqr, axis=1)
+    table["Mean ratio"] = table["mean_implied_eti"].map(
+        lambda value: _fmt_number(float(value), 2)
+    )
     table["Unchanged"] = table["unchanged_share"].map(_fmt_pct)
     table["Directional among changes"] = table["directional_consistency_nonzero"].map(
         _fmt_pct
@@ -160,12 +164,70 @@ def _main_results_tables(summary: pd.DataFrame) -> tuple[str, str]:
     diagnostics = table[
         [
             "Model",
+            "Mean ratio",
             "Median ratio [IQR]",
             "Unchanged",
             "Directional among changes",
         ]
     ].to_markdown(index=False)
     return slopes, diagnostics
+
+
+def _regression_details_table(summary: pd.DataFrame) -> str:
+    """Format complete primary taxable- and broad-income regression results."""
+
+    rows = []
+    for row in summary.itertuples(index=False):
+        for outcome, prefix in [
+            ("Taxable income", ""),
+            ("Broad income", "broad_"),
+        ]:
+            rows.append(
+                {
+                    "Model": row.model,
+                    "Outcome": outcome,
+                    "Scenarios": int(getattr(row, f"{prefix}n_scenarios")),
+                    "Clusters": int(getattr(row, f"{prefix}n_clusters")),
+                    "Slope (95% CI)": (
+                        f"{getattr(row, f'{prefix}slope'):.6f} "
+                        f"[{getattr(row, f'{prefix}slope_ci_lower'):.6f}, "
+                        f"{getattr(row, f'{prefix}slope_ci_upper'):.6f}]"
+                    ),
+                    "Slope SE": f"{getattr(row, f'{prefix}slope_se'):.6f}",
+                    "Intercept": f"{getattr(row, f'{prefix}intercept'):.6f}",
+                    "Intercept SE": f"{getattr(row, f'{prefix}intercept_se'):.6f}",
+                    "R²": f"{getattr(row, f'{prefix}r_squared'):.4f}",
+                }
+            )
+    return str(pd.DataFrame(rows).to_markdown(index=False, disable_numparse=True))
+
+
+def _same_rate_table(summary: pd.DataFrame) -> str:
+    """Format same-rate stability with explicit response and pair denominators."""
+
+    table = summary.copy()
+    table["Unchanged response records, n/N (%)"] = table.apply(
+        lambda row: _fmt_count_share(
+            int(row["unchanged_responses"]), int(row["response_records"])
+        ),
+        axis=1,
+    )
+    table["Pairs with both responses unchanged, n/N (%)"] = table.apply(
+        lambda row: _fmt_count_share(
+            int(row["both_unchanged_pairs"]), int(row["scenario_pairs"])
+        ),
+        axis=1,
+    )
+    table = table.rename(columns={"model": "Model"})
+    return str(
+        table[
+            [
+                "Model",
+                "Unchanged response records, n/N (%)",
+                "Pairs with both responses unchanged, n/N (%)",
+            ]
+        ].to_markdown(index=False)
+    )
 
 
 def _sensitivity_table(sensitivity: pd.DataFrame) -> str:
@@ -812,6 +874,7 @@ def main() -> None:
     slope_results, response_diagnostics = _main_results_tables(summary)
     _write("slope_results.md", slope_results)
     _write("response_diagnostics.md", response_diagnostics)
+    _write("regression_details.md", _regression_details_table(summary))
     _write("sensitivity.md", _sensitivity_table(sensitivity))
     _write("boundary_by_direction.md", _boundary_direction_table(boundary_incidence))
     _write(
@@ -888,30 +951,8 @@ def main() -> None:
         ),
     )
 
-    placebo = results[
-        results["primary_model"]
-        & results["scenario_id"].isin(balanced_ids)
-        & ~results["displayed_rate_change"]
-        & results["valid_income_response"]
-    ]
-    placebo_table = (
-        placebo.groupby("model_display", as_index=False)
-        .agg(
-            scenarios=("scenario_id", "nunique"),
-            unchanged_share=("taxable_income_unchanged", "mean"),
-        )
-        .rename(
-            columns={
-                "model_display": "Model",
-                "scenarios": "Same-rate scenarios",
-                "unchanged_share": "Taxable income unchanged",
-            }
-        )
-    )
-    placebo_table["Taxable income unchanged"] = placebo_table[
-        "Taxable income unchanged"
-    ].map(_fmt_pct)
-    _write("same_rate_check.md", placebo_table.to_markdown(index=False))
+    same_rate = same_rate_summary(results, balanced_ids)
+    _write("same_rate_check.md", _same_rate_table(same_rate))
 
     (partial_spec,) = [spec for spec in MODEL_SPECS if not spec.primary]
     partial = (
@@ -1079,18 +1120,24 @@ def main() -> None:
     _write(
         "key_findings.md",
         (
-            "The four models do not produce a common response distribution. Claude "
-            "Haiku 4.5 has "
-            "a median scenario-level implied response ratio of "
-            f"**{claude['median_implied_eti']:.2f}**, and DeepSeek V3 has a median "
-            f"of **{deepseek['median_implied_eti']:.2f}**. Gemma 4 and GPT-4o mini "
-            "both have medians of approximately zero because most responses leave "
+            "The four models do not produce a common response distribution. "
+            "Scenario-level implied response ratios have means of "
+            f"**{claude['mean_implied_eti']:.2f}** for Claude Haiku 4.5, "
+            f"**{deepseek['mean_implied_eti']:.2f}** for DeepSeek V3, "
+            f"**{gemma['mean_implied_eti']:.2f}** for Gemma 4, and "
+            f"**{mini['mean_implied_eti']:.2f}** for GPT-4o mini; the corresponding "
+            "medians are "
+            f"**{claude['median_implied_eti']:.2f}**, "
+            f"**{deepseek['median_implied_eti']:.2f}**, "
+            f"**{gemma['median_implied_eti']:.2f}**, and "
+            f"**{mini['median_implied_eti']:.2f}**. Gemma 4 and GPT-4o mini have "
+            "medians of approximately zero because most responses leave "
             f"taxable income unchanged ({gemma['unchanged_share']:.1%} and "
             f"{mini['unchanged_share']:.1%}). Their occasional large adjustments "
-            "nevertheless produce positive least-squares slopes. This mean–median "
-            "divergence reflects a large mass at the supplied baseline and sensitivity "
-            "to tail responses; it is not evidence that any model recovers a human "
-            "behavioral elasticity."
+            "produce positive means and least-squares slopes. This scenario-ratio "
+            "mean–median divergence reflects a large mass at the supplied baseline "
+            "and sensitivity to tail responses; it is not evidence that any model "
+            "recovers a human behavioral elasticity."
         ),
     )
     sensitivity_index = sensitivity.set_index(["model_key", "specification"])
@@ -1222,6 +1269,7 @@ def main() -> None:
         "direction_symmetry": direction_symmetry.to_dict(orient="records"),
         "boundary_incidence": boundary_incidence.to_dict(orient="records"),
         "selection_balance": selection_balance.to_dict(orient="records"),
+        "same_rate": same_rate.to_dict(orient="records"),
     }
     (GENERATED_DIR / "analysis_summary.json").write_text(
         json.dumps(_canonicalize_json(manifest), indent=2, sort_keys=True) + "\n",

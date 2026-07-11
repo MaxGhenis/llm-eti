@@ -47,6 +47,11 @@ def test_manuscript_describes_the_implemented_estimator():
     assert "600 year–tax-unit clusters" in primary_panel
     assert "HC3" not in methods
     assert "not preregistered" in methods
+    assert "use_correction=True" in methods
+    assert "use_t=False" in methods
+    assert "standard-normal critical" in methods
+    assert "working-model regression uncertainty" in methods
+    assert "archived scenarios and outputs" in methods
 
 
 def test_exact_prompt_is_in_manuscript_appendix():
