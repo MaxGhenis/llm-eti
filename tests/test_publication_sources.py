@@ -17,6 +17,20 @@ def test_package_version_matches_citation():
     assert "version: 0.2.0" in citation
 
 
+def test_license_scope_and_response_redistribution_review_are_explicit():
+    citation = (ROOT / "CITATION.cff").read_text()
+    readme = (ROOT / "README.md").read_text()
+    notice = (ROOT / "NOTICE.md").read_text()
+    checklist = (ROOT / "PUBLICATION_CHECKLIST.md").read_text()
+    assert "field covers original" in citation
+    assert "see NOTICE.md for archived model-output terms" in citation
+    assert "Its `license` field" in readme
+    assert "EDSL's universal-cache path" in notice
+    assert "does not yet record such a completed audit" in notice
+    assert "provider-by-provider terms audit" in checklist
+    assert "Author:" in checklist
+
+
 def test_only_canonical_manuscript_and_pipeline_remain():
     assert (ROOT / "paper" / "index.qmd").exists()
     assert (ROOT / "_quarto.yml").exists()

@@ -81,6 +81,8 @@ See [`data/README.md`](data/README.md),
 
 ## Citation and license
 
-Citation metadata are in [`CITATION.cff`](CITATION.cff). Original code and text
-are released under the [Unlicense](LICENSE); third-party terms may continue to
-apply to model outputs and source-derived data.
+Citation metadata are in [`CITATION.cff`](CITATION.cff). Its `license` field
+and the [Unlicense](LICENSE) cover original code and text contributed to this
+repository. See [`NOTICE.md`](NOTICE.md) for the archived response corpus's
+provenance, current redistribution status, and third-party terms that require
+separate review.

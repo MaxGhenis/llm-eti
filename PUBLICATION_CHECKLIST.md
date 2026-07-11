@@ -21,9 +21,11 @@
   interest statements.
 - [ ] Decide whether the project is PolicyEngine-branded and whether the site
   should live under a PolicyEngine domain or the repository's GitHub Pages URL.
-- [ ] Confirm that the intended public release of the archived Expected Parrot
-  outputs and PolicyEngine-derived scenario sample is consistent with all
-  applicable third-party terms.
+- [ ] Author: complete and record a provider-by-provider terms audit for
+  redistributing the archived model outputs.
+- [ ] Author: confirm that the intended public release of the
+  PolicyEngine-derived scenario sample is consistent with applicable
+  third-party terms.
 - [ ] Select a journal or preprint venue and apply any venue-specific style,
   length, data-availability, and AI-disclosure requirements.
 - [ ] Author: tag version `0.2.0`, mint an archival DOI for that release, and

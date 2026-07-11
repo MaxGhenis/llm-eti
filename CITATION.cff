@@ -6,6 +6,9 @@ version: 0.2.0
 date-released: 2026-07-09
 repository-code: "https://github.com/MaxGhenis/llm-eti"
 url: "https://maxghenis.github.io/llm-eti/"
+# CFF 1.2.0 has no top-level per-file license scope. This field covers original
+# repository code and text; see NOTICE.md for archived model-output terms and
+# other third-party boundaries.
 license: Unlicense
 authors:
   - family-names: DeBacker
