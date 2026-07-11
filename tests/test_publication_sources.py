@@ -28,6 +28,15 @@ def test_only_canonical_manuscript_and_pipeline_remain():
     assert not (ROOT / "policy_engine_simulation").exists()
 
 
+def test_web_paper_has_a_skip_link_to_its_main_landmark():
+    title_block = (ROOT / "paper" / "title-block.html").read_text()
+    manuscript = (ROOT / "paper" / "index.qmd").read_text()
+    paper_css = (ROOT / "assets" / "paper.css").read_text()
+    assert 'class="skip-link" href="#paper-content"' in title_block
+    assert '{#paper-content role="main"}' in manuscript
+    assert ".skip-link:focus" in paper_css
+
+
 def test_manuscript_uses_model_output_framing():
     manuscript = "\n".join(
         path.read_text()

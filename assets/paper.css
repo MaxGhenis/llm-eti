@@ -261,6 +261,25 @@ a:hover {
   color: var(--teal);
 }
 
+.skip-link {
+  position: fixed;
+  z-index: 1000;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.65rem 0.9rem;
+  transform: translateY(calc(-100% - 1rem));
+  border: 2px solid var(--teal-dark);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  font-weight: 750;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
 .interpretation-note {
   margin: 2rem 0 3rem;
   padding: 1.1rem 1.25rem;
@@ -450,6 +469,7 @@ figcaption,
 }
 
 @media print {
+  .skip-link,
   .paper-utility,
   nav#TOC {
     display: none !important;

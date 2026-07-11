@@ -94,6 +94,30 @@ jobs:
       - name: Build and verify publication
         run: make publication
 
+      - name: Validate PDF/UA-2 conformance
+        env:
+          VERAPDF_IMAGE: >-
+            verapdf/cli:v1.30.2@sha256:d5ee329657cf9bc4b2400392dd54c7d0a0ce9980ff6fa2da5590eebeec007cdb
+        run: |
+          report="${RUNNER_TEMP}/verapdf-report.xml"
+          log="${RUNNER_TEMP}/verapdf.log"
+          docker pull "${VERAPDF_IMAGE}"
+          set +e
+          docker run --rm --network none \
+            --volume "${PWD}:/data:ro" \
+            "${VERAPDF_IMAGE}" \
+            --format xml --flavour ua2 _site/paper/llm-eti.pdf \
+            > "${report}" 2> "${log}"
+          status=$?
+          set -e
+          cat "${log}" >&2
+          if [ "${status}" -ne 0 ] && [ "${status}" -ne 1 ]; then
+            echo "veraPDF could not complete (exit status ${status})." >&2
+            exit "${status}"
+          fi
+          uv run --frozen python scripts/check_verapdf.py \
+            "${report}" .github/verapdf-baseline.json
+
       - name: Upload verified publication
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

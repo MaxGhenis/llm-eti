@@ -301,9 +301,17 @@ def main() -> None:
                 f"found {parser.main_landmarks}"
             )
 
-    for html_path in [SITE / "index.html", SITE / "reproduce.html"]:
+    skip_targets = {
+        SITE / "index.html": "#main-content",
+        SITE / "reproduce.html": "#main-content",
+        SITE / "paper" / "index.html": "#paper-content",
+    }
+    for html_path, target in skip_targets.items():
         parser = parsed_pages[html_path]
-        if parser.skip_targets != ["#main-content"] or "main-content" not in parser.ids:
+        if (
+            parser.skip_targets != [target]
+            or target.removeprefix("#") not in parser.ids
+        ):
             raise SystemExit(
                 f"Missing skip-to-main target in {html_path.relative_to(SITE)}"
             )
