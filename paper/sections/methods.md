@@ -57,6 +57,20 @@ were not retained.
 
 {{< include generated/recovery_diagnostics.md >}}
 
+The exact historical flexible parser is archived in
+`protocols/legacy_income_parser.md` with its source commit and SHA-256 digest.
+For a stricter compliance audit, we require the entire raw response to decode
+as one JSON object with exactly the `broad_income` and `taxable_income` keys and
+JSON-number or `null` values. The non-strict recovery column counts final rows
+that did not satisfy that exact contract but whose numeric values were retained
+by the historical parser. Because failed attempts were not archived, these are
+properties of the retained parseable responses, not model or parser success
+rates.
+
+{{< include generated/parse_compliance.md >}}
+
+: Exact JSON-contract compliance and flexible-parser recovery among archived parseable responses for the four primary models. {#tbl-parse-compliance}
+
 Archive coverage is highly structured by year, especially for DeepSeek. The
 table reports scenarios with at least one parseable archived response, followed
 by the more restrictive common panels.

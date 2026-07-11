@@ -27,6 +27,7 @@ def test_artifact_generator_is_complete_and_has_no_fallbacks():
         "key_findings.md",
         "main_narrative.md",
         "model_provenance.md",
+        "parse_compliance.md",
         "partial_run_note.md",
         "patterns_figure.md",
         "primary_panel.md",
@@ -99,6 +100,10 @@ def test_artifact_generator_is_complete_and_has_no_fallbacks():
     regression_details = (generated / "regression_details.md").read_text()
     for field in ["Clusters", "Intercept SE", "R²", "600"]:
         assert field in regression_details
+
+    parse_compliance = (generated / "parse_compliance.md").read_text()
+    for exact_count in ["0/2,000", "1,676/1,678", "12/1,974", "1,792/1,997"]:
+        assert exact_count in parse_compliance
 
     summary = json.loads((generated / "analysis_summary.json").read_text())
     assert summary["primary_analysis_scenario_count"] == 603

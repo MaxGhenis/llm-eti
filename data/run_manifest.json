@@ -15,6 +15,16 @@
     "claude-haiku-4-5-20251001": "Added a non-null, whole-dollar formatting suffix",
     "deepseek-ai/DeepSeek-V3": "Added a non-null, whole-dollar formatting suffix"
   },
+  "prompt_template_sha256": {
+    "common": "52754080153c4982d9a43349560a853a9fac791d8d84abcc3adb6ba3ffe4973d",
+    "claude-haiku-4-5-20251001": "3d9029a7e0f0d559f5bf87eef621541588792c5a4649fe95de109277670d4011",
+    "deepseek-ai/DeepSeek-V3": "3d9029a7e0f0d559f5bf87eef621541588792c5a4649fe95de109277670d4011"
+  },
+  "historical_parser": {
+    "source": "b23f2cb882d33f79d706afbdcca836b3905361f8:llm_eti/edsl_client.py#L298-L409",
+    "archive": "protocols/legacy_income_parser.md",
+    "excerpt_sha256": "7c274bd9d6796aef6c60473f8800a1a8ed9ebc1345db7c58e3742611ee02f399"
+  },
   "unknown_fields": [
     "provider decoding parameters",
     "provider response identifiers",

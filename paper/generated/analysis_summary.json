@@ -355,6 +355,48 @@
       "zero_taxable_income_share": 0.0
     }
   ],
+  "parse_compliance": [
+    {
+      "archived_parseable_responses": 2000,
+      "archived_records": 2000,
+      "model": "Claude Haiku 4.5",
+      "model_key": "claude_haiku_4_5",
+      "recovered_non_strict_responses": 2000,
+      "recovered_non_strict_share": 1.0,
+      "strict_json_responses": 0,
+      "strict_json_share": 0.0
+    },
+    {
+      "archived_parseable_responses": 1678,
+      "archived_records": 1678,
+      "model": "DeepSeek V3",
+      "model_key": "deepseek_v3",
+      "recovered_non_strict_responses": 2,
+      "recovered_non_strict_share": 0.00119189511323,
+      "strict_json_responses": 1676,
+      "strict_json_share": 0.998808104887
+    },
+    {
+      "archived_parseable_responses": 1974,
+      "archived_records": 1974,
+      "model": "Gemma 4 26B",
+      "model_key": "gemma_4_26b",
+      "recovered_non_strict_responses": 1962,
+      "recovered_non_strict_share": 0.993920972644,
+      "strict_json_responses": 12,
+      "strict_json_share": 0.00607902735562
+    },
+    {
+      "archived_parseable_responses": 1997,
+      "archived_records": 1997,
+      "model": "GPT-4o mini",
+      "model_key": "gpt_4o_mini",
+      "recovered_non_strict_responses": 205,
+      "recovered_non_strict_share": 0.102653980971,
+      "strict_json_responses": 1792,
+      "strict_json_share": 0.897346019029
+    }
+  ],
   "primary_analysis_scenario_count": 603,
   "primary_cluster_count": 600,
   "same_rate": [

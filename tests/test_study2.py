@@ -16,6 +16,7 @@ from llm_eti.study2 import (
     completion_summary,
     direction_symmetry_test,
     model_summary,
+    parse_compliance_summary,
     primary_analysis_scenario_ids,
     primary_balanced_scenario_ids,
     prompt_income,
@@ -77,6 +78,27 @@ def test_completion_counts(study_data):
         "gpt_4o_mini": 999,
         "gpt_4o": 245,
     }
+
+
+def test_strict_json_compliance_uses_immutable_source_rows():
+    summary = parse_compliance_summary(ROOT / "data" / "responses").set_index(
+        "model_key"
+    )
+    expected = {
+        "claude_haiku_4_5": (0, 2_000, 2_000),
+        "deepseek_v3": (1_676, 1_678, 2),
+        "gemma_4_26b": (12, 1_974, 1_962),
+        "gpt_4o_mini": (1_792, 1_997, 205),
+    }
+    for model_key, counts in expected.items():
+        row = summary.loc[model_key]
+        observed = (
+            int(row["strict_json_responses"]),
+            int(row["archived_parseable_responses"]),
+            int(row["recovered_non_strict_responses"]),
+        )
+        assert observed == counts
+        assert row["archived_records"] == row["archived_parseable_responses"]
 
 
 @pytest.mark.parametrize(

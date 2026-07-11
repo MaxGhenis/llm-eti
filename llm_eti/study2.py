@@ -9,6 +9,7 @@ percentages, while the legacy ``implied_eti_*`` columns used unrounded inputs.
 
 from __future__ import annotations
 
+import json
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
@@ -685,6 +686,73 @@ def same_rate_summary(
                 "scenario_pairs": int(len(pairs)),
                 "both_unchanged_pairs": int(pairs["both_unchanged"].sum()),
                 "both_unchanged_pair_share": float(pairs["both_unchanged"].mean()),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def _strict_income_json_contract(raw_response: object) -> bool:
+    """Return whether a raw response is exactly the requested JSON object."""
+
+    if not isinstance(raw_response, str):
+        return False
+    try:
+        payload = json.loads(raw_response)
+    except (json.JSONDecodeError, TypeError):
+        return False
+    if not isinstance(payload, dict) or set(payload) != {
+        "broad_income",
+        "taxable_income",
+    }:
+        return False
+    for value in payload.values():
+        if value is None:
+            continue
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, int | float)
+            or not np.isfinite(value)
+        ):
+            return False
+    return True
+
+
+def parse_compliance_summary(data_dir: Path) -> pd.DataFrame:
+    """Compare exact-JSON compliance with the archived flexible-parser output."""
+
+    rows = []
+    for spec in MODEL_SPECS:
+        if not spec.primary:
+            continue
+        source = data_dir / spec.filename
+        archived = pd.read_csv(source, float_precision="high")
+        _require_columns(
+            archived,
+            ["income_response_raw", "broad_income_this", "taxable_income_this"],
+            source,
+        )
+        recovered = (
+            archived["broad_income_this"].notna()
+            & np.isfinite(archived["broad_income_this"])
+            & archived["taxable_income_this"].notna()
+            & np.isfinite(archived["taxable_income_this"])
+        )
+        strict = archived["income_response_raw"].map(_strict_income_json_contract)
+        strict_recovered = strict & recovered
+        non_strict_recovered = ~strict & recovered
+        recovered_count = int(recovered.sum())
+        rows.append(
+            {
+                "model_key": spec.key,
+                "model": spec.display_name,
+                "archived_records": int(len(archived)),
+                "archived_parseable_responses": recovered_count,
+                "strict_json_responses": int(strict_recovered.sum()),
+                "strict_json_share": float(strict_recovered.sum() / recovered_count),
+                "recovered_non_strict_responses": int(non_strict_recovered.sum()),
+                "recovered_non_strict_share": float(
+                    non_strict_recovered.sum() / recovered_count
+                ),
             }
         )
     return pd.DataFrame(rows)

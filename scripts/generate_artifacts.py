@@ -29,6 +29,7 @@ from llm_eti.study2 import (
     direction_symmetry_test,
     load_study2_data,
     model_summary,
+    parse_compliance_summary,
     primary_analysis_scenario_ids,
     primary_balanced_scenario_ids,
     same_rate_summary,
@@ -133,6 +134,42 @@ def _completion_table(completion: pd.DataFrame) -> str:
                 "Unique parseable responses",
                 "Complete response pairs",
                 "Unique-response coverage",
+            ]
+        ].to_markdown(index=False)
+    )
+
+
+def _parse_compliance_table(compliance: pd.DataFrame) -> str:
+    """Format exact-contract and flexible-parser recovery counts."""
+
+    table = compliance.copy()
+    table["Exact JSON contract, n/N (%)"] = table.apply(
+        lambda row: _fmt_count_share(
+            int(row["strict_json_responses"]),
+            int(row["archived_parseable_responses"]),
+        ),
+        axis=1,
+    )
+    table["Non-strict responses recovered, n/N (%)"] = table.apply(
+        lambda row: _fmt_count_share(
+            int(row["recovered_non_strict_responses"]),
+            int(row["archived_parseable_responses"]),
+        ),
+        axis=1,
+    )
+    table = table.rename(
+        columns={
+            "model": "Model",
+            "archived_parseable_responses": "Archived parseable responses",
+        }
+    )
+    return str(
+        table[
+            [
+                "Model",
+                "Archived parseable responses",
+                "Exact JSON contract, n/N (%)",
+                "Non-strict responses recovered, n/N (%)",
             ]
         ].to_markdown(index=False)
     )
@@ -824,6 +861,7 @@ def main() -> None:
         if bool(scenario_index.loc[scenario_id, "displayed_rate_change"])
     }
     completion = completion_summary(scenarios, results)
+    parse_compliance = parse_compliance_summary(DATA_DIR)
     summary = model_summary(results, scenario_ids=analysis_ids)
     sensitivity = sensitivity_summary(results, analysis_ids, identified_ids)
     boundary_incidence = boundary_incidence_summary(results, identified_ids)
@@ -862,6 +900,7 @@ def main() -> None:
     )
 
     _write("completion.md", _completion_table(completion))
+    _write("parse_compliance.md", _parse_compliance_table(parse_compliance))
     _write("model_provenance.md", _provenance_table(results))
     _write(
         "year_coverage.md",
@@ -1264,6 +1303,7 @@ def main() -> None:
         "primary_cluster_count": int(summary["n_clusters"].min()),
         "source_sha256": _source_hashes(),
         "completion": completion.to_dict(orient="records"),
+        "parse_compliance": parse_compliance.to_dict(orient="records"),
         "main_results": summary.to_dict(orient="records"),
         "sensitivity": sensitivity.to_dict(orient="records"),
         "direction_symmetry": direction_symmetry.to_dict(orient="records"),

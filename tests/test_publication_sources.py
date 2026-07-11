@@ -1,3 +1,6 @@
+import hashlib
+import json
+import re
 from pathlib import Path
 
 import llm_eti
@@ -64,6 +67,42 @@ def test_exact_prompt_is_in_manuscript_appendix():
     for text in [marker, response_contract]:
         assert text in protocol
         assert text in appendix
+
+    expected_hashes = [
+        "52754080153c4982d9a43349560a853a9fac791d8d84abcc3adb6ba3ffe4973d",
+        "3d9029a7e0f0d559f5bf87eef621541588792c5a4649fe95de109277670d4011",
+    ]
+    suffix = (
+        "Do not use null. Return your best numeric estimates even if approximate. "
+        "Use whole-dollar amounts."
+    )
+    protocol_blocks = re.findall(r"```text\n(.*?)\n```", protocol, re.DOTALL)
+    appendix_blocks = re.findall(r"```text\n(.*?)\n```", appendix, re.DOTALL)
+    assert protocol_blocks == appendix_blocks
+    assert len(protocol_blocks) == 2
+    assert protocol_blocks[1] == protocol_blocks[0] + "\n\n" + suffix
+    assert [
+        hashlib.sha256(block.encode()).hexdigest() for block in protocol_blocks
+    ] == expected_hashes
+    for digest in expected_hashes:
+        assert digest in protocol
+        assert digest in appendix
+
+
+def test_historical_parser_archive_is_verbatim_and_provenanced():
+    archive = (ROOT / "protocols" / "legacy_income_parser.md").read_text()
+    (parser_block,) = re.findall(r"````python\n(.*?)````", archive, re.DOTALL)
+    assert len(parser_block.encode()) == 4_545
+    assert hashlib.sha256(parser_block.encode()).hexdigest() == (
+        "7c274bd9d6796aef6c60473f8800a1a8ed9ebc1345db7c58e3742611ee02f399"
+    )
+    assert "b23f2cb882d33f79d706afbdcca836b3905361f8" in archive
+    assert "llm_eti/edsl_client.py" in archive
+
+    manifest = json.loads((ROOT / "data" / "run_manifest.json").read_text())
+    assert manifest["historical_parser"]["excerpt_sha256"] == (
+        "7c274bd9d6796aef6c60473f8800a1a8ed9ebc1345db7c58e3742611ee02f399"
+    )
 
 
 def test_publication_is_offline_and_has_no_model_secret_workflow():
