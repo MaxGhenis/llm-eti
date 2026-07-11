@@ -49,8 +49,10 @@ def test_web_paper_has_a_skip_link_to_its_main_landmark():
     manuscript = (ROOT / "paper" / "index.qmd").read_text()
     paper_css = (ROOT / "assets" / "paper.css").read_text()
     assert 'class="skip-link" href="#paper-content"' in title_block
-    assert "{#paper-content}" in manuscript
-    assert '{#paper-content role="main"}' not in manuscript
+    # The custom template partials emit no <main> element, so this div's
+    # role="main" is the page's single main landmark (check_publication
+    # requires exactly one on the rendered page).
+    assert '{#paper-content role="main"}' in manuscript
     assert ".skip-link:focus" in paper_css
 
 
