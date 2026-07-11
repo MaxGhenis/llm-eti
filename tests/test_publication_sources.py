@@ -48,7 +48,8 @@ def test_web_paper_has_a_skip_link_to_its_main_landmark():
     manuscript = (ROOT / "paper" / "index.qmd").read_text()
     paper_css = (ROOT / "assets" / "paper.css").read_text()
     assert 'class="skip-link" href="#paper-content"' in title_block
-    assert '{#paper-content role="main"}' in manuscript
+    assert "{#paper-content}" in manuscript
+    assert '{#paper-content role="main"}' not in manuscript
     assert ".skip-link:focus" in paper_css
 
 

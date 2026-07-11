@@ -46,7 +46,7 @@ keywords:
 </nav>
 :::
 
-::: {#paper-content role="main"}
+::: {#paper-content}
 
 # Abstract {.unnumbered}
 
