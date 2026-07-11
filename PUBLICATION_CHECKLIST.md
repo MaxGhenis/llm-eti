@@ -28,8 +28,6 @@
   third-party terms.
 - [ ] Select a journal or preprint venue and apply any venue-specific style,
   length, data-availability, and AI-disclosure requirements.
-- [ ] Author: tag version `0.2.0`, mint an archival DOI for that release, and
-  add the DOI to `CITATION.cff`.
 
 ## Merge-time operations
 
@@ -37,5 +35,7 @@
   the legacy `gh-pages` branch, immediately before merging.
 - [ ] Merge the publication-readiness pull request after author review.
 - [ ] Verify the deployed `/`, `/paper/`, PDF, and TeX URLs.
+- [ ] Author: after merge and deployment verification, create the `v0.2.0` tag,
+  mint an archival DOI for that release, and add the DOI to `CITATION.cff`.
 - [ ] Attach or archive the verified publication bundle with the versioned
   release.

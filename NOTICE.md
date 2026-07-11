@@ -6,12 +6,13 @@ repository. It does not state terms for third-party material.
 ## Archived response corpus
 
 The five CSVs under `data/responses/` are currently distributed in this
-repository as the frozen research inputs analyzed by the paper. They were
-exported through EDSL's universal-cache path. The retained technical provenance
-chain is recorded in `data/run_manifest.json`: collection dates, EDSL version,
-source commit and pull request, cache settings and unknown cache fields, prompt
-hashes, parser provenance, record counts, and file checksums. In particular,
-the manifest records that per-response cache-hit status was not retained.
+repository as the frozen research inputs analyzed by the paper. The archived
+runs used EDSL 1.0.7 with its universal cache enabled for first attempts and
+disabled for parser retries. The retained technical provenance chain is
+recorded in `data/run_manifest.json`: collection dates, source commit and pull
+request, cache settings and unknown cache fields, prompt hashes, parser
+provenance, record counts, and file checksums. In particular, the manifest
+records that per-response cache-hit status was not retained.
 
 Model-provider and Expected Parrot terms require provider-by-provider review
 before deciding how to redistribute archived model outputs. This repository

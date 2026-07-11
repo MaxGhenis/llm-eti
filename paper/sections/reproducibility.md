@@ -30,10 +30,11 @@ this same Quarto source.
 
 ## Accessibility conformance
 
-The web paper provides a skip link to its single main landmark. The PDF build
-requests PDF/UA-2 tagging from Quarto and LuaLaTeX, and the release workflow
-runs veraPDF 1.30.2 with the `ua2` profile. The gate rejects PDF parsing or
-processing errors and any failed rule identifier not listed in the reviewed
-`.github/verapdf-baseline.json`. The committed baseline currently accepts no
-failed rules. Automated validation covers machine-verifiable checks; it does
-not establish complete accessibility conformance or independent certification.
+The web-paper gate requires a single main landmark and a skip link to the start
+of the paper content. The PDF build requests PDF/UA-2 tagging from Quarto and
+LuaLaTeX, and the release workflow runs veraPDF 1.30.2 with the `ua2` profile.
+The gate rejects PDF parsing or processing errors and any failed rule identifier
+not listed in the reviewed `.github/verapdf-baseline.json`. The committed
+baseline currently accepts no failed rules. Automated validation covers
+machine-verifiable checks; it does not establish complete accessibility
+conformance or independent certification.

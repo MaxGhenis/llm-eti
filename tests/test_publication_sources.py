@@ -26,9 +26,10 @@ def test_license_scope_and_response_redistribution_review_are_explicit():
     assert "field covers original" in citation
     assert "see NOTICE.md for archived model-output terms" in citation
     assert "Its `license` field" in readme
-    assert "EDSL's universal-cache path" in notice
+    assert "universal cache enabled for first attempts" in notice
     assert "does not yet record such a completed audit" in notice
     assert "provider-by-provider terms audit" in checklist
+    assert "create the `v0.2.0` tag" in checklist
     assert "Author:" in checklist
 
 
