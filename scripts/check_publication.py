@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import shutil
@@ -14,12 +15,117 @@ from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
-from render_publication import PAPER_URL, REQUIRED_QUARTO_VERSION, SITEMAP_NAMESPACE
+if __package__:
+    from . import render_publication as _package_render_publication
+
+    _render_publication = _package_render_publication
+else:
+    import render_publication as _script_render_publication
+
+    _render_publication = _script_render_publication
+
+MANIFEST_OUTPUT_PATHS = _render_publication.MANIFEST_OUTPUT_PATHS
+PAPER_URL = _render_publication.PAPER_URL
+REQUIRED_QUARTO_VERSION = _render_publication.REQUIRED_QUARTO_VERSION
+SITEMAP_NAMESPACE = _render_publication.SITEMAP_NAMESPACE
 
 ROOT = Path(__file__).resolve().parents[1]
 PAPER = ROOT / "paper"
 SITE = ROOT / "_site"
 SOCIAL_IMAGE_URL = "https://maxghenis.github.io/llm-eti/assets/social-card.png"
+ATTESTATION_FIELDS = (
+    "git_commit_sha",
+    "uv_lock_sha256",
+    "pyproject_toml_sha256",
+    "python_version",
+    "operating_system",
+)
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _is_sha256(value: object) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and value == value.lower()
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
+def _verify_publication_manifest(manifest_path: Path, site_dir: Path = SITE) -> None:
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as error:
+        raise SystemExit(f"Could not read publication manifest: {error}") from error
+    if not isinstance(manifest, dict):
+        raise SystemExit("Publication manifest must be a JSON object")
+
+    missing_attestations = [
+        field
+        for field in ATTESTATION_FIELDS
+        if not isinstance(manifest.get(field), str) or not manifest[field].strip()
+    ]
+    if missing_attestations:
+        raise SystemExit(
+            f"Publication manifest lacks attestations: {missing_attestations}"
+        )
+    if manifest.get("quarto_version") != REQUIRED_QUARTO_VERSION:
+        raise SystemExit(
+            f"Publication manifest must record Quarto {REQUIRED_QUARTO_VERSION}; "
+            f"found {manifest.get('quarto_version')!r}"
+        )
+
+    git_commit_sha = manifest["git_commit_sha"]
+    if len(git_commit_sha) not in {40, 64} or any(
+        character not in "0123456789abcdef" for character in git_commit_sha.lower()
+    ):
+        raise SystemExit("Publication manifest has an invalid git commit SHA")
+    source_hashes = {
+        "uv_lock_sha256": _sha256(ROOT / "uv.lock"),
+        "pyproject_toml_sha256": _sha256(ROOT / "pyproject.toml"),
+    }
+    for field, observed_hash in source_hashes.items():
+        if manifest.get(field) != observed_hash:
+            raise SystemExit(
+                f"Publication manifest {field} does not match the build source"
+            )
+
+    outputs = manifest.get("outputs")
+    if not isinstance(outputs, dict):
+        raise SystemExit("Publication manifest outputs must be a JSON object")
+    expected_paths = set(MANIFEST_OUTPUT_PATHS)
+    observed_paths = set(outputs)
+    if observed_paths != expected_paths:
+        raise SystemExit(
+            "Publication manifest output paths differ from the required set: "
+            f"missing={sorted(expected_paths - observed_paths)}, "
+            f"unexpected={sorted(observed_paths - expected_paths)}"
+        )
+
+    site_root = site_dir.resolve()
+    for relative_path, expected_hash in outputs.items():
+        if not _is_sha256(expected_hash):
+            raise SystemExit(
+                f"Publication manifest has an invalid SHA-256 for {relative_path}"
+            )
+        output_path = (site_root / relative_path).resolve()
+        try:
+            output_path.relative_to(site_root)
+        except ValueError as error:
+            raise SystemExit(
+                f"Publication manifest output escapes _site: {relative_path}"
+            ) from error
+        if not output_path.is_file():
+            raise SystemExit(f"Publication manifest output is missing: {relative_path}")
+        actual_hash = _sha256(output_path)
+        if actual_hash != expected_hash:
+            raise SystemExit(
+                f"Publication output hash mismatch for {relative_path}: "
+                f"expected {expected_hash}, found {actual_hash}"
+            )
 
 
 class _LocalReferenceParser(HTMLParser):
@@ -264,14 +370,7 @@ def main() -> None:
                     f"expected {expected_value:.6f}"
                 )
 
-    publication_manifest = json.loads(
-        (SITE / "downloads" / "publication_manifest.json").read_text()
-    )
-    if publication_manifest.get("quarto_version") != REQUIRED_QUARTO_VERSION:
-        raise SystemExit(
-            f"Publication manifest must record Quarto {REQUIRED_QUARTO_VERSION}; "
-            f"found {publication_manifest.get('quarto_version')!r}"
-        )
+    _verify_publication_manifest(SITE / "downloads" / "publication_manifest.json")
 
     paper_html = (SITE / "paper" / "index.html").read_text(encoding="utf-8")
     for link in ["llm-eti.pdf", "llm-eti.tex", "llm-eti-source.zip"]:

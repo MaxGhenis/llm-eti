@@ -6,6 +6,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import platform
 import shutil
 import subprocess
 import sys
@@ -21,6 +22,14 @@ DOWNLOADS_DIR = SITE_DIR / "downloads"
 PAPER_URL = "https://maxghenis.github.io/llm-eti/paper/"
 SITEMAP_NAMESPACE = "http://www.sitemaps.org/schemas/sitemap/0.9"
 REQUIRED_QUARTO_VERSION = "1.9.38"
+MANIFEST_OUTPUT_PATHS = (
+    "paper/index.html",
+    "paper/llm-eti.pdf",
+    "paper/llm-eti.tex",
+    "paper/llm-eti-source.zip",
+    "downloads/analysis_summary.json",
+    "downloads/run_manifest.json",
+)
 
 
 def _sha256(path: Path) -> str:
@@ -30,6 +39,25 @@ def _sha256(path: Path) -> str:
 def _run(command: list[str], *, cwd: Path) -> None:
     print(f"+ {' '.join(command)}")
     subprocess.run(command, cwd=cwd, check=True, env=os.environ.copy())
+
+
+def _build_manifest(quarto_version: str, outputs: dict[str, str]) -> dict[str, object]:
+    git_commit_sha = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    return {
+        "git_commit_sha": git_commit_sha,
+        "operating_system": platform.platform(),
+        "outputs": outputs,
+        "pyproject_toml_sha256": _sha256(ROOT / "pyproject.toml"),
+        "python_version": platform.python_version(),
+        "quarto_version": quarto_version,
+        "uv_lock_sha256": _sha256(ROOT / "uv.lock"),
+    }
 
 
 def _find_quarto() -> str:
@@ -165,19 +193,19 @@ def main() -> None:
     )
     (SITE_DIR / ".nojekyll").touch()
 
-    build_manifest = {
-        "quarto_version": quarto_version,
-        "outputs": {
-            "paper/index.html": _sha256(PUBLIC_PAPER_DIR / "index.html"),
-            "paper/llm-eti.pdf": _sha256(pdf),
-            "paper/llm-eti.tex": _sha256(tex),
-            "paper/llm-eti-source.zip": _sha256(source_bundle),
-            "downloads/analysis_summary.json": _sha256(
-                DOWNLOADS_DIR / "analysis_summary.json"
-            ),
-            "downloads/run_manifest.json": _sha256(DOWNLOADS_DIR / "run_manifest.json"),
-        },
+    outputs = {
+        "paper/index.html": _sha256(PUBLIC_PAPER_DIR / "index.html"),
+        "paper/llm-eti.pdf": _sha256(pdf),
+        "paper/llm-eti.tex": _sha256(tex),
+        "paper/llm-eti-source.zip": _sha256(source_bundle),
+        "downloads/analysis_summary.json": _sha256(
+            DOWNLOADS_DIR / "analysis_summary.json"
+        ),
+        "downloads/run_manifest.json": _sha256(DOWNLOADS_DIR / "run_manifest.json"),
     }
+    if tuple(outputs) != MANIFEST_OUTPUT_PATHS:
+        raise AssertionError("Publication manifest output paths are out of sync")
+    build_manifest = _build_manifest(quarto_version, outputs)
     (DOWNLOADS_DIR / "publication_manifest.json").write_text(
         json.dumps(build_manifest, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",

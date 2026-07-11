@@ -168,3 +168,15 @@ def test_publication_is_offline_and_has_no_model_secret_workflow():
     )
     assert "EXPECTED_PARROT_API_KEY" not in workflows
     assert "placeholder" not in workflows.lower()
+
+
+def test_verification_jobs_pin_runner_and_check_lock_before_sync():
+    workflow = (ROOT / ".github" / "workflows" / "publication.yml").read_text()
+    compatibility_job = workflow.split("  python-compatibility:", 1)[1].split(
+        "\n  build:", 1
+    )[0]
+    build_job = workflow.split("\n  build:", 1)[1].split("\n  deploy:", 1)[0]
+    for job in [compatibility_job, build_job]:
+        assert "runs-on: ubuntu-24.04" in job
+        assert job.count("uv lock --check") == 1
+        assert job.index("uv lock --check") < job.index("uv sync")
