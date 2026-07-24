@@ -17,8 +17,10 @@
 
 - [ ] Confirm the final title, author order, affiliations, and corresponding
   author contact.
-- [ ] Supply journal-specific CRediT, funding, acknowledgements, and competing-
-  interest statements.
+- [x] Funding statement recorded in the manuscript declarations ("no dedicated
+  external funding", per MG 2026-07-11; JDB to confirm at submission).
+- [ ] Supply journal-specific CRediT, acknowledgements, and competing-interest
+  statements.
 - [ ] Decide whether the project is PolicyEngine-branded and whether the site
   should live under a PolicyEngine domain or the repository's GitHub Pages URL.
 - [ ] Author: complete and record a provider-by-provider terms audit for
@@ -31,8 +33,8 @@
 
 ## Merge-time operations
 
-- [ ] Set GitHub Pages source to **GitHub Actions** if the repository still uses
-  the legacy `gh-pages` branch, immediately before merging.
+- [x] GitHub Pages source switched from the legacy `gh-pages` branch to
+  **GitHub Actions** (2026-07-11).
 - [ ] Merge the publication-readiness pull request after author review.
 - [ ] Verify the deployed `/`, `/paper/`, PDF, and TeX URLs.
 - [ ] Author: after merge and deployment verification, create the `v0.2.0` tag,

@@ -13,6 +13,8 @@ scenarios; it does not analyze human responses or identifiable private
 information. Human-subjects review and participant consent were therefore not
 applicable.
 
+**Funding.** This work received no dedicated external funding.
+
 **Use of AI.** Language-model outputs are the object of study. OpenAI Codex also
 assisted with repository refactoring, analysis verification, tests, and
 manuscript drafting. The authors remain responsible for the methods,
