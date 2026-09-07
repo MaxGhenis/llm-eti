@@ -74,7 +74,9 @@ validation. Downloaded CI artifacts match all 97 local source hashes and their
 output checksums. CI built the PR merge commit 0f542a3, whose source tree matches
 the continuation. Its four optional TeX tests skipped because Quarto finds
 TinyTeX outside PATH. The build job now explicitly requires the installed
-LuaLaTeX path and supplies it to those tests; Python 3.12 compatibility can
+LuaLaTeX path and runs those tests after Quarto resolves required PDF packages
+(such as tagpdf and luamml). The actual regression step cannot silently skip
+for a missing executable. Python 3.12 compatibility can
 still skip them when no TeX installation is present. This closes a discovered
 CI coverage gap, without relaxing any output gate.
 

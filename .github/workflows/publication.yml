@@ -137,6 +137,12 @@ jobs:
           version: "1.9.38"
           tinytex: true
 
+      - name: Install locked Python environment
+        run: uv sync --frozen --group dev
+
+      - name: Build and verify publication
+        run: make publication
+
       - name: Require LuaLaTeX for PDF rendering regressions
         run: |
           python - <<'PY'
@@ -154,11 +160,8 @@ jobs:
               environment.write(f"LUALATEX_BIN={engines[0]}\n")
           PY
 
-      - name: Install locked Python environment
-        run: uv sync --frozen --group dev
-
-      - name: Build and verify publication
-        run: make publication
+      - name: Run PDF rendering regressions
+        run: uv run --frozen pytest tests/test_pdf_rendering.py -q
 
       - name: Validate PDF/UA-2 conformance
         env:
