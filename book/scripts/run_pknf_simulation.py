@@ -12,6 +12,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from llm_eti.edsl_client import EDSLClient
+from llm_eti.lab_checkpoint import rate_label
 from llm_eti.simulation_engine import LabExperimentSimulation
 
 ALL_MODELS = [
@@ -19,6 +20,7 @@ ALL_MODELS = [
     "gpt-4o",
     "deepseek-ai/DeepSeek-V3",
     "claude-haiku-4-5-20251001",
+    "google/gemma-4-26B-A4B-it",
 ]
 
 
@@ -45,6 +47,13 @@ def main():
         type=float,
         default=50.0,
         help="High marginal tax rate as a percentage (default: 50)",
+    )
+    parser.add_argument("--seed", type=int, default=0, help="Persisted experiment seed")
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=Path(__file__).parent.parent / "data",
+        help="Results directory; use a new directory for incompatible experiments",
     )
     args = parser.parse_args()
 
@@ -95,31 +104,38 @@ def main():
         print(f"  - Low rate: {args.low_rate}%")
         print(f"  - High rate: {args.high_rate}%")
 
-        # Run experiment
+        # Keep immutable attempts separate from the derived latest-row result CSV.
+        output_dir = args.output_dir
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        # if model string has a slash (e.g. "deepseek-ai/DeepSeek-V3"), replace with underscore for filename
+        safe_model_name = model.replace("/", "_")
+        filename = (
+            f"pknf_results_{safe_model_name}_{rate_label(args.low_rate)}pct_{rate_label(args.high_rate)}pct"
+            f"_{rounds}rounds_seed{args.seed}"
+        )
+        if args.test:
+            filename += "_test"
+
+        output_path = output_dir / f"{filename}.csv"
+
+        checkpoint_path = output_dir / "checkpoints" / f"{filename}.csv"
+
+        # Manifest compatibility is checked before any survey request. The
+        # append-only attempts file is never replaced with consolidated results.
         results_df = experiment.run_experiment(
             treatments=treatments,
             rounds=rounds,
             subjects_per_treatment=num_subjects,
             low_rate=args.low_rate,
             high_rate=args.high_rate,
+            checkpoint_path=checkpoint_path,
+            seed=args.seed,
         )
 
-        # Save results
-        output_dir = Path(__file__).parent.parent / "data"
-        output_dir.mkdir(exist_ok=True)
-
-        # if model string has a slash (e.g. "deepseek-ai/DeepSeek-V3"), replace with underscore for filename
-        safe_model_name = model.replace("/", "_")
-        low_rate_int = int(args.low_rate)
-        high_rate_int = int(args.high_rate)
-        filename = (
-            f"pknf_results_{safe_model_name}_{low_rate_int}pct_{high_rate_int}pct"
-        )
-        if args.test:
-            filename += "_test"
-
-        results_df.to_csv(output_dir / f"{filename}.csv", index=False)
-        print(f"Results saved to {output_dir / f'{filename}.csv'}")
+        # Derived snapshot only; failed attempts remain in the separate checkpoint.
+        results_df.to_csv(output_path, index=False)
+        print(f"Results saved to {output_path}")
         print(f"Total responses: {len(results_df)}")
 
     # Analyze cache if requested

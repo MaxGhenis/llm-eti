@@ -12,7 +12,7 @@ dependencies = [
     "openai>=1.0.0",
     "pandas>=2.0.0",
     "numpy>=1.26.0,<2.0",  # EDSL compatibility
-    "matplotlib>=3.8.0",  # Compatible with numpy 1.x
+    "matplotlib>=3.9.0",  # Compatible with numpy 1.x
     "seaborn>=0.12.0",
     "python-dotenv>=1.0.0",
     "click>=8.1.0",
@@ -27,7 +27,7 @@ dependencies = [
     "sphinx-book-theme>=1.0.0",
     "sphinx-design>=0.4.0",
     "streamlit>=1.28.0",
-    "edsl",
+    "edsl==1.0.7",
 ]
 
 [project.optional-dependencies]

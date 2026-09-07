@@ -25,6 +25,7 @@ ALL_MODELS = [
     "gpt-4o",
     "deepseek-ai/DeepSeek-V3",
     "claude-haiku-4-5-20251001",
+    "google/gemma-4-26B-A4B-it",
 ]
 
 
@@ -82,6 +83,11 @@ def main():
         # Run simulation
         simulation = TaxSimulation(client, params)
         results_df = simulation.run_bulk_simulation(CSV_PATH)
+        if results_df.empty:
+            raise RuntimeError(
+                "Simulation produced no result rows; refusing to write empty CSV "
+                f"for model {model}"
+            )
 
         # Save results
         output_dir = Path(__file__).parent.parent / "data"

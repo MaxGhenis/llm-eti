@@ -1,15 +1,22 @@
 """Simulation engine using EDSL for LLM surveys."""
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
-import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
 from .edsl_client import EDSLClient
+from .lab_checkpoint import (
+    RECORD_FIELDS,
+    append_record,
+    build_manifest,
+    checkpoint_lock,
+    prepare_checkpoint,
+    valid_income,
+)
 
 
 @dataclass
@@ -67,56 +74,50 @@ class TaxSimulation:
         """
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        try:
-            # Create scenario for EDSL
-            scenario = {
-                "broad_income": row["broad_income"],
-                "taxable_income": row["taxable_income"],
-                "mtr_last": row["mtr"],
-                "mtr_this": row["mtr_prime"],
-            }
+        # Create scenario for EDSL
+        scenario = {
+            "broad_income": row["broad_income"],
+            "taxable_income": row["taxable_income"],
+            "mtr_last": row["mtr"],
+            "mtr_this": row["mtr_prime"],
+        }
 
-            # Run survey with EDSL
-            results = self.client.run_batch_surveys(
-                [scenario],
-                n=self.params.responses_per_household,
-                survey_type="tax",
+        # Run survey with EDSL
+        results = self.client.run_batch_surveys(
+            [scenario],
+            n=self.params.responses_per_household,
+            survey_type="tax",
+        )
+
+        # Format results to match existing structure
+        formatted_results = []
+        for i, result in enumerate(results):
+            formatted_results.append(
+                {
+                    "timestamp": timestamp,
+                    "tax_unit_id": row.get("tax_unit_id"),
+                    "filing_status": row.get("filing_status"),
+                    "broad_income": row["broad_income"],
+                    "taxable_income": row["taxable_income"],
+                    "mtr": row["mtr"],
+                    "mtr_prime": row["mtr_prime"],
+                    "response_number": i + 1,
+                    "taxable_income_this": result.get("taxable_income_this"),
+                    "broad_income_this": result.get("broad_income_this"),
+                    "implied_eti_taxable": result.get("implied_eti_taxable"),
+                    "implied_eti_broad": result.get("implied_eti_broad"),
+                    "model": result.get("model", self.client.model),
+                    "income_response_raw": result.get("income_response_raw"),
+                }
             )
 
-            # Format results to match existing structure
-            formatted_results = []
-            for i, result in enumerate(results):
-                formatted_results.append(
-                    {
-                        "timestamp": timestamp,
-                        "tax_unit_id": row.get("tax_unit_id"),
-                        "filing_status": row.get("filing_status"),
-                        "broad_income": row["broad_income"],
-                        "taxable_income": row["taxable_income"],
-                        "mtr": row["mtr"],
-                        "mtr_prime": row["mtr_prime"],
-                        "response_number": i + 1,
-                        "taxable_income_this": result.get("taxable_income_this"),
-                        "broad_income_this": result.get("broad_income_this"),
-                        "implied_eti_taxable": result.get("implied_eti_taxable"),
-                        "implied_eti_broad": result.get("implied_eti_broad"),
-                        "model": result.get("model", self.client.model),
-                        "income_response_raw": result.get("income_response_raw"),
-                    }
-                )
-
-            return formatted_results
-
-        except Exception as e:
-            import traceback
-
+        if not formatted_results:
             print(
-                f"\nError in simulation for income {row['broad_income']}, rate {row['mtr_prime']}:"
+                "Warning: skipping household with no valid tax responses "
+                f"for income {row['broad_income']} and rate {row['mtr_prime']}"
             )
-            print(f"Error type: {type(e).__name__}")
-            print(f"Error message: {str(e)}")
-            traceback.print_exc()
-            return []
+
+        return formatted_results
 
     def run_bulk_simulation(self, csv_path: Path) -> pd.DataFrame:
         """Run simulations for all households in the CSV.
@@ -163,6 +164,27 @@ class LabExperimentSimulation:
 
         self.config = Config.PKNF_CONFIG
 
+    def experiment_manifest(
+        self,
+        treatments: List[str],
+        rounds: Optional[int] = None,
+        subjects_per_treatment: int = 100,
+        low_rate: float = 25.0,
+        high_rate: float = 50.0,
+        seed: int = 0,
+    ) -> Dict:
+        """Build the full offline design without issuing a survey request."""
+        return build_manifest(
+            self.client,
+            self.config,
+            treatments,
+            int(self.config["rounds"]) if rounds is None else rounds,
+            subjects_per_treatment,
+            low_rate,
+            high_rate,
+            seed,
+        )
+
     def run_experiment(
         self,
         treatments: List[str],
@@ -170,90 +192,88 @@ class LabExperimentSimulation:
         subjects_per_treatment: int = 100,
         low_rate: float = 25.0,
         high_rate: float = 50.0,
+        checkpoint_path: Optional[Path] = None,
+        seed: int = 0,
     ) -> pd.DataFrame:
-        """Run the full lab experiment simulation.
+        """Run or resume only a manifest-compatible experiment.
 
-        Args:
-            treatments: List of treatment labels to run (e.g., ["Prog,Prog", "Prog,Flat25"])
-            rounds: Number of rounds (default: 16 from config)
-            subjects_per_treatment: Number of subjects per treatment group
-            low_rate: Low marginal tax rate as a percentage (default: 25)
-            high_rate: High marginal tax rate as a percentage (default: 50)
-
-        Returns:
-            DataFrame with experiment results
+        The checkpoint is an append-only attempt ledger. Only successful rows
+        count as completed; zero is a valid income. This method returns the latest
+        row per planned scenario, while preserving failures/retries in the ledger.
+        Legacy manifest-free CSVs are never reused or overwritten automatically.
         """
-        from .pknf_types import Treatment
-
-        if rounds is None:
-            rounds = int(self.config["rounds"])
-
-        instructions = self.client.create_instructions_text(
-            rounds=rounds, wage_per_unit=self.config["wage_per_unit"]
+        manifest = self.experiment_manifest(
+            treatments, rounds, subjects_per_treatment, low_rate, high_rate, seed
         )
-        all_results = []
-
-        for treatment_label in treatments:
-            try:
-                treatment = Treatment.from_label(treatment_label)
-            except ValueError:
-                print(f"Warning: Unknown treatment '{treatment_label}', skipping")
-                continue
-
-            for subject_id in range(subjects_per_treatment):
-                # Random labor endowments for each round
-                labor_endowments = np.random.randint(
-                    int(self.config["labor_endowment_min"]),
-                    int(self.config["labor_endowment_max"]) + 1,
-                    size=rounds,
-                )
-
-                for round_idx in range(rounds):
-                    round_num = round_idx + 1  # 1-based round number
-
-                    # Get tax schedule for this round
-                    schedule = treatment.get_schedule_for_round(round_num, rounds)
-
-                    scenario = {
-                        "round_num": round_num,
-                        "tax_schedule": schedule.value,
-                        "labor_endowment": int(labor_endowments[round_idx]),
-                        "wage_per_unit": self.config["wage_per_unit"],
-                        "rounds": rounds,
-                        "low_rate": low_rate,
-                        "high_rate": high_rate,
+        path = None if checkpoint_path is None else Path(checkpoint_path)
+        with checkpoint_lock(path):
+            records = prepare_checkpoint(path, manifest)
+            latest = {row["scenario_id"]: row for row in records}
+            with tqdm(total=len(manifest["scenarios"]), desc="Lab experiment") as pbar:
+                for scenario in manifest["scenarios"]:
+                    scenario_id = scenario["scenario_id"]
+                    previous = latest.get(scenario_id)
+                    if previous is not None and previous["status"] == "success":
+                        pbar.update(1)
+                        continue
+                    request = {
+                        "round_num": scenario["round"],
+                        **{
+                            key: scenario[key]
+                            for key in (
+                                "tax_schedule",
+                                "labor_endowment",
+                                "wage_per_unit",
+                                "rounds",
+                                "low_rate",
+                                "high_rate",
+                            )
+                        },
                     }
-
-                    # Run survey
-                    results = self.client.run_batch_surveys(
-                        [scenario],
-                        n=1,
-                        survey_type="lab",
-                        agent_instruction=instructions,
-                    )
-
-                    if results:
-                        result = results[0]
-                        income_choice = result.get("income", 0)
-
-                        # Relabel treatment to reflect actual rates used
-                        output_label = treatment.label.replace(
-                            "Flat25", f"Flat{int(low_rate)}"
-                        ).replace("Flat50", f"Flat{int(high_rate)}")
-
-                        all_results.append(
-                            {
-                                "treatment": output_label,
-                                "subject_id": subject_id,
-                                "round": round_num,
-                                "tax_schedule": schedule.value,
-                                "labor_endowment": labor_endowments[round_idx],
-                                "labor_supply": income_choice
-                                / self.config["wage_per_unit"],
-                                "income": income_choice,
-                                "post_reform": round_num > rounds // 2,
-                                "model": result.get("model", self.client.model),
-                            }
+                    try:
+                        results = self.client.run_batch_surveys(
+                            [request],
+                            n=1,
+                            survey_type="lab",
+                            agent_instruction=manifest["spec"]["instructions"],
                         )
+                    except Exception as error:
+                        row = self._checkpoint_row(
+                            manifest, scenario, previous, {"response_raw": repr(error)}
+                        )
+                        append_record(path, row)
+                        raise
+                    result = (
+                        results[0]
+                        if results and len(results) == 1
+                        else {"response_raw": repr(results)}
+                    )
+                    row = self._checkpoint_row(manifest, scenario, previous, result)
+                    append_record(path, row)
+                    latest[scenario_id] = row
+                    pbar.update(1)
+            return pd.DataFrame(list(latest.values()), columns=RECORD_FIELDS)
 
-        return pd.DataFrame(all_results)
+    def _checkpoint_row(self, manifest, scenario, previous, result):
+        income = result.get("income")
+        success = (
+            valid_income(income, scenario)
+            and not result.get("parse_failed", False)
+            and result.get("model", self.client.model) == self.client.model
+        )
+        if not success:
+            income = None
+        return {
+            "experiment_id": manifest["experiment_id"],
+            **scenario,
+            "model": self.client.model,
+            "attempt": 1 if previous is None else previous["attempt"] + 1,
+            "status": "success" if success else "retryable_failure",
+            "income": income,
+            "labor_supply": (
+                None if income is None else income / scenario["wage_per_unit"]
+            ),
+            "response_error": not success,
+            "response_raw": str(result.get("response_raw", result)),
+            "recorded_at": datetime.now(timezone.utc).isoformat(),
+        }
