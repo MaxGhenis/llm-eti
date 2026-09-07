@@ -7,9 +7,9 @@ import re
 import time
 from typing import Any, Dict, List, Optional
 
-logger = logging.getLogger(__name__)
-
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
 
 try:
     from edsl import (

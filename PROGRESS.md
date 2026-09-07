@@ -2,41 +2,58 @@
 
 ## State
 
-2026-09-07: isolated branch `codex/pr44-checkpoint-manifest-20260907` from PR44's
-reviewed commit `cf102a2a221c13b36283a8a6a20fad4b547d4f3c`. Cached `origin/main`
-`899daa612cecaee08dbf9a279d4b03ea4c5fb6d2` is already an ancestor. GitHub live
-verification/fetch is blocked by network/DNS. This is an offline continuation,
-not a claim of current live PR state or validated experimental results.
+2026-09-07: local implementation and offline verification complete on
+`codex/pr44-checkpoint-manifest-20260907`, from reviewed PR44 commit
+`cf102a2a221c13b36283a8a6a20fad4b547d4f3c`. Cached `origin/main`
+`899daa612cecaee08dbf9a279d4b03ea4c5fb6d2` is an ancestor. Live head/base/check
+verification and remote submission remain blocked by GitHub network/DNS.
+This is an isolated continuation, separate from the PR43 provenance patch.
 
 ## Done
 
-- Read global/project instructions and the independent PR44 review.
-- Inspected clean original checkout, branch, remotes and cached base.
-- Kept PR43 provenance fixes in their separate branch/worktree; that local
-  implementation is complete, with external publication/review gates blocked.
-- Created this fresh isolated continuation; no original checkout modifications.
-
-- Reproduced the original eight-round →16-round checkpoint mixing with a fake
-  client (eight new calls, wrong rounds 5–8 retained); evidence in
-  `../evidence/pr44-before.json`.
-- Implemented a full deterministic PCG64 scenario manifest, prompt/config/model/
-  source fingerprinting, fail-closed checkpoint compatibility, an append-only
-  attempt ledger, retryable failure handling, preserved zeros, and a local
-  exclusive writer lock. The CLI keeps attempts separate from derived results.
-- First targeted suite: 24 tests pass using the existing Python 3.12 environment,
-  including three fresh interpreter hash-seed comparisons. Added further input,
-  fractional-rate-label, prompt-source, and actual process-resume regressions.
-  Expanded suite: 35 passed; changed-area Black/Ruff and core Mypy pass.
+- Read global/project instructions and the independent PR44 review. Inspected
+  original status/branch/remotes/base and left that clean checkout untouched.
+- Reproduced eight-round →16-round checkpoint mixing with a fake client:
+  only eight new calls, with wrong treatment assignments retained for rounds
+  5–8. Evidence: `../evidence/pr44-before.json`.
+- Persisted complete deterministic PCG64 scenario designs and an experiment
+  digest covering configuration, effective reform timing, prompts, model/cache,
+  implementation sources, seed and package versions before requests.
+- Added strict row/manifest compatibility, scenario identities, crash-safe
+  manifest replacement, append-only/fsynced attempts and a POSIX writer lock.
+  Successful zeros remain completed; failures are retained and retried.
+- Separated CLI attempt ledgers from derived results, included round count,
+  seed and precise rates in filenames, and added an output-directory option.
+- Added 35 targeted tests, including four fresh-interpreter checks, real quoted
+  multiline CSV fixtures, corrupt/legacy checkpoint rejection, prompt/config/
+  model drift, failures, zeros and concurrent writers. All pass in the frozen
+  Python 3.13.9 environment with pinned EDSL 1.0.7, installed entirely offline.
+  They also passed in the preexisting Python 3.12 environment (EDSL 1.0.1).
+- Fixed the preexisting E402 import-order CI failure in `edsl_client.py` without
+  changing API/parse behavior. Whole-repository Ruff and Black now pass; Mypy
+  passes for the three changed implementation/runner files with imports skipped.
+- Added a repeatable synthetic-fixture exporter: 64 scenarios, four retained
+  parse failures, four successful retries, and four successful zeros. These are
+  fake-client regression artifacts, explicitly not model observations or ETIs.
+- Documented the contract and remaining limits in `CHECKPOINT_COMPATIBILITY.md`.
+  No estimator, manuscript/result claim, historical CSV, or model collection
+  was changed. No API key is used by these tests or fixture exports.
 
 ## Next
 
-1. Reproduce eight-round/16-round checkpoint mixing with a fake client.
-2. Persist experiment identity and full deterministic scenario design before
-   requests; reject incompatible or manifest-free existing checkpoints.
-3. Cover config, prompt, model, seed, malformed rows and interrupted writes
-   using realistic offline regressions. Never run paid model collection.
-4. Commit reviewable code and handoff. Leave all estimators/results unchanged;
-   PR44's methodological findings remain unresolved and ETIs unvalidated.
+1. Fetch and verify live PR44 head/base/checks when GitHub is reachable; integrate
+   new head/base commits safely before any remote draft update.
+2. Review the isolated manifest patch using the saved draft update and bundle.
+   No independent semantic approval is claimed: the single sprint review attempt
+   on PR43 was blocked by provider connectivity; no additional lane was launched.
+3. Keep PR44's economic estimators, valid-zero selection, provider-metadata
+   parsing and human-validation findings open. The legacy protocol is explicitly
+   unvalidated. No publication or merge is authorized by this handoff.
+4. A production protocol still needs immutable provider revisions, explicit
+   cache independence, and an attempt ledger spanning in-flight/EDSL subrequests.
+   A kill during a model request can cause that request to be retried on restart.
 
-Final lane report: `/Users/maxghenis/capacity-sprint-20260907/llm-eti/result.md`.
-Preserve no-reset controls; stop launching new work at 21:00 America/New_York.
+Final report: `/Users/maxghenis/capacity-sprint-20260907/llm-eti/result.md`.
+Durable detailed handoff: sibling `HANDOFF.md`; tests/logs: sibling `evidence/`;
+synthetic fixture: sibling `artifacts/pr44-synthetic-fixture-frozen/`.
+Preserve no-reset.json and auto_reset.enabled=false after the 21:00 deadline.
