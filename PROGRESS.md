@@ -23,10 +23,17 @@ ancestor of that head; no cached-base integration is needed. The original
   hashes, pre/post-render source identity checks, and index + worktree generated
   text drift detection. Added isolated Git regressions; 77 tests pass (baseline
   55), Black and Ruff pass. Mypy exposed dual script/package import names and
-  inferred empty-dict typing; those findings are fixed and being rechecked.
+  inferred empty-dict typing; fixed, and Mypy now passes.
 - Local Quarto is 1.9.36, while the release pin is 1.9.38. The pinned renderer is
   not installed in the checked local tool locations; release rendering remains
   blocked unless a local copy is found. No dependency/version gate was relaxed.
+
+- Added a repeatable historical-parser reconciliation command and regressions:
+  all 8,095 CSV records / 16,190 numeric fields match with zero discrepancies.
+  Verified the archived parser excerpt byte-for-byte against local historical
+  commit `b23f2cb882d33f79d706afbdcca836b3905361f8`. No API client was imported.
+- Requested one bounded semantic Subfleet review, read-only, pinned to Thesis
+  `.codex-5`, zero retries/reset/overflow. Its startup has not produced output.
 
 ## Next
 

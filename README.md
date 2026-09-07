@@ -50,6 +50,16 @@ the figures remain subject to structural checks. This exception does not allow
 new, deleted, renamed, or type-changed figure files. There is no dirty-source
 release override; preview edited prose after committing it on a local branch.
 
+The offline tests also reapply the hash-pinned historical parser to all 8,095
+archived responses and compare both numeric income fields (16,190 values). To
+save the detailed reconciliation, including a byte-for-byte check against the
+historical Git commit when it is locally available, run:
+
+```bash
+uv run --offline --frozen python scripts/reconcile_responses.py \
+  --verify-git-origin --output /tmp/response-reconciliation.json
+```
+
 Useful narrower targets:
 
 ```bash
