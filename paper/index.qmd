@@ -40,6 +40,7 @@ keywords:
 <li><a href="#discussion">Discussion</a></li>
 <li><a href="#reproducibility-and-data-provenance">Reproducibility</a></li>
 <li><a href="#appendix-archived-prompt-instrument">Prompt appendix</a></li>
+<li><a href="#appendix-why-the-capped-laboratory-estimates-are-withheld">Lab identification appendix</a></li>
 <li><a href="#data-code-and-declarations">Data and declarations</a></li>
 <li><a href="#references">References</a></li>
 </ul>
@@ -72,6 +73,8 @@ language-model outputs. None identifies how people respond to taxes.
 {{< include sections/reproducibility.md >}}
 
 {{< include sections/appendix.md >}}
+
+{{< include sections/lab_methods.md >}}
 
 {{< include sections/declarations.md >}}
 

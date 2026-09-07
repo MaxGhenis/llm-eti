@@ -31,3 +31,15 @@ terms.
 
 Users should review applicable provider and dataset terms before redistributing
 raw responses or source-derived data.
+
+## Retained legacy laboratory archives
+
+`data/legacy_lab/` preserves a previously tracked response pickle and a recovered
+local numeric CSV for a separate provenance audit. These are not the five
+Study 2 response CSVs described above, and their collection provenance does
+not inherit that corpus's EDSL version or cache settings. The adjacent manifest
+records exact hashes and known recovery locations. The same provider-by-provider
+author review remains required before any eventual release of these outputs;
+their inclusion in this review draft does not resolve third-party terms.
+The cited human articles and registry are source evidence only. No participant
+microdata or human analysis code has been obtained or redistributed.

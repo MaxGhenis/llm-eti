@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from llm_eti.lab_archive import audit_markdown, publication_audit
 from llm_eti.study2 import (
     CLEAN_PAIRS_SPECIFICATION,
     MODEL_SPECS,
@@ -850,6 +851,10 @@ def main() -> None:
     GENERATED_DIR.mkdir(parents=True, exist_ok=True)
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     ASSETS_DIR.mkdir(parents=True, exist_ok=True)
+
+    lab_audit = publication_audit(ROOT / "data" / "legacy_lab")
+    _write("legacy_lab_audit.md", audit_markdown(lab_audit))
+    _write("legacy_lab_audit.json", json.dumps(lab_audit, indent=2, sort_keys=True))
 
     scenarios, results = load_study2_data(SCENARIO_PATH, DATA_DIR)
     balanced_ids = primary_balanced_scenario_ids(results)

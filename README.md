@@ -128,3 +128,20 @@ and the [Unlicense](LICENSE) cover original code and text contributed to this
 repository. See [`NOTICE.md`](NOTICE.md) for the archived response corpus's
 provenance, current redistribution status, and third-party terms that require
 separate review.
+
+## Capped laboratory identification correction
+
+The lab appendix withholds the earlier structural notch-ETI and numerical bound
+claims. It records a budget/identification argument, named zero-inclusive
+alternative outcomes, and an audit of two retained legacy inputs. Both fail the
+real-data acceptance contract; no lab contrast, bootstrap interval, completion
+range or human Table 6 replication is reported. Study 2's 8,095 responses and
+existing numerical results remain unchanged.
+
+See [the integration scope](docs/lab-methods/README.md),
+[analysis contract](docs/lab-methods/SPECIFICATION.md), and
+[retained archive provenance](data/legacy_lab/README.md). The usual artifact
+command regenerates `paper/generated/legacy_lab_audit.json` and its manuscript
+table; the test suite includes the independently reviewed synthetic reference
+regressions and rejection checks against the actual retained inputs. Synthetic
+recovery is not empirical validation. Author and release gates remain open.

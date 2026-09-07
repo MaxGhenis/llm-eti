@@ -66,7 +66,20 @@ def test_manuscript_uses_model_output_framing():
     )
     assert "model-implied" in manuscript.lower()
     assert "not human elasticities" in manuscript.lower()
-    assert "PKNF" not in manuscript
+    # A named identification correction is now authorized. Keep the earlier
+    # empirical replication excluded while allowing its primary citations.
+    lab_note = (ROOT / "paper" / "sections" / "lab_methods.md").read_text()
+    assert "We withhold" in lab_note
+    assert "not report a new" in lab_note
+    assert "experimental replication" in lab_note
+    audit = json.loads(
+        (ROOT / "paper" / "generated" / "legacy_lab_audit.json").read_text()
+    )
+    assert audit["empirical_lab_estimates_released"] is False
+    for archive in audit["archives"]:
+        assert archive["zero_inclusive_standardized_outcomes"] is None
+        assert archive["sequence_or_reform_contrast"] is None
+        assert archive["structural_notch_eti"]["estimate"] is None
     assert "factorial" not in manuscript.lower()
     assert "common prior" not in manuscript.lower()
 

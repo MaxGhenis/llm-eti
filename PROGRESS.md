@@ -8,7 +8,8 @@ Live PR43 and PR44 heads and fetched main were verified before this continuation
 Main `899daa612cecaee08dbf9a279d4b03ea4c5fb6d2` is already an ancestor.
 The reviewed methods reference is `1f6c23a0c00f0c197cd16e5b235f1e8420d9ee49`.
 The retained-input adapter is implemented for auditing and fails closed on both
-archives. Final integration scientific validation remains pending.
+archives. Final integration scientific validation remains pending. All 149 local tests
+pass (including the 54 reviewed synthetic regressions and 10 archive tests).
 
 ## Done
 
@@ -26,7 +27,8 @@ archives. Final integration scientific validation remains pending.
    observed grid diagnostics and explicit withholding; no real estimate accepted.
 2. Reviewed reference methods and 54 synthetic regressions ported; new retained-
    archive regressions added. Finalize paper integration and validation.
-3. Build with verified Quarto 1.9.38, inspect affected PDF pages, reconcile the
+3. Paper correction and generated withholding audit integrated; now build with
+   verified Quarto 1.9.38, inspect affected PDF pages, reconcile the
    raw archive, and run strict provenance, TeX and veraPDF gates.
 4. Write METHODS-REVIEW-READY.md for coordinator scientific/code review, then
    apply findings and update the existing draft PR by normal push only.
