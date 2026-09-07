@@ -17,10 +17,12 @@ from urllib.parse import unquote, urlsplit
 
 if __package__:
     from . import render_publication as _package_render_publication
+    from .publication_provenance import source_attestation, verify_generated_text
 
     _render_publication = _package_render_publication
 else:
     import render_publication as _script_render_publication
+    from publication_provenance import source_attestation, verify_generated_text
 
     _render_publication = _script_render_publication
 
@@ -89,6 +91,12 @@ def _verify_publication_manifest(manifest_path: Path, site_dir: Path = SITE) -> 
     }
     for field, observed_hash in source_hashes.items():
         if manifest.get(field) != observed_hash:
+            raise SystemExit(
+                f"Publication manifest {field} does not match the build source"
+            )
+
+    for field, observed_value in source_attestation(ROOT).items():
+        if manifest.get(field) != observed_value:
             raise SystemExit(
                 f"Publication manifest {field} does not match the build source"
             )
@@ -502,18 +510,7 @@ def main() -> None:
     # rasterization and PDF/SVG geometry vary across operating systems, so the
     # figures are rebuilt above and validated structurally instead of compared
     # byte-for-byte with artifacts committed from another platform.
-    subprocess.run(
-        [
-            "git",
-            "diff",
-            "--exit-code",
-            "--",
-            "paper/generated",
-            "paper/_variables.yml",
-        ],
-        cwd=ROOT,
-        check=True,
-    )
+    verify_generated_text(ROOT)
     print("Publication integrity checks passed.")
 
 

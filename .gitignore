@@ -23,6 +23,9 @@ _site/
 **/.quarto/
 **/site_libs/
 **/*.quarto_ipynb
+/paper/index.tex
+/paper/index.pdf
+/paper/index-luamml-mathml.html
 
 # Simulation scratch files and checkpoints
 edsl_output_*.csv

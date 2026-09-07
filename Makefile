@@ -1,4 +1,4 @@
-.PHONY: install artifacts test format lint site publication check clean serve
+.PHONY: install provenance artifacts test format lint site publication check clean serve
 
 UV := uv
 PYTHON := $(UV) run python
@@ -8,6 +8,9 @@ install:
 
 artifacts:
 	$(PYTHON) scripts/generate_artifacts.py
+
+provenance:
+	$(PYTHON) scripts/publication_provenance.py
 
 test:
 	$(UV) run pytest --cov=llm_eti --cov-report=term-missing
@@ -27,7 +30,7 @@ site: artifacts
 check:
 	$(PYTHON) scripts/check_publication.py
 
-publication: artifacts test lint site check
+publication: provenance artifacts test lint site check
 
 serve: site
 	$(PYTHON) -m http.server 8000 --directory _site

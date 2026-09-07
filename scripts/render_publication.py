@@ -14,6 +14,11 @@ import xml.etree.ElementTree as ET
 import zipfile
 from pathlib import Path
 
+if __package__:
+    from .publication_provenance import source_attestation
+else:
+    from publication_provenance import source_attestation
+
 ROOT = Path(__file__).resolve().parents[1]
 SITE_DIR = ROOT / "_site"
 PAPER_DIR = ROOT / "paper"
@@ -42,15 +47,8 @@ def _run(command: list[str], *, cwd: Path) -> None:
 
 
 def _build_manifest(quarto_version: str, outputs: dict[str, str]) -> dict[str, object]:
-    git_commit_sha = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
     return {
-        "git_commit_sha": git_commit_sha,
+        **source_attestation(ROOT),
         "operating_system": platform.platform(),
         "outputs": outputs,
         "pyproject_toml_sha256": _sha256(ROOT / "pyproject.toml"),
@@ -140,6 +138,7 @@ def _add_paper_to_sitemap() -> None:
 
 
 def main() -> None:
+    initial_source = source_attestation(ROOT)
     quarto = _find_quarto()
     quarto_version = subprocess.run(
         [quarto, "--version"],
@@ -206,6 +205,11 @@ def main() -> None:
     if tuple(outputs) != MANIFEST_OUTPUT_PATHS:
         raise AssertionError("Publication manifest output paths are out of sync")
     build_manifest = _build_manifest(quarto_version, outputs)
+    # A renderer runs long enough for another process to edit or commit source.
+    # Figures may be regenerated, but the committed source and HEAD must stay fixed.
+    for field in ("git_commit_sha", "git_source_state", "source_sha256"):
+        if build_manifest[field] != initial_source[field]:
+            raise SystemExit(f"Publication source changed during rendering: {field}")
     (DOWNLOADS_DIR / "publication_manifest.json").write_text(
         json.dumps(build_manifest, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",

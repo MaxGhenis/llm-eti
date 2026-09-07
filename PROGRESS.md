@@ -17,6 +17,16 @@ ancestor of that head; no cached-base integration is needed. The original
 - Created an isolated worktree from the exact reviewed commit.
 - Confirmed reset prevention remains enabled and automatic resets disabled.
 
+- Reproduced both original bugs in a disposable Git fixture; evidence saved in
+  `../evidence/before-regressions.json`.
+- Implemented clean source/HEAD binding, tracked-source and platform-figure
+  hashes, pre/post-render source identity checks, and index + worktree generated
+  text drift detection. Added isolated Git regressions; 77 tests pass (baseline
+  55), Black and Ruff pass. Mypy is running.
+- Local Quarto is 1.9.36, while the release pin is 1.9.38. The pinned renderer is
+  not installed in the checked local tool locations; release rendering remains
+  blocked unless a local copy is found. No dependency/version gate was relaxed.
+
 ## Next
 
 1. Reproduce dirty-manuscript attestation and staged-generated-drift failures.

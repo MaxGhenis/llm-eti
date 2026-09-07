@@ -32,6 +32,24 @@ runs tests and static checks, renders the site and web paper, compiles the PDF,
 retains the TeX, checks internal links and file signatures, and fails if tracked
 generated artifacts drift. No model API key is required.
 
+Publication rendering requires a Git checkout with source committed to `HEAD`.
+Both the index and working tree are checked, including manuscript sections,
+analysis code, generated text, and numeric summaries. Untracked non-ignored
+files also fail the release gate. Run `make artifacts`, review changes, and
+commit them before rendering an edited publication. Tests use isolated Git
+fixtures and can still run while developing with uncommitted changes.
+
+`_site/downloads/publication_manifest.json` records the exact commit, a clean
+source attestation, SHA-256 hashes of every tracked source file, dependency and
+rendering versions, and output hashes. Source identity is checked before and
+after rendering and again by `make check`. Only modifications to the nine named
+generated figures (PNG/SVG/PDF) and `assets/social-card.png` are exempt from
+byte equality with `HEAD`: font rasterization and geometry can vary by platform.
+Their actual bytes are separately hashed in `platform_generated_sha256` and
+the figures remain subject to structural checks. This exception does not allow
+new, deleted, renamed, or type-changed figure files. There is no dirty-source
+release override; preview edited prose after committing it on a local branch.
+
 Useful narrower targets:
 
 ```bash
