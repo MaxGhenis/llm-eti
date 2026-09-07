@@ -67,6 +67,17 @@ Next: review the existing draft and retain all author/release gates in
 PUBLICATION_CHECKLIST.md. No release tag, Pages deployment, paper submission,
 merge, model collection or estimator redesign is authorized by this checkpoint.
 
+## CI rendering-regression coverage
+
+The initial updated PR43 head 1111dfe passed both CI jobs and actual PDF/UA-2
+validation. Downloaded CI artifacts match all 97 local source hashes and their
+output checksums. CI built the PR merge commit 0f542a3, whose source tree matches
+the continuation. Its four optional TeX tests skipped because Quarto finds
+TinyTeX outside PATH. The build job now explicitly requires the installed
+LuaLaTeX path and supplies it to those tests; Python 3.12 compatibility can
+still skip them when no TeX installation is present. This closes a discovered
+CI coverage gap, without relaxing any output gate.
+
 ## State
 
 2026-09-07: PR43 provenance implementation is complete locally on

@@ -137,6 +137,23 @@ jobs:
           version: "1.9.38"
           tinytex: true
 
+      - name: Require LuaLaTeX for PDF rendering regressions
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+
+          # Quarto can find TinyTeX without placing its executables on PATH.
+          engines = sorted(
+              path for path in (Path.home() / ".TinyTeX" / "bin").glob("*/lualatex")
+              if path.is_file() and os.access(path, os.X_OK)
+          )
+          if len(engines) != 1:
+              raise SystemExit(f"Expected one TinyTeX LuaLaTeX, found {engines}")
+          with Path(os.environ["GITHUB_ENV"]).open("a") as environment:
+              environment.write(f"LUALATEX_BIN={engines[0]}\n")
+          PY
+
       - name: Install locked Python environment
         run: uv sync --frozen --group dev
 
