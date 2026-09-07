@@ -43,6 +43,27 @@ Next: retain the independent review and red/green evidence in the handoff;
 regenerate the explicitly synthetic fixture, verify remote heads again, and
 update the existing PR44 as a draft. No estimator or methods-lane code is included.
 
+## Host draft closure
+
+State: existing PR44 is now draft and its contributor branch was updated by a
+normal fast-forward, preserving both cf102a2 and the reviewed e71e837 revision.
+At implementation head c5b26cf, both live GitHub checks passed: lint (including
+45 offline checkpoint tests and full-project Mypy) and the inherited book
+build. The latter is a build check only; it does not validate research claims.
+This documentation checkpoint changes no implementation or synthetic fixture.
+
+Done: root's two P2 findings are fixed with red/green regressions; a frozen
+64-scenario synthetic retry/zero fixture is saved in the lane artifacts. The
+PR body explicitly identifies reviewed e71e837, later unreviewed fixes, and
+remaining scientific/provider limitations. The original worktree stays clean.
+Final heads/checks, the exact-head review, patches/bundles, and validation logs
+are recorded in the lane's followup-HANDOFF.md and followup-result.md.
+
+Next: independent review of the later checkpoint fixes and a separately scoped
+estimator task after the methods lane's final handoff. No preliminary methods
+math or code was merged into this patch; no model collection, paper publication
+or merge occurred.
+
 ## State
 
 2026-09-07: local implementation and offline verification complete on
