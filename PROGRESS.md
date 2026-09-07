@@ -1,3 +1,42 @@
+# Scientific correction continuation — 2026-09-07
+
+## State
+
+Active bounded scientific draft on `codex/pr43-methods-correction-20260907`,
+from independently clean PR43 `c1ac55cd79cf9ac885d979da2bbd4c5a6dc5a47b`.
+Live PR43 and PR44 heads and fetched main were verified before this continuation.
+Main `899daa612cecaee08dbf9a279d4b03ea4c5fb6d2` is already an ancestor.
+The reviewed methods reference is `1f6c23a0c00f0c197cd16e5b235f1e8420d9ee49`.
+No empirical adapter or final scientific validation is claimed yet.
+
+## Done
+
+- Read the methods specification, handoff, independent methods review, human
+  source recovery, and project instructions.
+- Created a fresh isolated worktree; preserved original and prior dirty figures.
+- Archived PR44's retained scientific source/data before any correction.
+- Confirmed structural notch ETI and its purported bounds are unsupported in
+  the capped design. Human Table 6 remains unreproduced: public microdata and
+  complete assignment inventory are unavailable.
+
+## Next
+
+1. Audit retained lab rows and provenance; fail closed on absent/incompatible
+   run, instrument, planned subject inventory, and cap/phase evidence.
+2. Integrate reviewed deterministic estimand regressions and an appropriately
+   scoped paper correction, preserving all 8,095 canonical responses.
+3. Build with verified Quarto 1.9.38, inspect affected PDF pages, reconcile the
+   raw archive, and run strict provenance, TeX and veraPDF gates.
+4. Write METHODS-REVIEW-READY.md for coordinator scientific/code review, then
+   apply findings and update the existing draft PR by normal push only.
+
+PR44 checkpoint changes remain separate. No collections, paid jobs, resets,
+merges, submission, publication, or author contact are authorized here.
+The earlier engineering progress below is historical; its network/toolchain
+blockers were resolved and independently reviewed at the head stated above.
+
+---
+
 # Publication provenance sprint
 
 ## Host follow-up state
