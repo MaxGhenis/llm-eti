@@ -1,3 +1,31 @@
+# Reference-grid wording follow-up — 2026-09-07
+
+## State
+
+Active wording-only continuation from live PR43 a2936f4, whose scientific
+implementation is independently clean under the coordinator review of f85b2eb.
+The only requested clarification is the generated grid label and definition.
+Fresh branch: `codex/pr43-reference-grid-wording-20260907`. Fetched current main
+899daa612cecaee08dbf9a279d4b03ea4c5fb6d2 is already an ancestor.
+
+## Done
+
+- Read independent-methods-integration-review-host.md and global/project rules.
+- Verified live PR43/main/checks and unchanged draft PR44 at 792c9f8.
+- Preserved the previous site/PDF/TeX, generated audit and dirty figure diff in
+  the lane's evidence/final-wording-before directory; originals are untouched.
+
+## Next
+
+1. Change the source generator to “Complete reference grids” and define observed
+   source-cap coverage without asserting a human assignment protocol.
+2. Regenerate, verify unchanged counts/hashes/withheld estimates, and run the
+   existing publication gates. Keep scientific formulas and PR44 unchanged.
+3. Normal-update draft PR43 and save final-wording-result.md, handoff and tiny
+   delta patch for the coordinator. No nested review or new analysis.
+
+---
+
 # Scientific correction continuation — 2026-09-07
 
 ## State
