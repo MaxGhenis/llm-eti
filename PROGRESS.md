@@ -39,6 +39,34 @@ Next: commit source, regenerate with pinned Quarto and matching TeX backend,
 run the full publication gate, historical reconciliation, veraPDF and visual
 inspection; then update the existing draft PR43 and record final CI results.
 
+## Host validation closure
+
+State: the publication continuation is locally validated and prepared for a
+normal fast-forward update of existing draft PR43. Main and the live PR head
+were verified before work; the reviewed 6ee5cfc revision and prior dirty figure
+rebuild remain intact in the original isolated worktree.
+
+Done: `make publication` passed at 5dced8a with official Quarto 1.9.38 and
+matching task-local TeX backend files: 85 tests, Black, Ruff, Mypy, source and
+output provenance, all local links, generated drift, and PDF text/tagging checks.
+The 21-page PDF passed veraPDF 1.30.2 PDF/UA-2 with zero failed rules and an
+unchanged empty exception baseline. Visually inspected pages 2, 3, 10, 20 and 21:
+blue citations and URLs are intact, no RGB operands appear, and the results
+figure/table remain readable. The exported TeX ZIP compiles independently.
+Historical parser reconciliation verifies its original Git source and all
+8,095 responses / 16,190 numeric values with zero mismatches. Canonical data,
+analysis implementation and generated numeric/text artifacts match f3b2387.
+
+The subsequent documentation checkpoint is rerendered so its manifest binds
+the final committed source. Exact final heads, remote checks, hashes, and the
+review-resolution record are saved in the lane's followup-HANDOFF.md and
+followup-result.md. Root's independent approval is restricted to provenance
+at 6ee5cfc; it does not approve the later render safeguards or a paper release.
+
+Next: review the existing draft and retain all author/release gates in
+PUBLICATION_CHECKLIST.md. No release tag, Pages deployment, paper submission,
+merge, model collection or estimator redesign is authorized by this checkpoint.
+
 ## State
 
 2026-09-07: PR43 provenance implementation is complete locally on
