@@ -27,9 +27,12 @@ pass (including the 54 reviewed synthetic regressions and 10 archive tests).
    observed grid diagnostics and explicit withholding; no real estimate accepted.
 2. Reviewed reference methods and 54 synthetic regressions ported; new retained-
    archive regressions added. Finalize paper integration and validation.
-3. Paper correction and generated withholding audit integrated; now build with
-   verified Quarto 1.9.38, inspect affected PDF pages, reconcile the
-   raw archive, and run strict provenance, TeX and veraPDF gates.
+3. Completed build at bc8f7d2: Quarto 1.9.38, 149 tests, formatting/types,
+   provenance and strict publication checks passed. All 8,095 responses /
+   16,190 values reconcile with zero mismatches and verified historical parser.
+   veraPDF UA-2 reports no failed rules. PDF pages 21–25 inspected; shortening
+   the cap-menu introductory sentence avoids crowding the right margin.
+   Revalidate the resulting exact source head before coordinator review.
 4. Write METHODS-REVIEW-READY.md for coordinator scientific/code review, then
    apply findings and update the existing draft PR by normal push only.
 

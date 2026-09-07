@@ -9,8 +9,9 @@ experimental replication.
 
 ## A cap does not locate the marginal buncher
 
-The source instrument permits zero choices and assigns a maximum of
-$E\in\{14,16,20,21,22,24,25,30\}$ tasks, with gross income $z=20q$ cents.
+Task caps in the source instrument are
+$E\in\{14,16,20,21,22,24,25,30\}$. Zero choices are permitted, and gross
+income is $z=20q$ cents.
 The progressive schedule leaves 75 percent of gross income through 400 cents
 and 50 percent of the entire income above that threshold. The flat schedules
 leave 75 or 50 percent throughout. These menus come from the source design and
