@@ -56,6 +56,17 @@ def test_untracked_manuscript_is_not_attributed_to_head(git_source):
         source_attestation(git_source)
 
 
+@pytest.mark.parametrize("flag", ["--assume-unchanged", "--skip-worktree"])
+def test_git_index_optimizations_cannot_hide_dirty_manuscript(git_source, flag):
+    manuscript = git_source / "paper/sections/discussion.md"
+    subprocess.run(
+        ["git", "update-index", flag, str(manuscript)], cwd=git_source, check=True
+    )
+    manuscript.write_text("Hidden manuscript revision\n")
+    with pytest.raises(SystemExit, match="does not match HEAD.*discussion.md"):
+        source_attestation(git_source)
+
+
 def test_untracked_generated_text_is_rejected(git_source):
     (git_source / "paper/generated/new.md").write_text("Uncommitted\n")
     with pytest.raises(SystemExit, match="Untracked generated publication text"):

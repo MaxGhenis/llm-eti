@@ -35,6 +35,10 @@ ancestor of that head; no cached-base integration is needed. The original
 - Requested one bounded semantic Subfleet review, read-only, pinned to Thesis
   `.codex-5`, zero retries/reset/overflow. Its startup has not produced output.
 
+- Added two red/green regressions for Git `assume-unchanged` and `skip-worktree`
+  hiding manuscript edits. Attestation now compares actual source bytes and
+  executable bits with committed Git blobs independently of the index cache.
+
 ## Next
 
 1. Reproduce dirty-manuscript attestation and staged-generated-drift failures.

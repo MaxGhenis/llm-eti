@@ -72,7 +72,13 @@ def source_attestation(root: Path) -> dict[str, object]:
     the index independently catches staged edits even if the worktree equals HEAD.
     """
     commit = _git(root, "rev-parse", "HEAD").decode().strip()
-    tracked = _paths(_git(root, "ls-tree", "-r", "--name-only", "-z", "HEAD"))
+    object_format = _git(root, "rev-parse", "--show-object-format").decode().strip()
+    tracked = {}
+    for entry in _git(root, "ls-tree", "-r", "-z", commit).split(b"\0"):
+        if entry:
+            metadata, name = entry.split(b"\t", 1)
+            mode, _, object_id = metadata.decode().split()
+            tracked[os.fsdecode(name)] = (mode, object_id)
     dirty = _paths(_git(root, "ls-files", "--others", "--exclude-standard", "-z"))
     for comparison in ((), ("--cached",)):
         changed = _paths(
@@ -105,7 +111,18 @@ def source_attestation(root: Path) -> dict[str, object]:
             raise SystemExit(
                 f"Publication source must be a regular file: {relative_path}"
             )
-        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        content = path.read_bytes()
+        if relative_path not in PLATFORM_GENERATED_PATHS:
+            # Git's index flags/stat cache can suppress a diff. Compare the real
+            # bytes and executable bit to the committed blob independently.
+            header = f"blob {len(content)}\0".encode()
+            object_id = hashlib.new(object_format, header + content).hexdigest()
+            mode = "100755" if path.stat().st_mode & 0o111 else "100644"
+            if (mode, object_id) != tracked[relative_path]:
+                raise SystemExit(
+                    f"Publication source does not match HEAD: {relative_path}"
+                )
+        digest = hashlib.sha256(content).hexdigest()
         destination = (
             figure_hashes
             if relative_path in PLATFORM_GENERATED_PATHS
