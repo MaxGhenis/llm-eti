@@ -2,44 +2,61 @@
 
 ## State
 
-Active bounded scientific draft on `codex/pr43-methods-correction-20260907`,
-from independently clean PR43 `c1ac55cd79cf9ac885d979da2bbd4c5a6dc5a47b`.
-Live PR43 and PR44 heads and fetched main were verified before this continuation.
-Main `899daa612cecaee08dbf9a279d4b03ea4c5fb6d2` is already an ancestor.
-The reviewed methods reference is `1f6c23a0c00f0c197cd16e5b235f1e8420d9ee49`.
-The retained-input adapter is implemented for auditing and fails closed on both
-archives. Final integration scientific validation remains pending. All 149 local tests
-pass (including the 54 reviewed synthetic regressions and 10 archive tests).
+Implementation and publication validation complete; coordinator independent
+scientific/code review pending. This isolated continuation is
+`codex/pr43-methods-correction-20260907`, based on independently clean PR43
+`c1ac55cd79cf9ac885d979da2bbd4c5a6dc5a47b`. Current main
+`899daa612cecaee08dbf9a279d4b03ea4c5fb6d2` is already an ancestor.
+The scientific implementation is frozen at `f85b2eb`; this checkpoint updates
+only this progress record. Exact current head/artifact evidence is maintained
+in the lane's `METHODS-REVIEW-READY.md` and `methods-HANDOFF.md`.
 
 ## Done
 
-- Read the methods specification, handoff, independent methods review, human
-  source recovery, and project instructions.
-- Created a fresh isolated worktree; preserved original and prior dirty figures.
-- Archived PR44's retained scientific source/data before any correction.
-- Confirmed structural notch ETI and its purported bounds are unsupported in
-  the capped design. Human Table 6 remains unreproduced: public microdata and
-  complete assignment inventory are unavailable.
+- Read the independently reviewed methods at `1f6c23a`, the human instrument and
+  source evidence, and project instructions. Preserved original checkouts,
+  earlier reviewed revisions and all dirty figure artifacts.
+- Ported the 54 reviewed synthetic regressions and reference methods. Added
+  ten retained-input/adversarial adapter tests. All 149 local tests pass,
+  including actual LuaLaTeX/Poppler regressions; formatting and types pass.
+- Preserved the 320-row historical pickle and 32-row local Gemini CSV exactly.
+  Every pickle answer reconciles to its stored response payload. The archives
+  have respectively 70 and 16 rows outside the original cap menu, no complete
+  original subject/phase/cap grids, and missing run/planned-inventory/independent-
+  unit provenance. The adapter audits both and fails closed for estimation.
+- Added the source-cited identification correction and generated archive table.
+  No structural ETI/bounds, standardized lab effect, completion range or human
+  Table 6 replication is claimed. PR44 checkpoint scope remains unchanged at
+  `792c9f826e6ee8dfb7dcf23ef7ad51a925f62d13`.
+- All six canonical Study 2 inputs, its estimator and existing analysis summary
+  are unchanged. All 8,095 responses / 16,190 numeric values reconcile with zero
+  mismatches and verified historical parser Git origin.
+- Quarto 1.9.38 publication at f85b2eb passes all strict source/output gates.
+  Its 25-page PDF passes veraPDF UA-2: 1,727 rules, 234,975 checks, zero failures.
+  Appendix pages 21–23 and references 24–25 visually inspected; clean blue
+  citations and readable formulas/table. No gate or exception baseline weakened.
+- Normal push updated the existing draft PR43. CI run 34169922043 passes Python
+  3.12 and publication jobs: 145 tests before TeX installation, then all four
+  required real TeX regressions; PDF/UA-2 passes. Pages deployment is skipped.
+  Downloaded CI outputs and every source hash were verified against f85b2eb.
+- Saved the exact patch, verified Git bundle, original-input hashes, render,
+  portable publication, validation logs and coordinator review packet in the
+  lane directory. The reference's prior approval is not integration approval.
 
 ## Next
 
-1. Completed: immutable archives, strict hash checks, answer-payload reconciliation,
-   observed grid diagnostics and explicit withholding; no real estimate accepted.
-2. Reviewed reference methods and 54 synthetic regressions ported; new retained-
-   archive regressions added. Finalize paper integration and validation.
-3. Completed build at bc8f7d2: Quarto 1.9.38, 149 tests, formatting/types,
-   provenance and strict publication checks passed. All 8,095 responses /
-   16,190 values reconcile with zero mismatches and verified historical parser.
-   veraPDF UA-2 reports no failed rules. PDF pages 21–25 inspected; shortening
-   the cap-menu introductory sentence avoids crowding the right margin.
-   Revalidate the resulting exact source head before coordinator review.
-4. Write METHODS-REVIEW-READY.md for coordinator scientific/code review, then
-   apply findings and update the existing draft PR by normal push only.
+1. Coordinator independent scientific/code review of the exact head identified
+   in `METHODS-REVIEW-READY.md`; apply actionable file/line findings if supplied.
+2. Keep draft-only status. Author/redistribution and publication-checklist gates
+   remain open. No release, merge, submission or human replication is approved.
+3. A future empirical adapter requires actual compatible run/instrument,
+   full planned rows/subjects, attempts/cache and independent-unit evidence.
+   Completed observations and modern PR44 manifests cannot create that history.
 
-PR44 checkpoint changes remain separate. No collections, paid jobs, resets,
-merges, submission, publication, or author contact are authorized here.
-The earlier engineering progress below is historical; its network/toolchain
-blockers were resolved and independently reviewed at the head stated above.
+No collections, paid jobs, resets, automatic resets, merges, submission,
+publication or author contact occurred. Earlier engineering progress below is
+historical; its network/toolchain blockers were resolved and independently
+reviewed at c1ac55c. No further implementation owner or nested reviewer ran.
 
 ---
 
