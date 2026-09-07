@@ -7,7 +7,8 @@ from independently clean PR43 `c1ac55cd79cf9ac885d979da2bbd4c5a6dc5a47b`.
 Live PR43 and PR44 heads and fetched main were verified before this continuation.
 Main `899daa612cecaee08dbf9a279d4b03ea4c5fb6d2` is already an ancestor.
 The reviewed methods reference is `1f6c23a0c00f0c197cd16e5b235f1e8420d9ee49`.
-No empirical adapter or final scientific validation is claimed yet.
+The retained-input adapter is implemented for auditing and fails closed on both
+archives. Final integration scientific validation remains pending.
 
 ## Done
 
@@ -21,10 +22,10 @@ No empirical adapter or final scientific validation is claimed yet.
 
 ## Next
 
-1. Audit retained lab rows and provenance; fail closed on absent/incompatible
-   run, instrument, planned subject inventory, and cap/phase evidence.
-2. Integrate reviewed deterministic estimand regressions and an appropriately
-   scoped paper correction, preserving all 8,095 canonical responses.
+1. Completed: immutable archives, strict hash checks, answer-payload reconciliation,
+   observed grid diagnostics and explicit withholding; no real estimate accepted.
+2. Reviewed reference methods and 54 synthetic regressions ported; new retained-
+   archive regressions added. Finalize paper integration and validation.
 3. Build with verified Quarto 1.9.38, inspect affected PDF pages, reconcile the
    raw archive, and run strict provenance, TeX and veraPDF gates.
 4. Write METHODS-REVIEW-READY.md for coordinator scientific/code review, then

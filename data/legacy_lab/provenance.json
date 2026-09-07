@@ -1,0 +1,24 @@
+{
+  "archives": {
+    "PKNF_replication_results.pkl": {
+      "bytes": 265742,
+      "origin": "Git commit 71ed769:data/PKNF_replication_results.pkl; identical at verified PR44 792c9f826e6ee8dfb7dcf23ef7ad51a925f62d13",
+      "sha256": "43b22a36e9ab387ea511b60aa77373257cef9d420f05b31ebc58737a52899438"
+    },
+    "historical-collection.py.txt": {
+      "bytes": 10548,
+      "sha256": "615899f881ede3c9f711cf598926a338ddc958c34f2de695d868f393904011fc"
+    },
+    "pknf_results_gemini-2.5-flash_minimal.csv": {
+      "bytes": 2028,
+      "origin": "Previously ignored local book/data CSV; byte-preserved snapshot 2026-09-07. Exact collection commit and raw provider answers unavailable.",
+      "sha256": "e3b890dae7b5152b1a43c0ead2235ad3963fc0c3b2fbea473d7886f25eb547bd"
+    }
+  },
+  "historical_code": {
+    "commit": "71ed769cb95df0d48cfeae92bdca75c9b86c122a",
+    "path": "PKNF_2024_replication/GPT_PKNF_replication.py",
+    "status": "Same-revision source evidence; not proof of actual run-bound prompt or planned randomized inventory. Never executed by this build."
+  },
+  "scope": "Separate legacy lab audit; not Study 2 inputs or a prospective run manifest"
+}
