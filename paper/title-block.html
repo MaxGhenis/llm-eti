@@ -1,0 +1,51 @@
+<header id="title-block-header" class="quarto-title-block">
+  <a class="skip-link" href="#paper-content">Skip to main content</a>
+  <div class="quarto-title">
+  $if(title)$
+    <h1 class="title">$title$</h1>
+  $endif$
+  $if(subtitle)$
+    <p class="subtitle">$subtitle$</p>
+  $endif$
+  $if(description)$
+    <div class="description">$description$</div>
+  $endif$
+  </div>
+
+  $if(by-affiliation/first)$
+  <div class="quarto-title-meta-author">
+    <div class="quarto-title-meta-heading">$labels.authors$</div>
+    <div class="quarto-title-meta-heading">$labels.affiliations$</div>
+    $for(by-author)$
+    <div class="quarto-title-meta-contents">
+      <p class="author">$by-author.name.literal$</p>
+    </div>
+    <div class="quarto-title-meta-contents">
+      $for(by-author.affiliations)$
+      <p class="affiliation">$it.name$</p>
+      $endfor$
+    </div>
+    $endfor$
+  </div>
+  $elseif(by-author)$
+  <div class="quarto-title-meta">
+    <div>
+      <div class="quarto-title-meta-heading">$labels.authors$</div>
+      <div class="quarto-title-meta-contents">
+      $for(by-author)$
+        <p class="author">$by-author.name.literal$</p>
+      $endfor$
+      </div>
+    </div>
+  </div>
+  $endif$
+
+  $if(date)$
+  <div class="quarto-title-meta">
+    <div>
+      <div class="quarto-title-meta-heading">$labels.published$</div>
+      <div class="quarto-title-meta-contents"><p class="date">$date$</p></div>
+    </div>
+  </div>
+  $endif$
+</header>

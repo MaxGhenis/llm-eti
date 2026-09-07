@@ -1,110 +1,42 @@
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
 *.py[cod]
-*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+tmp/
 
-# C extensions
-*.so
-
-# files with private keys/tokens
-gpt_api_key.txt
+# Local environments and credentials
+.venv/
 .env
+*.key
+*.pem
 .streamlit/secrets.toml
 
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+# Quarto build output (source artifacts remain tracked)
+_site/
+**/.quarto/
+**/site_libs/
+**/*.quarto_ipynb
+/paper/index.tex
+/paper/index.pdf
+/paper/index-luamml-mathml.html
 
-# PyInstaller
-*.manifest
-*.spec
+# Simulation scratch files and checkpoints
+edsl_output_*.csv
+data/responses/*_test.csv
+data/responses/*.checkpoint.csv
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-cover/
-
-# Virtual environments
-.venv/
-venv/
-ENV/
-env/
-
-# JupyterBook build
-book/_build/
-book/.jupyter_cache/
-
-# Generated data and figures
-book/data/
-book/figures/
-book/tables/
-
-# IDE
-.vscode/
+# Editors and operating systems
+.DS_Store
 .idea/
+.vscode/
 *.swp
 *.swo
-*~
 
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# ruff
-.ruff_cache/
-
-# Pyre type checker
-.pyre/
-
-# pytype static type analyzer
-.pytype/
-
-# Cython debug symbols
-cython_debug/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# IPython
-profile_default/
-ipython_config.py
-
-# macOS
-.DS_Store
-
-# Results directory (but keep structure)
-results/*/
-
-# Generated survey CSV artifacts
-edsl_output_tax_*.csv
+/.quarto/

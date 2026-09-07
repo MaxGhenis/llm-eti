@@ -1,134 +1,147 @@
-# LLM-ETI: What can LLMs tell us about the ETI?
+# LLM × ETI
 
-This repository contains code and analysis for the paper "What can LLMs tell us about the ETI?" by Jason DeBacker and Max Ghenis.
+Reproducible research for **“What do language models imply about taxable-income
+responses?”** by Jason DeBacker and Max Ghenis.
 
-## Overview
+This project compares archived responses from Claude Haiku 4.5, DeepSeek V3,
+Gemma 4 26B, and GPT-4o mini on a common set of hypothetical tax scenarios. It
+studies model-output distributions; it does **not** treat an LLM completion as
+an estimate of human behavior.
 
-We investigate how Large Language Models (LLMs) perceive and simulate behavioral responses to tax policy changes, specifically measuring the Elasticity of Taxable Income (ETI).
+The publication has three outputs from one Quarto manuscript source:
 
-The current paper includes:
+- a small project microsite;
+- a native web version of the paper; and
+- a compiled PDF with its generated TeX retained for audit, plus a compilable
+  source bundle containing the figures.
 
-1. **Lab Experiment Replication**: Replicating Pfeil et al. (2024) using LLMs instead of human subjects
-2. **Tax Response Survey**: A factorial survey of taxpayer personas and tax shocks
+## Reproduce everything
 
-Exploratory writeups that are not part of the published book live outside the book TOC.
-
-## Quick Start
-
-### Prerequisites
-
-- Python 3.12
-- [uv](https://github.com/astral-sh/uv)
-- Expected Parrot API key (for EDSL)
-
-### Installation
+Prerequisites are [uv](https://docs.astral.sh/uv/), Quarto 1.9.38, a coherent
+LaTeX distribution, and Poppler (`pdfinfo` and `pdftotext`).
 
 ```bash
-# Install uv if not already installed
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Install dependencies
-make install
-
-# Set your Expected Parrot API key
-export EXPECTED_PARROT_API_KEY=your-key-here
+git clone https://github.com/MaxGhenis/llm-eti.git
+cd llm-eti
+uv sync --python 3.13 --group dev --frozen
+make publication
 ```
 
-### For Collaborators
+The build validates the frozen inputs, regenerates every number and figure,
+runs tests and static checks, renders the site and web paper, compiles the PDF,
+retains the TeX, checks internal links and file signatures, and fails if tracked
+generated artifacts drift. No model API key is required.
 
-To ensure everyone uses the same environment:
+The PDF template checks that selecting a link color produces no visible text;
+the output gate also rejects leaked blue RGB operands. A tagged PDF can pass
+PDF/UA validation while incorrectly printing `0.0 0.0 1.0` before citations.
+This was reproduced with an August 2026 `l3kernel` loading a stale July backend
+from `l3backend/` ahead of the matching files in `l3kernel/`. Upstream
+[merged the backend into the kernel](https://github.com/latex3/latex3/commit/574b0c5fd5831a88b064e72868b175b94208caeb).
+Use `kpsewhich -all l3backend-luatex.def` from the TeX installation Quarto uses
+to diagnose shadowed files. A task-local copy of the matching backend files,
+selected with `TEXINPUTS="/path/to/matching-backend//:"`, repairs that search
+order without modifying a shared installation. Keep its source paths and
+hashes with the build evidence. Do not disable color links or the output gates
+to make an incompatible TeX installation pass.
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/MaxGhenis/llm-eti.git
-   cd llm-eti
-   ```
+Publication rendering requires a Git checkout with source committed to `HEAD`.
+Both the index and working tree are checked, including manuscript sections,
+analysis code, generated text, and numeric summaries. Untracked non-ignored
+files also fail the release gate. Run `make artifacts`, review changes, and
+commit them before rendering an edited publication. Tests use isolated Git
+fixtures and can still run while developing with uncommitted changes.
 
-2. **Install dependencies**:
-   ```bash
-   make install
-   source .venv/bin/activate
-   ```
+`_site/downloads/publication_manifest.json` records the exact commit, a clean
+source attestation, SHA-256 hashes of every tracked source file, dependency and
+rendering versions, and output hashes. Source identity is checked before and
+after rendering and again by `make check`. Only modifications to the nine named
+generated figures (PNG/SVG/PDF) and `assets/social-card.png` are exempt from
+byte equality with `HEAD`: font rasterization and geometry can vary by platform.
+Their actual bytes are separately hashed in `platform_generated_sha256` and
+the figures remain subject to structural checks. This exception does not allow
+new, deleted, renamed, or type-changed figure files. There is no dirty-source
+release override; preview edited prose after committing it on a local branch.
 
-3. **Verify installation**:
-   ```bash
-   python --version  # Should show 3.12.x inside .venv
-   uv --version      # Should show uv version
-   ```
-
-### Run Test Analysis
+The offline tests also reapply the hash-pinned historical parser to all 8,095
+archived responses and compare both numeric income fields (16,190 values). To
+save the detailed reconciliation, including a byte-for-byte check against the
+historical Git commit when it is locally available, run:
 
 ```bash
-# Quick test with minimal API calls
-make book-test
+uv run --offline --frozen python scripts/reconcile_responses.py \
+  --verify-git-origin --output /tmp/response-reconciliation.json
 ```
 
-This will:
-1. Run test simulations using gpt-4o-mini
-2. Generate figures, tables, and markdown include fragments
-3. Build the Jupyter Book
-4. Serve locally at http://localhost:8000
-
-## Project Structure
-
-```
-.
-├── book/                    # Published Jupyter Book paper
-│   ├── _config.yml         # Book configuration
-│   ├── results/            # Published results chapters
-│   ├── drafts/             # Unpublished exploratory chapters
-│   ├── generated/          # Generated markdown fragments
-│   └── scripts/            # Data generation scripts
-├── llm_eti/                # Python package and analysis code
-├── results/                # Generated simulation outputs
-├── tests/                  # Regression and integration tests
-└── pyproject.toml          # Project dependencies
-```
-
-## Full Analysis Pipeline
-
-To run the complete analysis (warning: expensive API calls!):
+Useful narrower targets:
 
 ```bash
-# Run full simulations
-make run-simulation-4o  # GPT-4o
-make run-simulation     # GPT-4o-mini
-
-# Build the book
-cd book
-make all
+make artifacts   # Regenerate tables, figures, and analysis_summary.json
+make test        # Run offline integrity and regression tests
+make lint        # Run Black, Ruff, and mypy checks
+make site        # Render the microsite plus HTML/PDF/TeX paper
+make serve       # Preview _site at http://localhost:8000
 ```
 
-## Jupyter Book Commands
+## Reproducibility boundary
 
-- `make book` - Build the JupyterBook
-- `make book-serve` - Serve locally
-- `make book-pdf` - Generate PDF
-- `make book-test` - Run test pipeline
+The analysis starts from `data/scenarios.csv` and five archived response files
+under `data/responses/`. The original runner did not retain the exact
+PolicyEngine-US or upstream dataset revisions used to create the scenario
+sample, nor every provider setting, failed attempt, or cache hit. Those unknowns
+are disclosed rather than reconstructed.
 
-## Development
+The analysis rebuild is deterministic from the archived CSVs. A future call to
+a moving model endpoint is not expected to reproduce the same text.
 
-```bash
-# Format code
-cd book && make format
+The Python source distribution is a minimal library artifact containing
+`llm_eti` and the required package, readme, license, and notice files. It omits
+the research data, tests, paper and site sources, assets, protocols, automation,
+and CI configuration. Clone the repository or use its publication/release
+archive when reproducing the paper; the Python sdist alone is not the
+research-data archive.
 
-# Run linters
-cd book && make lint
+## Repository map
 
-# Run tests
-cd book && make test
+```text
+index.qmd                    editorial project landing page
+reproduce.qmd                public provenance and build guide
+paper/index.qmd              canonical web/PDF/TeX manuscript
+paper/sections/              manuscript sections
+paper/generated/             derived tables, text, and machine summary
+paper/figures/               derived PNG, SVG, and PDF figures
+data/                        frozen scenario and response inputs
+llm_eti/study2.py            validated analysis library
+scripts/generate_artifacts.py single presentation-artifact generator
+scripts/render_publication.py Quarto build orchestrator
+tests/                       offline integrity and regression tests
 ```
 
-## Citation
+See [`data/README.md`](data/README.md),
+[`data/run_manifest.json`](data/run_manifest.json), and
+[`NOTICE.md`](NOTICE.md) for provenance and third-party boundaries.
 
-```bibtex
-@article{debacker2025llmeti,
-  title={What can LLMs tell us about the ETI?},
-  author={DeBacker, Jason and Ghenis, Max},
-  year={2025}
-}
-```
+## Citation and license
 
-## License
+Citation metadata are in [`CITATION.cff`](CITATION.cff). Its `license` field
+and the [Unlicense](LICENSE) cover original code and text contributed to this
+repository. See [`NOTICE.md`](NOTICE.md) for the archived response corpus's
+provenance, current redistribution status, and third-party terms that require
+separate review.
 
-MIT License - see LICENSE file for details.
+## Capped laboratory identification correction
+
+The lab appendix withholds the earlier structural notch-ETI and numerical bound
+claims. It records a budget/identification argument, named zero-inclusive
+alternative outcomes, and an audit of two retained legacy inputs. Both fail the
+real-data acceptance contract; no lab contrast, bootstrap interval, completion
+range or human Table 6 replication is reported. Study 2's 8,095 responses and
+existing numerical results remain unchanged.
+
+See [the integration scope](docs/lab-methods/README.md),
+[analysis contract](docs/lab-methods/SPECIFICATION.md), and
+[retained archive provenance](data/legacy_lab/README.md). The usual artifact
+command regenerates `paper/generated/legacy_lab_audit.json` and its manuscript
+table; the test suite includes the independently reviewed synthetic reference
+regressions and rejection checks against the actual retained inputs. Synthetic
+recovery is not empirical validation. Author and release gates remain open.

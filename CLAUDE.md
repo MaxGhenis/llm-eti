@@ -1,105 +1,79 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for agents working in this repository.
 
-## Critical CI/CD Workflow Note
+## Research boundary
 
-**IMPORTANT**: The GitHub Actions workflows are set up with dependencies. The build-book workflow will NOT run if the lint workflow fails. Always check ALL workflows (not just build-book) when monitoring CI:
+This repository analyzes a frozen June 2026 language-model response archive.
+It does not estimate human behavior and does not call model APIs during the
+publication build.
+
+The six canonical inputs are `data/scenarios.csv` and the five CSVs under
+`data/responses/`. Do not mutate them, replace them with fresh downloads, or use
+the legacy `implied_eti_*` columns. `data/run_manifest.json` records their hashes
+and the limits of the historical provenance.
+
+The unsupported PKNF replication and the legacy scenario generator were
+removed. Do not reintroduce either result into the paper without a new,
+prospectively validated design.
+
+## Build
+
+Use uv and Python 3.13:
 
 ```bash
-# Check ALL recent workflow runs
-gh run list --limit=10
-
-# Don't just check build-book workflow - lint failures will block it!
+make install
+make publication
 ```
 
-## Build and Development Commands
+`make publication` regenerates the analysis artifacts, runs tests and static
+checks, renders the Quarto microsite and web paper, compiles the PDF, retains
+the TeX source, checks local links, and verifies generated-file drift.
 
-### Installation (uses uv package manager - 10-100x faster than pip)
+Useful targets:
+
 ```bash
-make install               # Install deps and create Python 3.13 venv
-source .venv/bin/activate  # Activate environment
-export OPENAI_API_KEY=xxx  # Required for simulations
+make artifacts
+make test
+make lint
+make site
+make serve
 ```
 
-### Development Workflow
-```bash
-# ALWAYS format before pushing - lint failures block other CI workflows
-make format                # Run black and ruff formatters
-make lint                  # Check formatting and run mypy
+Quarto 1.9.38 is the pinned publication version. CI installs it with TinyTeX.
 
-# Run from project root, not book/ directory
-cd book && make test-data  # Generate test data (uses gpt-4o-mini)
-cd book && make book       # Build JupyterBook
-cd book && make serve      # Serve locally at http://localhost:8000
-```
+## Architecture
 
-### Testing Single Components
-```bash
-# Run specific simulation scripts
-uv run python book/scripts/run_pknf_simulation.py --test --model gpt-4o-mini
-uv run python book/scripts/run_gruber_saez_simulation.py --test --model gpt-4o-mini
+- `llm_eti/study2.py` is the validated analysis library.
+- `scripts/generate_artifacts.py` is the only presentation-artifact generator.
+- `paper/generated/` and `paper/figures/` are generated, tracked, and checked
+  for drift.
+- `paper/index.qmd` is the canonical manuscript source for HTML, PDF, and TeX.
+- `index.qmd` and `reproduce.qmd` form the small project microsite.
+- `scripts/render_publication.py` orchestrates both Quarto projects.
+- `scripts/check_publication.py` enforces release integrity.
 
-# Run regression analysis
-uv run python -m llm_eti.simple_regression
-```
+Do not hand-edit a generated table, headline number, plot, or
+`analysis_summary.json`. Change the analysis/generator and regenerate instead.
 
-## Architecture Overview
+## Methodological invariants
 
-### Package Structure (`llm_eti/`)
-The project is packaged as `llm_eti` with all Python code inside this directory:
+- Reconstruct the whole-dollar incomes and integer rates delivered in the
+  prompt.
+- Exclude all duplicated delivered-prompt rows and ambiguous recovery reruns.
+- The primary four-model panel contains 821 clean paired scenarios, 632 with a
+  displayed rate change, and 603 with positive outputs in all eight responses.
+- Average response-level log changes within model-scenario cells.
+- Fit model-specific OLS slopes with an intercept and cluster by
+  `year × tax_unit_id` (600 clusters in the primary panel).
+- Treat `log1p` as a unit-dependent boundary stress test, not an elasticity.
+- Describe results as model-implied responses, never human ETI estimates.
 
-- **Core Simulation Engine**: 
-  - `simulation_engine.py`: `TaxSimulation` class orchestrates Gruber & Saez style observational simulations
-  - `gpt_utils.py`: `GPTClient` wrapper for OpenAI API calls and ETI calculations
-  - `config.py`: Configuration management
+Tests lock the primary counts, slopes, hashes, and major sensitivity results.
+Update them only when an intentional methodological change is documented.
 
-- **PKNF Lab Experiment Replication** (`PKNF_2024_replication/`):
-  - `GPT_PKNF_replication.py`: Main experiment runner simulating lab subjects
-  - Implements 16-round tax decision game with different tax schedules
+## CI and deployment
 
-- **Analysis & Visualization**:
-  - `analysis.py`: ETI heterogeneity analysis
-  - `plotting.py`: Standardized plot generation
-  - `regression_utils.py` & `table_utils.py`: Statistical analysis and LaTeX table generation
-
-### JupyterBook Structure (`book/`)
-- `_config.yml`: Book configuration (title, author, build settings)
-- `_toc.yml`: Table of contents defining chapter order
-- `intro.md`, `methods.md`, `results/*.md`: Book content
-- `scripts/`: Data generation scripts that import from `llm_eti` package
-- `data/`, `figures/`, `tables/`: Generated assets
-
-### Key Design Patterns
-
-1. **Two-Study Approach**: The codebase replicates two different ETI studies:
-   - Lab experiment (PKNF 2024): Controlled environment with specific tax schedules
-   - Observational study (Gruber & Saez 2002): Simulated real-world tax responses
-
-2. **Simulation Pipeline**: 
-   - Scripts in `book/scripts/` orchestrate simulations
-   - Results saved to CSV in `book/data/`
-   - Figures/tables generated from saved data
-   - JupyterBook compiles everything into HTML/PDF
-
-3. **API Cost Management**:
-   - `--test` flag limits API calls (10 subjects instead of 100)
-   - CI uses `gpt-4o-mini` model to minimize costs
-   - Full simulations require explicit commands
-
-## Common Issues and Solutions
-
-### Mypy Errors
-The codebase has some type annotation issues that don't affect functionality. If mypy is blocking progress:
-- Focus on fixing import errors and syntax warnings first
-- Many mypy errors are about missing type annotations (non-critical)
-
-### Import Errors
-All imports should use the package form:
-```python
-from llm_eti import GPTClient, SimulationParams, TaxSimulation
-# NOT: from llm_eti.config import SimulationParams
-```
-
-### CI Placeholder Data
-The CI workflow creates placeholder CSV files to avoid API calls. If plotting fails, ensure test data has sufficient rows and all required columns.
+The publication workflow has read-only permissions during build and uses a
+separate GitHub Pages deploy job on `main`. It must not receive an API key or
+fabricate placeholder data. PDF or TeX build failures are release failures.

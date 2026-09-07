@@ -1,0 +1,1 @@
+The clean four-model intersection contains **821 scenarios**. Of those, **632** display a nonzero integer rate change. Requiring positive broad- and taxable-income outputs from all four models and both requested responses leaves **603 scenarios** in **600 year–tax-unit clusters**.

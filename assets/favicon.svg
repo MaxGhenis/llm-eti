@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="LLM times ETI">
+  <rect width="64" height="64" fill="#f4f0e6"/>
+  <path d="M9 13h8v30h16v8H9z" fill="#17231f"/>
+  <path d="M38 18l5-5 5 5-5 5zm0 28l5-5 5 5-5 5zM29 27l5-5 20 20-5 5zm20-5l5 5-20 20-5-5z" fill="#176b63"/>
+</svg>

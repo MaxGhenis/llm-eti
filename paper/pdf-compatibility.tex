@@ -1,0 +1,15 @@
+% A mismatched l3kernel/l3backend can typeset RGB operands before hyperlinks
+% while LuaLaTeX and PDF/UA validation both report success. Color selection
+% must emit no visible text. Test its behavior without patching TeX internals.
+\ExplSyntaxOn
+\group_begin:
+  \hbox_set:Nn \l_tmpa_box { \color_select:n { blue } }
+  \dim_compare:nNnF { \box_wd:N \l_tmpa_box } = { 0pt }
+    {
+      \PackageError{publication}
+        {Incompatible~TeX~color~backend:~color~selection~typesets~text}
+        {Use~matching~l3kernel~and~l3backend~files.~A~stale~l3backend~directory
+         ~can~shadow~the~backend~bundled~with~l3kernel.~See~README.md.}
+    }
+\group_end:
+\ExplSyntaxOff

@@ -1,0 +1,1 @@
+The 5 response files contain **8,095 archived rows**. Deduplication leaves **8,087 unique analysis rows**. In DeepSeek V3, **4 scenarios** contain **8 duplicated scenario–response cells** (**16 raw rows**); the first timestamped row in each cell is retained and flagged, and every affected scenario is excluded from common-panel analysis.
