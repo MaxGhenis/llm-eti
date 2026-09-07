@@ -33,6 +33,8 @@ once and use round-trip-safe float labels in both exported rows and filenames.
 A tenth regression runs the CLI with the synthetic client and proves nearby
 rates produce separate result and checkpoint files. Frozen tests: 45 passed;
 whole-repo Black/Ruff and targeted implementation Mypy passed.
+The runner regression now imports the script dynamically, avoiding duplicate
+module discovery in Mypy; full Mypy also passes across all 49 source files.
 
 Next: retain the independent review and red/green evidence in the handoff;
 regenerate the explicitly synthetic fixture, verify remote heads again, and

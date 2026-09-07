@@ -1,4 +1,5 @@
 import csv
+import importlib
 import json
 import os
 import subprocess
@@ -300,7 +301,7 @@ def test_fractional_rates_have_distinct_output_labels(experiment, low, high, lab
 
 
 def test_runner_preserves_close_rates_in_separate_filenames(tmp_path, monkeypatch):
-    from book.scripts import run_pknf_simulation as runner
+    runner = importlib.import_module("book.scripts.run_pknf_simulation")
 
     monkeypatch.setenv("EXPECTED_PARROT_API_KEY", "offline-test-sentinel")
     monkeypatch.setattr(runner, "EDSLClient", lambda **kwargs: OfflineLabClient())
