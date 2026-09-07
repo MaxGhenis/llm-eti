@@ -2,52 +2,66 @@
 
 ## State
 
-2026-09-07: Offline continuation on `codex/pr43-provenance-20260907` of PR43's
-exact independently reviewed head `f3b23873f7240491cb40d6378c9080cbd23fd726`.
-Live head/base/check verification is blocked by GitHub DNS/network access.
-Cached `origin/main` is `899daa612cecaee08dbf9a279d4b03ea4c5fb6d2` and is an
-ancestor of that head; no cached-base integration is needed. The original
-`/Users/maxghenis/llm-eti` checkout is clean on `ti_resolved` and untouched.
+2026-09-07: PR43 provenance implementation is complete locally on
+`codex/pr43-provenance-20260907`, based on reviewed head
+`f3b23873f7240491cb40d6378c9080cbd23fd726`. Release/remote closure is blocked:
+GitHub and the independent-review provider cannot resolve from this sandbox;
+local Quarto is 1.9.36 instead of required 1.9.38. No live PR/check status or
+independent approval is claimed. No push, publication, merge, model collection,
+paid compute, usage reset, or reset-setting change occurred.
 
 ## Done
 
-- Read global and project instructions and the independent PR43 review.
-- Inspected original status, branches, remotes and cached base; attempted live
-  PR lookup and fetch (both failed: GitHub could not be resolved).
-- Created an isolated worktree from the exact reviewed commit.
-- Confirmed reset prevention remains enabled and automatic resets disabled.
-
-- Reproduced both original bugs in a disposable Git fixture; evidence saved in
-  `../evidence/before-regressions.json`.
-- Implemented clean source/HEAD binding, tracked-source and platform-figure
-  hashes, pre/post-render source identity checks, and index + worktree generated
-  text drift detection. Added isolated Git regressions; 77 tests pass (baseline
-  55), Black and Ruff pass. Mypy exposed dual script/package import names and
-  inferred empty-dict typing; fixed, and Mypy now passes.
-- Local Quarto is 1.9.36, while the release pin is 1.9.38. The pinned renderer is
-  not installed in the checked local tool locations; release rendering remains
-  blocked unless a local copy is found. No dependency/version gate was relaxed.
-
-- Added a repeatable historical-parser reconciliation command and regressions:
-  all 8,095 CSV records / 16,190 numeric fields match with zero discrepancies.
-  Verified the archived parser excerpt byte-for-byte against local historical
-  commit `b23f2cb882d33f79d706afbdcca836b3905361f8`. No API client was imported.
-- Requested one bounded semantic Subfleet review, read-only, pinned to Thesis
-  `.codex-5`, zero retries/reset/overflow. Its startup has not produced output.
-
-- Added two red/green regressions for Git `assume-unchanged` and `skip-worktree`
-  hiding manuscript edits. Attestation now compares actual source bytes and
-  executable bits with committed Git blobs independently of the index cache.
+- Read global/project instructions and the independent PR43/PR44 reviews.
+- Inspected status, branch, remotes and cached base before edits. Original
+  `/Users/maxghenis/llm-eti` remains clean on `ti_resolved` and untouched.
+- Created this isolated worktree from the exact reviewed PR43 commit. Cached
+  `origin/main` (`899daa612cecaee08dbf9a279d4b03ea4c5fb6d2`) is already an ancestor.
+  Live lookup/fetch attempts failed with GitHub DNS errors; cached is not live.
+- Reproduced dirty manuscript attribution and staged generated drift in a
+  disposable Git repository; saved `../evidence/before-regressions.json`.
+- Required clean source against HEAD, checked both index and worktree, hashed
+  all tracked sources, bound the manifest to actual source and commit, and
+  checked source identity before/after rendering. Only the ten named existing
+  generated image outputs may differ by platform and are separately hashed.
+- Added direct Git-blob/executable-bit comparisons after two additional tests
+  showed assume-unchanged/skip-worktree can hide dirty manuscript bytes.
+- Added a repeatable historical-parser audit: all 8,095 records / 16,190 income
+  values match; zero mismatches. Verified the parser excerpt byte-for-byte with
+  historical commit `b23f2cb882d33f79d706afbdcca836b3905361f8`.
+- 81 tests pass (baseline 55); Black, Ruff, Mypy pass. Generated prose/numeric
+  artifacts and variables have zero drift from HEAD and the index.
+- Rendered the entire publication with an explicitly opted-out Quarto 1.9.36
+  for diagnostics: HTML, tagged 22-page PDF, retained TeX, source ZIP and hashes.
+  Strict check correctly rejects that version. Remaining integrity checks pass
+  when only that version expectation is changed in memory for diagnostics.
+- Visually inspected PDF pages 1, 3, 10 and 22. Main results/figure are readable,
+  but citations visibly contain stray `0.0 0.0 1.0` values in this off-pin local
+  toolchain. The preview is not suitable for release. No full veraPDF run.
+- One bounded semantic Subfleet review was attempted on pinned Thesis
+  `.codex-5`; run `20260907-170228-review-md` could not connect to chatgpt.com.
+  Stopped its network retries (exit 130); no verdict or approval. Initial
+  detached launch produced no review/run output.
 
 ## Next
 
-1. Reproduce dirty-manuscript attestation and staged-generated-drift failures.
-2. Enforce truthful release provenance and HEAD-based drift checks; regressions.
-3. Regenerate and validate the publication and historical-parser reconciliation
-   of all 8,095 archived responses without inference or paid compute.
-4. Prepare review-ready branch/patch and evidence; reverify live PR state before
-   any remote update. No publication, merge, or collaborator messaging.
-5. If PR43 closes with time remaining, isolate PR44 manifest/checkpoint work.
+1. Restore permitted network access and fetch/verify live PR43 head, base,
+   checks, and draft state before updating any remote branch. Safely integrate
+   any new head/base changes; never overwrite the original checkout.
+2. Run `make publication` with Quarto 1.9.38 and a compatible LaTeX environment,
+   inspect citation rendering, then run the existing veraPDF/UA-2 CI gate.
+3. Obtain the bounded independent review when the subscription lane is reachable.
+4. Use the prepared draft update and patch/bundle in the lane directory; do not
+   publish or merge. Author/redistribution approval conditions remain intact.
+5. Optional PR44 manifest/checkpoint work belongs in a separate isolated branch,
+   without estimator changes, model collection, or claims of validated ETIs.
 
-Final lane report: `/Users/maxghenis/capacity-sprint-20260907/llm-eti/result.md`.
-Stop launching work at 21:00 America/New_York; preserve no-reset controls.
+Generated figure modifications visible in this worktree are this sprint's
+platform rebuild outputs, intentionally uncommitted under the documented
+exception. They are not manuscript or analysis changes. All six canonical
+inputs and numerical results are unchanged.
+
+Durable evidence and final report:
+`/Users/maxghenis/capacity-sprint-20260907/llm-eti/result.md` and `evidence/` beside
+this worktree. Preserve `no-reset.json` and `auto_reset.enabled=false` after the
+21:00 America/New_York sprint deadline.
