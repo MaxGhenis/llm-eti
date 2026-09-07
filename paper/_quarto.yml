@@ -50,13 +50,14 @@ format:
     geometry:
       - margin=1in
     include-in-header:
-      text: |
-        \usepackage{booktabs}
-        \usepackage{longtable}
-        \usepackage{microtype}
-        \usepackage{fontspec}
-        \setmainfont{TeX Gyre Pagella}
-        \setsansfont{TeX Gyre Heros}
+      - file: pdf-compatibility.tex
+      - text: |
+          \usepackage{booktabs}
+          \usepackage{longtable}
+          \usepackage{microtype}
+          \usepackage{fontspec}
+          \setmainfont{TeX Gyre Pagella}
+          \setsansfont{TeX Gyre Heros}
 
 execute:
   enabled: false

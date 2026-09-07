@@ -6,6 +6,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import xml.etree.ElementTree as ET
@@ -219,6 +220,23 @@ def _missing_local_references(html_path: Path) -> list[str]:
     return sorted(set(missing))
 
 
+def verify_pdf_text(pdf: Path) -> None:
+    """Catch visible RGB operands that tagging/conformance validators accept."""
+    pdftotext = shutil.which("pdftotext")
+    if pdftotext is None:
+        raise SystemExit("pdftotext (poppler-utils) is required to verify PDF text")
+    text = subprocess.run(
+        [pdftotext, "-layout", os.fspath(pdf), "-"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    if not text.strip():
+        raise SystemExit("The publication PDF has no extractable text")
+    if re.search(r"0\.0\s+0\.0\s+1\.0", text):
+        raise SystemExit("The publication PDF typesets blue RGB color operands")
+
+
 def main() -> None:
     required = [
         PAPER / "generated" / "analysis_summary.json",
@@ -287,6 +305,8 @@ def main() -> None:
         )
         if tagged_value != "yes":
             raise SystemExit("The publication PDF is not tagged for accessibility")
+
+    verify_pdf_text(pdf)
 
     tex = SITE / "paper" / "llm-eti.tex"
     tex_text = tex.read_text(encoding="utf-8")

@@ -17,8 +17,8 @@ The publication has three outputs from one Quarto manuscript source:
 
 ## Reproduce everything
 
-Prerequisites are [uv](https://docs.astral.sh/uv/), Quarto 1.9.38, and a LaTeX
-distribution.
+Prerequisites are [uv](https://docs.astral.sh/uv/), Quarto 1.9.38, a coherent
+LaTeX distribution, and Poppler (`pdfinfo` and `pdftotext`).
 
 ```bash
 git clone https://github.com/MaxGhenis/llm-eti.git
@@ -31,6 +31,19 @@ The build validates the frozen inputs, regenerates every number and figure,
 runs tests and static checks, renders the site and web paper, compiles the PDF,
 retains the TeX, checks internal links and file signatures, and fails if tracked
 generated artifacts drift. No model API key is required.
+
+The PDF template checks that selecting a link color produces no visible text;
+the output gate also rejects leaked blue RGB operands. A tagged PDF can pass
+PDF/UA validation while incorrectly printing `0.0 0.0 1.0` before citations.
+This was reproduced with an August 2026 `l3kernel` loading a stale July backend
+from `l3backend/` ahead of the matching files in `l3kernel/`. Upstream
+[merged the backend into the kernel](https://github.com/latex3/latex3/commit/574b0c5fd5831a88b064e72868b175b94208caeb).
+Use `kpsewhich -all l3backend-luatex.def` from the TeX installation Quarto uses
+to diagnose shadowed files. A task-local copy of the matching backend files,
+selected with `TEXINPUTS="/path/to/matching-backend//:"`, repairs that search
+order without modifying a shared installation. Keep its source paths and
+hashes with the build evidence. Do not disable color links or the output gates
+to make an incompatible TeX installation pass.
 
 Publication rendering requires a Git checkout with source committed to `HEAD`.
 Both the index and working tree are checked, including manuscript sections,

@@ -20,6 +20,25 @@ existing PR branches as drafts after review, with accurate final evidence.
 No nested reviewers, model collection, paid jobs, resets, publication or merges.
 Final host report: sibling followup-result.md.
 
+## Pinned render and color backend (2026-09-07)
+
+State: Quarto 1.9.38 verified against the official release SHA-256 and checksum
+file. The initial pinned render reproduced visible RGB text despite passing
+veraPDF 1.30.2 with an empty failed-rule baseline. Root's independent review
+approved provenance at 6ee5cfc only; this later rendering scope is not covered.
+
+Done: isolated the defect to stale July l3backend files shadowing matching
+August l3kernel backend files in TinyTeX. A minimal document reproduces it;
+selecting task-local copies of the matching files fixes it without modifying
+shared TeX. Added a template behavior check (color selection must have zero
+width), a PDF extracted-text gate, and four real LuaLaTeX/Poppler regressions.
+Toolchain sources, hashes, minimal reproductions and signed veraPDF installation
+evidence are saved in sibling toolchains/ and evidence/.
+
+Next: commit source, regenerate with pinned Quarto and matching TeX backend,
+run the full publication gate, historical reconciliation, veraPDF and visual
+inspection; then update the existing draft PR43 and record final CI results.
+
 ## State
 
 2026-09-07: PR43 provenance implementation is complete locally on
