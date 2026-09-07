@@ -36,6 +36,9 @@ whole-repo Black/Ruff and targeted implementation Mypy passed.
 The runner regression now imports the script dynamically, avoiding duplicate
 module discovery in Mypy; full Mypy also passes across all 49 source files.
 
+CI now installs frozen dependencies and runs the offline checkpoint suite after
+full-project lint/type checks; the job receives no provider credentials.
+
 Next: retain the independent review and red/green evidence in the handoff;
 regenerate the explicitly synthetic fixture, verify remote heads again, and
 update the existing PR44 as a draft. No estimator or methods-lane code is included.
