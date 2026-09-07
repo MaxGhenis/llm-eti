@@ -2,27 +2,39 @@
 
 ## State
 
-Active wording-only continuation from live PR43 a2936f4, whose scientific
-implementation is independently clean under the coordinator review of f85b2eb.
-The only requested clarification is the generated grid label and definition.
-Fresh branch: `codex/pr43-reference-grid-wording-20260907`. Fetched current main
-899daa612cecaee08dbf9a279d4b03ea4c5fb6d2 is already an ancestor.
+Requested nonblocking wording clarification applied. The coordinator's review
+is independently clean for the scientific implementation at f85b2eb and its
+PROGRESS-only continuation a2936f4. This later delta changes only the generated
+grid heading/definition and a focused assertion; no scientific approval beyond
+that exact review scope is inferred.
+
+Fresh branch: `codex/pr43-reference-grid-wording-20260907`, based on verified
+live PR43 a2936f4. Fetched current main 899daa612cecaee08dbf9a279d4b03ea4c5fb6d2
+is already an ancestor. PR44 remains at 792c9f8.
 
 ## Done
 
 - Read independent-methods-integration-review-host.md and global/project rules.
-- Verified live PR43/main/checks and unchanged draft PR44 at 792c9f8.
 - Preserved the previous site/PDF/TeX, generated audit and dirty figure diff in
-  the lane's evidence/final-wording-before directory; originals are untouched.
+  evidence/final-wording-before; the original worktree remains untouched.
+- Changed the source generator to “Complete reference grids” and defined this
+  as observed labels covering all source-menu caps in each phase, not a verified
+  human assignment protocol or planned roster. Regenerated the table.
+- Extended the existing archive-output assertion to enforce the new label and
+  definition. Black and Ruff pass for the changed Python files.
+- Verified byte-identical audit JSON and table data rows, unchanged raw/data
+  tree, Study 2 code/results, reference formulas and manuscript section sources.
+  All empirical estimates remain withheld; canonical 8,095 responses unchanged.
+- Exact committed-head build/check results, rendered-paper comparisons, final
+  PR status and tiny delta patch are recorded outside the source tree in
+  final-wording-result.md and final-wording-HANDOFF.md after verification.
 
 ## Next
 
-1. Change the source generator to “Complete reference grids” and define observed
-   source-cap coverage without asserting a human assignment protocol.
-2. Regenerate, verify unchanged counts/hashes/withheld estimates, and run the
-   existing publication gates. Keep scientific formulas and PR44 unchanged.
-3. Normal-update draft PR43 and save final-wording-result.md, handoff and tiny
-   delta patch for the coordinator. No nested review or new analysis.
+Coordinator tiny wording-delta check using the final handoff and patch. Existing
+independent scientific approval retains its stated scope. Author/redistribution
+and publication gates remain open; draft update only. No new analysis, data
+collection, PE/model call, nested review, merge, publication, reset or paid job.
 
 ---
 

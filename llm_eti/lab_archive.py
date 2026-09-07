@@ -295,7 +295,7 @@ def publication_audit(directory: Path) -> dict[str, Any]:
 
 def audit_markdown(audit: dict[str, Any]) -> str:
     lines = [
-        "| Retained archive | Rows | Observed subject labels | Rows outside original cap menu | Complete original grids |",
+        "| Retained archive | Rows | Observed subject labels | Rows outside original cap menu | Complete reference grids |",
         "| --- | ---: | ---: | ---: | ---: |",
     ]
     for item in audit["archives"]:
@@ -311,6 +311,8 @@ def audit_markdown(audit: dict[str, Any]) -> str:
         )
     lines.extend(
         [
+            "",
+            "Complete reference grids count observed labels covering all eight source-menu caps in each phase; this is observed coverage, not a verified human assignment protocol or planned roster.",
             "",
             "Counts describe stored records, not planned or independent subjects. Both archives fail the analysis contract; all standardized lab estimates and completion bounds are withheld.",
         ]

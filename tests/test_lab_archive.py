@@ -12,6 +12,7 @@ from llm_eti.lab_archive import (
     _csv_audit,
     _grid,
     audit_archive,
+    audit_markdown,
     load_for_estimation,
     publication_audit,
 )
@@ -121,3 +122,8 @@ def test_publication_audit_has_no_nonfinite_or_empirical_estimands():
     json.dumps(report, allow_nan=False)
     assert report["empirical_lab_estimates_released"] is False
     assert all(a["human_Table_6_reproduced"] is False for a in report["archives"])
+    table = audit_markdown(report)
+    assert "Complete reference grids" in table
+    assert "Complete original grids" not in table
+    assert "observed labels covering all eight source-menu caps in each phase" in table
+    assert "not a verified human assignment protocol or planned roster" in table
