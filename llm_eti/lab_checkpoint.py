@@ -15,6 +15,7 @@ import math
 import os
 import tempfile
 from contextlib import contextmanager
+from datetime import datetime, timezone
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
@@ -56,6 +57,12 @@ def canonical(value) -> str:
 
 def digest(value) -> str:
     return hashlib.sha256(canonical(value).encode()).hexdigest()
+
+
+def rate_label(rate: float) -> str:
+    """Retain round-trip-safe rates in exported treatment labels and filenames."""
+    value = float(rate)
+    return str(int(value)) if value.is_integer() else repr(value)
 
 
 def build_manifest(
@@ -127,9 +134,12 @@ def build_manifest(
     spec_id = digest(spec)
     scenarios = []
     for treatment in parsed_treatments:
-        output_label = treatment.label.replace("Flat25", f"Flat{low_rate:g}").replace(
-            "Flat50", f"Flat{high_rate:g}"
-        )
+        components = {
+            "Prog": "Prog",
+            "Flat25": f"Flat{rate_label(low_rate)}",
+            "Flat50": f"Flat{rate_label(high_rate)}",
+        }
+        output_label = ",".join(components[part] for part in treatment.label.split(","))
         for subject in range(subjects):
             subject_seed = int(digest([seed, treatment.label, subject]), 16)
             rng = np.random.Generator(np.random.PCG64(subject_seed))
@@ -214,6 +224,15 @@ def prepare_checkpoint(path: Path | None, manifest) -> list[dict]:
         _atomic_json(manifest_path, manifest)
     if not path.exists():
         return []
+    # csv.DictReader accepts an unquoted scalar at EOF. Our writer always ends
+    # a complete record with CRLF; appending to any shorter tail corrupts it.
+    with path.open("rb") as stream:
+        stream.seek(0, os.SEEK_END)
+        if stream.tell() < 2:
+            raise ValueError("Incomplete checkpoint record")
+        stream.seek(-2, os.SEEK_END)
+        if stream.read() != b"\r\n":
+            raise ValueError("Incomplete checkpoint record")
     planned = {item["scenario_id"]: item for item in manifest["scenarios"]}
     attempts: dict[str, int] = {}
     completed = set()
@@ -228,6 +247,15 @@ def prepare_checkpoint(path: Path | None, manifest) -> list[dict]:
                     value is None for value in row.values()
                 ):
                     raise ValueError("Incomplete or extra checkpoint fields")
+                try:
+                    recorded = datetime.fromisoformat(row["recorded_at"])
+                    if (
+                        recorded.tzinfo != timezone.utc
+                        or recorded.isoformat() != row["recorded_at"]
+                    ):
+                        raise ValueError("Noncanonical UTC timestamp")
+                except ValueError as error:
+                    raise ValueError("Invalid checkpoint timestamp") from error
                 scenario_id = row["scenario_id"]
                 if scenario_id not in planned:
                     raise ValueError("Checkpoint has an unplanned scenario")

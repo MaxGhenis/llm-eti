@@ -12,6 +12,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
 from llm_eti.edsl_client import EDSLClient
+from llm_eti.lab_checkpoint import rate_label
 from llm_eti.simulation_engine import LabExperimentSimulation
 
 ALL_MODELS = [
@@ -110,7 +111,7 @@ def main():
         # if model string has a slash (e.g. "deepseek-ai/DeepSeek-V3"), replace with underscore for filename
         safe_model_name = model.replace("/", "_")
         filename = (
-            f"pknf_results_{safe_model_name}_{args.low_rate:g}pct_{args.high_rate:g}pct"
+            f"pknf_results_{safe_model_name}_{rate_label(args.low_rate)}pct_{rate_label(args.high_rate)}pct"
             f"_{rounds}rounds_seed{args.seed}"
         )
         if args.test:

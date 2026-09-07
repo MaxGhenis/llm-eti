@@ -20,6 +20,24 @@ existing PR branches as drafts after review, with accurate final evidence.
 No nested reviewers, model collection, paid jobs, resets, publication or merges.
 Final host report: sibling followup-result.md.
 
+## Host review fixes (2026-09-07)
+
+State: both P2 findings from the independent host review of e71e837 are fixed
+in this continuation. That exact-head review requested changes; it does not
+constitute independent approval of these subsequent fixes or scientific claims.
+
+Done: added nine regressions that failed on the reviewed implementation;
+reject truncated CSV scalar tails, missing CRLF, and noncanonical UTC timestamps
+before requests, preserving ledger bytes. Map original treatment components
+once and use round-trip-safe float labels in both exported rows and filenames.
+A tenth regression runs the CLI with the synthetic client and proves nearby
+rates produce separate result and checkpoint files. Frozen tests: 45 passed;
+whole-repo Black/Ruff and targeted implementation Mypy passed.
+
+Next: retain the independent review and red/green evidence in the handoff;
+regenerate the explicitly synthetic fixture, verify remote heads again, and
+update the existing PR44 as a draft. No estimator or methods-lane code is included.
+
 ## State
 
 2026-09-07: local implementation and offline verification complete on

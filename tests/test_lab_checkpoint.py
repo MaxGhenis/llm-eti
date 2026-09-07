@@ -153,6 +153,47 @@ def test_transport_exception_is_recorded_then_resumable(experiment, tmp_path):
     assert len(experiment.client.calls) == 9
 
 
+@pytest.mark.parametrize("cut_bytes", [1, 2, 10])
+def test_truncated_scalar_tail_is_rejected_before_retry(
+    experiment, tmp_path, cut_bytes
+):
+    path = tmp_path / "checkpoint.csv"
+    experiment.client.fail_rounds = {8}
+    run(experiment, path)
+    path.write_bytes(path.read_bytes()[:-cut_bytes])
+    before = path.read_bytes()
+    experiment.client.fail_rounds.clear()
+    with pytest.raises(ValueError, match="Incomplete checkpoint record"):
+        run(experiment, path)
+    assert len(experiment.client.calls) == 8
+    assert path.read_bytes() == before
+
+
+@pytest.mark.parametrize(
+    "timestamp",
+    ["", "2026-09-07", "2026-09-07T21:41:06.8251", "2026-09-07T21:41:06+01:00"],
+)
+def test_invalid_timestamp_is_rejected_before_retry(experiment, tmp_path, timestamp):
+    path = tmp_path / "checkpoint.csv"
+    experiment.client.fail_rounds = {8}
+    run(experiment, path)
+    with path.open(newline="") as stream:
+        reader = csv.DictReader(stream)
+        fields = reader.fieldnames
+        rows = list(reader)
+    rows[-1]["recorded_at"] = timestamp
+    with path.open("w", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=fields)
+        writer.writeheader()
+        writer.writerows(rows)
+    before = path.read_bytes()
+    experiment.client.fail_rounds.clear()
+    with pytest.raises(ValueError, match="Invalid checkpoint timestamp"):
+        run(experiment, path)
+    assert len(experiment.client.calls) == 8
+    assert path.read_bytes() == before
+
+
 @pytest.mark.parametrize(
     "corruption",
     [
@@ -239,18 +280,54 @@ def test_invalid_design_fails_before_requests(experiment, tmp_path, kwargs):
     assert experiment.client.calls == []
 
 
-def test_fractional_rates_have_distinct_output_labels(experiment):
+@pytest.mark.parametrize(
+    "low,high,labels",
+    [
+        (25.1, 25.9, {"Prog,Flat25.1", "Prog,Flat25.9"}),
+        (50, 60, {"Prog,Flat50", "Prog,Flat60"}),
+        (25.000001, 25.000002, {"Prog,Flat25.000001", "Prog,Flat25.000002"}),
+    ],
+)
+def test_fractional_rates_have_distinct_output_labels(experiment, low, high, labels):
     manifest = experiment.experiment_manifest(
         ["Prog,Flat25", "Prog,Flat50"],
         rounds=2,
         subjects_per_treatment=1,
-        low_rate=25.1,
-        high_rate=25.9,
+        low_rate=low,
+        high_rate=high,
     )
-    assert {row["treatment"] for row in manifest["scenarios"]} == {
-        "Prog,Flat25.1",
-        "Prog,Flat25.9",
+    assert {row["treatment"] for row in manifest["scenarios"]} == labels
+
+
+def test_runner_preserves_close_rates_in_separate_filenames(tmp_path, monkeypatch):
+    from book.scripts import run_pknf_simulation as runner
+
+    monkeypatch.setenv("EXPECTED_PARROT_API_KEY", "offline-test-sentinel")
+    monkeypatch.setattr(runner, "EDSLClient", lambda **kwargs: OfflineLabClient())
+    for low in ("25.000001", "25.000002"):
+        monkeypatch.setattr(
+            sys,
+            "argv",
+            [
+                "runner",
+                "--test",
+                "--model",
+                "offline",
+                "--low-rate",
+                low,
+                "--high-rate",
+                "60",
+                "--output-dir",
+                str(tmp_path),
+            ],
+        )
+        runner.main()
+    names = {path.name for path in tmp_path.glob("*.csv")}
+    assert names == {
+        "pknf_results_offline_25.000001pct_60pct_2rounds_seed0_test.csv",
+        "pknf_results_offline_25.000002pct_60pct_2rounds_seed0_test.csv",
     }
+    assert {path.name for path in (tmp_path / "checkpoints").glob("*.csv")} == names
 
 
 def test_changed_prompt_builder_source_rejects_resume(experiment, tmp_path):
