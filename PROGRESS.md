@@ -1,5 +1,25 @@
 # Offline checkpoint compatibility sprint
 
+## Host follow-up state
+
+2026-09-07: Network access restored. Live PR heads and fetched main verified:
+PR43 f3b23873f7240491cb40d6378c9080cbd23fd726; PR44
+cf102a2a221c13b36283a8a6a20fad4b547d4f3c; main
+899daa612cecaee08dbf9a279d4b03ea4c5fb6d2. Each reviewed continuation already
+contains its live head and current main. New isolated host continuation preserves
+reviewed revisions 6ee5cfc/e71e837 and the original worktrees; PR43 figure changes
+were snapshotted to sibling evidence/followup-start before any further build.
+
+Done: live PR43 remains draft, prior checks passed; PR44 is an open contributor
+PR with maintainer edits allowed and a prior lint failure. No remote writes yet.
+Root is supplying a host review of the two exact reviewed commits.
+
+Next: use task-local verified official Quarto 1.9.38; diagnose citation color
+rendering and validate PDF/UA; apply host findings; safely fast-forward the
+existing PR branches as drafts after review, with accurate final evidence.
+No nested reviewers, model collection, paid jobs, resets, publication or merges.
+Final host report: sibling followup-result.md.
+
 ## State
 
 2026-09-07: local implementation and offline verification complete on
