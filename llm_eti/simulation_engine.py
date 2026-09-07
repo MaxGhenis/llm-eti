@@ -1,15 +1,22 @@
 """Simulation engine using EDSL for LLM surveys."""
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
-import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
 from .edsl_client import EDSLClient
+from .lab_checkpoint import (
+    RECORD_FIELDS,
+    append_record,
+    build_manifest,
+    checkpoint_lock,
+    prepare_checkpoint,
+    valid_income,
+)
 
 
 @dataclass
@@ -157,6 +164,27 @@ class LabExperimentSimulation:
 
         self.config = Config.PKNF_CONFIG
 
+    def experiment_manifest(
+        self,
+        treatments: List[str],
+        rounds: Optional[int] = None,
+        subjects_per_treatment: int = 100,
+        low_rate: float = 25.0,
+        high_rate: float = 50.0,
+        seed: int = 0,
+    ) -> Dict:
+        """Build the full offline design without issuing a survey request."""
+        return build_manifest(
+            self.client,
+            self.config,
+            treatments,
+            int(self.config["rounds"]) if rounds is None else rounds,
+            subjects_per_treatment,
+            low_rate,
+            high_rate,
+            seed,
+        )
+
     def run_experiment(
         self,
         treatments: List[str],
@@ -165,150 +193,87 @@ class LabExperimentSimulation:
         low_rate: float = 25.0,
         high_rate: float = 50.0,
         checkpoint_path: Optional[Path] = None,
+        seed: int = 0,
     ) -> pd.DataFrame:
-        """Run the full lab experiment simulation.
+        """Run or resume only a manifest-compatible experiment.
 
-        Args:
-            treatments: List of treatment labels to run (e.g., ["Prog,Prog", "Prog,Flat25"])
-            rounds: Number of rounds (default: 16 from config)
-            subjects_per_treatment: Number of subjects per treatment group
-            low_rate: Low marginal tax rate as a percentage (default: 25)
-            high_rate: High marginal tax rate as a percentage (default: 50)
-
-        Returns:
-            DataFrame with experiment results
+        The checkpoint is an append-only attempt ledger. Only successful rows
+        count as completed; zero is a valid income. This method returns the latest
+        row per planned scenario, while preserving failures/retries in the ledger.
+        Legacy manifest-free CSVs are never reused or overwritten automatically.
         """
-        from .pknf_types import Treatment
-
-        if rounds is None:
-            rounds = int(self.config["rounds"])
-
-        instructions = self.client.create_instructions_text(
-            rounds=rounds, wage_per_unit=self.config["wage_per_unit"]
+        manifest = self.experiment_manifest(
+            treatments, rounds, subjects_per_treatment, low_rate, high_rate, seed
         )
-
-        # Load checkpoint if it exists
-        all_results: List[Dict] = []
-        completed_set: set = set()
-        if checkpoint_path is not None and Path(checkpoint_path).exists():
-            try:
-                existing_df = pd.read_csv(checkpoint_path)
-                if not existing_df.empty:
-                    all_results = existing_df.to_dict("records")
-                    for row in all_results:
-                        completed_set.add(
-                            (
-                                str(row["treatment"]),
-                                int(row["subject_id"]),
-                                int(row["round"]),
+        path = None if checkpoint_path is None else Path(checkpoint_path)
+        with checkpoint_lock(path):
+            records = prepare_checkpoint(path, manifest)
+            latest = {row["scenario_id"]: row for row in records}
+            with tqdm(total=len(manifest["scenarios"]), desc="Lab experiment") as pbar:
+                for scenario in manifest["scenarios"]:
+                    scenario_id = scenario["scenario_id"]
+                    previous = latest.get(scenario_id)
+                    if previous is not None and previous["status"] == "success":
+                        pbar.update(1)
+                        continue
+                    request = {
+                        "round_num": scenario["round"],
+                        **{
+                            key: scenario[key]
+                            for key in (
+                                "tax_schedule",
+                                "labor_endowment",
+                                "wage_per_unit",
+                                "rounds",
+                                "low_rate",
+                                "high_rate",
                             )
-                        )
-                    print(
-                        f"Resuming from checkpoint: {len(all_results)} results loaded "
-                        f"({len(completed_set)} (treatment, subject, round) tuples completed)"
-                    )
-            except Exception as e:
-                print(f"Warning: Could not load checkpoint {checkpoint_path}: {e}")
-                all_results = []
-                completed_set = set()
-
-        total_sims = len(treatments) * subjects_per_treatment * rounds
-        with tqdm(total=total_sims, desc="Lab experiment") as pbar:
-            for treatment_label in treatments:
-                try:
-                    treatment = Treatment.from_label(treatment_label)
-                except ValueError:
-                    print(f"Warning: Unknown treatment '{treatment_label}', skipping")
-                    pbar.update(rounds * subjects_per_treatment)
-                    continue
-
-                # Compute output label once per treatment (doesn't vary by round)
-                output_label = treatment.label.replace(
-                    "Flat25", f"Flat{int(low_rate)}"
-                ).replace("Flat50", f"Flat{int(high_rate)}")
-
-                for subject_id in range(subjects_per_treatment):
-                    # Deterministic seed per (treatment, subject) for reproducible endowments
-                    seed = abs(hash(treatment_label)) % (2**32) + subject_id
-                    rng = np.random.default_rng(seed)
-                    labor_endowments = rng.integers(
-                        int(self.config["labor_endowment_min"]),
-                        int(self.config["labor_endowment_max"]) + 1,
-                        size=rounds,
-                    )
-
-                    for round_idx in range(rounds):
-                        round_num = round_idx + 1  # 1-based round number
-
-                        # Skip rounds already saved to checkpoint
-                        if (output_label, subject_id, round_num) in completed_set:
-                            pbar.update(1)
-                            continue
-
-                        completed = pbar.n
-                        remaining = total_sims - completed
-                        pbar.set_description(
-                            f"Treatment {treatment_label} | "
-                            f"Subject {subject_id + 1}/{subjects_per_treatment} | "
-                            f"Round {round_num}/{rounds} | "
-                            f"{remaining} remaining"
-                        )
-
-                        # Get tax schedule for this round
-                        schedule = treatment.get_schedule_for_round(round_num, rounds)
-
-                        scenario = {
-                            "round_num": round_num,
-                            "tax_schedule": schedule.value,
-                            "labor_endowment": int(labor_endowments[round_idx]),
-                            "wage_per_unit": self.config["wage_per_unit"],
-                            "rounds": rounds,
-                            "low_rate": low_rate,
-                            "high_rate": high_rate,
-                        }
-
-                        # Run survey
+                        },
+                    }
+                    try:
                         results = self.client.run_batch_surveys(
-                            [scenario],
+                            [request],
                             n=1,
                             survey_type="lab",
-                            agent_instruction=instructions,
+                            agent_instruction=manifest["spec"]["instructions"],
                         )
+                    except Exception as error:
+                        row = self._checkpoint_row(
+                            manifest, scenario, previous, {"response_raw": repr(error)}
+                        )
+                        append_record(path, row)
+                        raise
+                    result = (
+                        results[0]
+                        if results and len(results) == 1
+                        else {"response_raw": repr(results)}
+                    )
+                    row = self._checkpoint_row(manifest, scenario, previous, result)
+                    append_record(path, row)
+                    latest[scenario_id] = row
+                    pbar.update(1)
+            return pd.DataFrame(list(latest.values()), columns=RECORD_FIELDS)
 
-                        if results:
-                            result = results[0]
-                            income_choice = result.get("income")
-
-                            row_data = {
-                                "treatment": output_label,
-                                "subject_id": subject_id,
-                                "round": round_num,
-                                "tax_schedule": schedule.value,
-                                "labor_endowment": int(labor_endowments[round_idx]),
-                                "labor_supply": (
-                                    income_choice / self.config["wage_per_unit"]
-                                    if income_choice is not None
-                                    else None
-                                ),
-                                "income": income_choice,
-                                "post_reform": round_num > rounds // 2,
-                                "model": result.get("model", self.client.model),
-                                "response_error": result.get("parse_failed", False),
-                            }
-                            all_results.append(row_data)
-                            completed_set.add((output_label, subject_id, round_num))
-
-                            # Append to checkpoint immediately so progress survives crashes
-                            if checkpoint_path is not None:
-                                checkpoint_df = pd.DataFrame([row_data])
-                                write_header = not Path(checkpoint_path).exists()
-                                checkpoint_df.to_csv(
-                                    checkpoint_path,
-                                    mode="a",
-                                    header=write_header,
-                                    index=False,
-                                )
-
-                        pbar.update(1)
-
-        return pd.DataFrame(all_results)
+    def _checkpoint_row(self, manifest, scenario, previous, result):
+        income = result.get("income")
+        success = (
+            valid_income(income, scenario)
+            and not result.get("parse_failed", False)
+            and result.get("model", self.client.model) == self.client.model
+        )
+        if not success:
+            income = None
+        return {
+            "experiment_id": manifest["experiment_id"],
+            **scenario,
+            "model": self.client.model,
+            "attempt": 1 if previous is None else previous["attempt"] + 1,
+            "status": "success" if success else "retryable_failure",
+            "income": income,
+            "labor_supply": (
+                None if income is None else income / scenario["wage_per_unit"]
+            ),
+            "response_error": not success,
+            "response_raw": str(result.get("response_raw", result)),
+            "recorded_at": datetime.now(timezone.utc).isoformat(),
+        }

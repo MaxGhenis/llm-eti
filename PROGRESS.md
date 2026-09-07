@@ -16,6 +16,18 @@ not a claim of current live PR state or validated experimental results.
   implementation is complete, with external publication/review gates blocked.
 - Created this fresh isolated continuation; no original checkout modifications.
 
+- Reproduced the original eight-round →16-round checkpoint mixing with a fake
+  client (eight new calls, wrong rounds 5–8 retained); evidence in
+  `../evidence/pr44-before.json`.
+- Implemented a full deterministic PCG64 scenario manifest, prompt/config/model/
+  source fingerprinting, fail-closed checkpoint compatibility, an append-only
+  attempt ledger, retryable failure handling, preserved zeros, and a local
+  exclusive writer lock. The CLI keeps attempts separate from derived results.
+- First targeted suite: 24 tests pass using the existing Python 3.12 environment,
+  including three fresh interpreter hash-seed comparisons. Added further input,
+  fractional-rate-label, prompt-source, and actual process-resume regressions.
+  Expanded suite: 35 passed; changed-area Black/Ruff and core Mypy pass.
+
 ## Next
 
 1. Reproduce eight-round/16-round checkpoint mixing with a fake client.

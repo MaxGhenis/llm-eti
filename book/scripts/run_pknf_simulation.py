@@ -47,6 +47,13 @@ def main():
         default=50.0,
         help="High marginal tax rate as a percentage (default: 50)",
     )
+    parser.add_argument("--seed", type=int, default=0, help="Persisted experiment seed")
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=Path(__file__).parent.parent / "data",
+        help="Results directory; use a new directory for incompatible experiments",
+    )
     args = parser.parse_args()
 
     # Check for API key
@@ -96,35 +103,36 @@ def main():
         print(f"  - Low rate: {args.low_rate}%")
         print(f"  - High rate: {args.high_rate}%")
 
-        # Determine output path (checkpoint and final output share the same file)
-        output_dir = Path(__file__).parent.parent / "data"
-        output_dir.mkdir(exist_ok=True)
+        # Keep immutable attempts separate from the derived latest-row result CSV.
+        output_dir = args.output_dir
+        output_dir.mkdir(parents=True, exist_ok=True)
 
         # if model string has a slash (e.g. "deepseek-ai/DeepSeek-V3"), replace with underscore for filename
         safe_model_name = model.replace("/", "_")
-        low_rate_int = int(args.low_rate)
-        high_rate_int = int(args.high_rate)
         filename = (
-            f"pknf_results_{safe_model_name}_{low_rate_int}pct_{high_rate_int}pct"
+            f"pknf_results_{safe_model_name}_{args.low_rate:g}pct_{args.high_rate:g}pct"
+            f"_{rounds}rounds_seed{args.seed}"
         )
         if args.test:
             filename += "_test"
 
         output_path = output_dir / f"{filename}.csv"
 
-        # Run experiment — results are written incrementally to output_path as a
-        # checkpoint so that a crash or server error doesn't lose completed work.
-        # Re-running the same command will resume from where it left off.
+        checkpoint_path = output_dir / "checkpoints" / f"{filename}.csv"
+
+        # Manifest compatibility is checked before any survey request. The
+        # append-only attempts file is never replaced with consolidated results.
         results_df = experiment.run_experiment(
             treatments=treatments,
             rounds=rounds,
             subjects_per_treatment=num_subjects,
             low_rate=args.low_rate,
             high_rate=args.high_rate,
-            checkpoint_path=output_path,
+            checkpoint_path=checkpoint_path,
+            seed=args.seed,
         )
 
-        # Final save (consolidates any in-memory-only rows; safe to re-run)
+        # Derived snapshot only; failed attempts remain in the separate checkpoint.
         results_df.to_csv(output_path, index=False)
         print(f"Results saved to {output_path}")
         print(f"Total responses: {len(results_df)}")
