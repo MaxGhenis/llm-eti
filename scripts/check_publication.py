@@ -16,15 +16,22 @@ from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
 if __package__:
+    from . import publication_provenance as _package_provenance
     from . import render_publication as _package_render_publication
-    from .publication_provenance import source_attestation, verify_generated_text
+
+    _provenance = _package_provenance
 
     _render_publication = _package_render_publication
 else:
+    import publication_provenance as _script_provenance
     import render_publication as _script_render_publication
-    from publication_provenance import source_attestation, verify_generated_text
+
+    _provenance = _script_provenance
 
     _render_publication = _script_render_publication
+
+source_attestation = _provenance.source_attestation
+verify_generated_text = _provenance.verify_generated_text
 
 MANIFEST_OUTPUT_PATHS = _render_publication.MANIFEST_OUTPUT_PATHS
 PAPER_URL = _render_publication.PAPER_URL

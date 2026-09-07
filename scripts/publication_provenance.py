@@ -97,8 +97,8 @@ def source_attestation(root: Path) -> dict[str, object]:
             "Publication requires clean source against HEAD (index and worktree). "
             f"Commit or restore these paths before rendering: {sorted(dirty)}"
         )
-    source_hashes = {}
-    figure_hashes = {}
+    source_hashes: dict[str, str] = {}
+    figure_hashes: dict[str, str] = {}
     for relative_path in sorted(tracked):
         path = root / relative_path
         if path.is_symlink() or not path.is_file():

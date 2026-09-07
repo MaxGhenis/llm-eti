@@ -15,9 +15,15 @@ import zipfile
 from pathlib import Path
 
 if __package__:
-    from .publication_provenance import source_attestation
+    from . import publication_provenance as _package_provenance
+
+    _provenance = _package_provenance
 else:
-    from publication_provenance import source_attestation
+    import publication_provenance as _script_provenance
+
+    _provenance = _script_provenance
+
+source_attestation = _provenance.source_attestation
 
 ROOT = Path(__file__).resolve().parents[1]
 SITE_DIR = ROOT / "_site"

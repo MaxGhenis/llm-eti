@@ -22,7 +22,8 @@ ancestor of that head; no cached-base integration is needed. The original
 - Implemented clean source/HEAD binding, tracked-source and platform-figure
   hashes, pre/post-render source identity checks, and index + worktree generated
   text drift detection. Added isolated Git regressions; 77 tests pass (baseline
-  55), Black and Ruff pass. Mypy is running.
+  55), Black and Ruff pass. Mypy exposed dual script/package import names and
+  inferred empty-dict typing; those findings are fixed and being rechecked.
 - Local Quarto is 1.9.36, while the release pin is 1.9.38. The pinned renderer is
   not installed in the checked local tool locations; release rendering remains
   blocked unless a local copy is found. No dependency/version gate was relaxed.
