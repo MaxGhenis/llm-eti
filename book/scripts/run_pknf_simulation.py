@@ -48,13 +48,8 @@ def main():
         default=50.0,
         help="High marginal tax rate as a percentage (default: 50)",
     )
-    parser.add_argument("--seed", type=int, default=0, help="Persisted experiment seed")
-    parser.add_argument(
-        "--output-dir",
-        type=Path,
-        default=Path(__file__).parent.parent / "data",
-        help="Results directory; use a new directory for incompatible experiments",
-    )
+    parser.add_argument("--batch-size", type=int, default=100)
+    parser.add_argument("--max-in-flight", type=int, default=1)
     args = parser.parse_args()
 
     # Check for API key
@@ -103,6 +98,8 @@ def main():
         print(f"  - Cache enabled: {client.use_cache}")
         print(f"  - Low rate: {args.low_rate}%")
         print(f"  - High rate: {args.high_rate}%")
+        print(f"  - Batch size: {args.batch_size}")
+        print(f"  - Max in-flight jobs: {args.max_in_flight}")
 
         # Keep immutable attempts separate from the derived latest-row result CSV.
         output_dir = args.output_dir
@@ -129,8 +126,9 @@ def main():
             subjects_per_treatment=num_subjects,
             low_rate=args.low_rate,
             high_rate=args.high_rate,
-            checkpoint_path=checkpoint_path,
-            seed=args.seed,
+            checkpoint_path=output_path,
+            batch_size=args.batch_size,
+            max_in_flight=args.max_in_flight,
         )
 
         # Derived snapshot only; failed attempts remain in the separate checkpoint.
