@@ -79,12 +79,12 @@ The treatment effect (Post × Treated) shows:
 Distribution of pre-tax income under flat 25% tax (blue) and progressive tax system (orange). The vertical line marks the notch at income = 400.
 ```
 
-Using the bunching estimator with:
+Using the notch bunching estimator of Kleven & Waseem (2013), e ≥ (Δz*/z*)² / (2Δt/(1−t)), with:
 - Notch location: z* = 400
 - Dominated region: Δz* = 200
 - Tax rate change: Δt = 0.25
 - Initial rate: t = 0.25
 
-We obtain: **ETI ≥ 0.53**
+We obtain: **ETI ≥ 0.375**
 
 This represents a lower bound as the experimental design constrains responses within the dominated region.
