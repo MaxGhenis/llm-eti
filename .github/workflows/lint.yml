@@ -41,4 +41,4 @@ jobs:
         uv run mypy . --ignore-missing-imports
 
     - name: Run offline checkpoint regressions
-      run: uv run --frozen pytest tests/test_lab_checkpoint.py -q
+      run: uv run --frozen pytest tests/test_lab_checkpoint.py tests/test_merge_integration.py -q
