@@ -1,0 +1,8 @@
+/.quarto/
+/site_libs/
+**/*.quarto_ipynb
+/index.html
+/index.pdf
+/index.tex
+/index-luamml-mathml.html
+/_tex/

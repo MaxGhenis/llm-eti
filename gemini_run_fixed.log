@@ -1,338 +1,0 @@
-Running full simulations with Gemini 2.0 models
-==============================================
-
-1. Running Gruber & Saez simulation with gemini-2.0-flash...
--------------------------------------------------------------
-Running Gruber & Saez simulation with gemini-2.0-flash using EDSL...
-Running simulation with:
-  - Model: gemini-2.0-flash
-  - Responses per rate: 100
-  - Income range: $50,000 to $200,000 (step $10,000)
-  - Cache enabled: True
-Running simulations:   0%|          | 0/176 [00:00<?, ?it/s]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/2683a0dd-93cd-454a-8b89-
-48ec02a68a50
-
-[15:29:32] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/76e7542b-ec2e-427f-94cc-52959871
-dbae) (100/100)Running simulations:   1%|          | 1/176 [00:14<43:00, 14.74s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/512efc35-4e5f-4257-b9f3-
-ac2ec08d8c05
-
-[15:29:47] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/80e163db-d81e-4411-9ab0-60feaf6d
-a2b4) (100/100)Running simulations:   1%|          | 2/176 [00:29<42:17, 14.58s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/50f5cfa3-9602-44a4-8a48-
-e0405a70f93a
-
-[15:30:02] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/6b3fae7b-9675-408e-99bc-2a7060bc
-e712) (100/100)Running simulations:   2%|▏         | 3/176 [00:43<42:03, 14.59s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/f9e186af-a43e-4807-9a6d-
-751d8ad76c58
-
-[15:30:16] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/de0dea13-fdf7-4dc4-b3b5-809a591a
-f78b) (100/100)Running simulations:   2%|▏         | 4/176 [00:58<41:54, 14.62s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/ca5ac9c1-90ef-481b-8ae6-
-4116c7c41731
-
-[15:30:31] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/f14205cf-c3ca-433e-bcc5-da529c6d
-2ab3) (100/100)Running simulations:   3%|▎         | 5/176 [01:13<41:34, 14.59s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/884ba2a2-8ef2-483a-ab39-
-57ac6cee6b64
-
-[15:30:45] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/659122c5-dde9-4159-ab76-bda6d59a
-ff06) (100/100)Running simulations:   3%|▎         | 6/176 [01:27<41:17, 14.58s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/4350f270-146f-44b5-bea5-
-abb260eb1095
-
-[15:31:00] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/717e8b22-4e9c-417b-8e41-bfbb8903
-10d9) (100/100)Running simulations:   4%|▍         | 7/176 [01:41<40:54, 14.52s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/5d4cb75c-d895-4f2b-b54a-
-284bfded482d
-
-[15:31:14] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/421b803b-07b0-4e74-bdba-ec7f1d38
-d164) (100/100)Running simulations:   5%|▍         | 8/176 [01:56<40:39, 14.52s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/9df7d5d4-65f3-4e44-bc11-
-c98469fef9ef
-
-[15:31:29] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/b2d9a1d2-a856-4bfa-83ed-06cc5b0d
-23ba) (100/100)Running simulations:   5%|▌         | 9/176 [02:10<40:18, 14.48s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/b922c2d6-7aa3-4be1-bbf6-
-c9b5ba1be324
-
-[15:31:39] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/c3720421-341a-49bf-b82d-4091d16a
-337f) (100/100)Running simulations:   6%|▌         | 10/176 [02:21<36:25, 13.17s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/ce7b73df-0ed7-4d06-9425-
-1ad8975414f7
-
-[15:31:54] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/2dce7a6c-8790-46a7-a4d2-2fe126a7
-87ff) (100/100)Running simulations:   6%|▋         | 11/176 [02:35<37:27, 13.62s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/d14b420e-b858-4ddc-8880-
-0249d57d0fa7
-
-[15:32:08] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/422057ea-e18b-4788-8a01-f68051e6
-0a6d) (100/100)Running simulations:   7%|▋         | 12/176 [02:50<37:59, 13.90s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/612392ad-6ecf-4194-8274-
-639c81ba9764
-
-[15:32:23] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/996c02ce-9fed-460b-9508-11818232
-f8a2) (100/100)Running simulations:   7%|▋         | 13/176 [03:04<38:13, 14.07s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/23ec6405-fa11-4360-a18d-
-89b527ab235f
-
-[15:32:37] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/92494a60-c895-4554-af18-d56e0dbe
-7499) (100/100)Running simulations:   8%|▊         | 14/176 [03:19<38:34, 14.29s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/ddb5a23b-073e-457d-9021-
-9d40ebb4905e
-
-[15:32:48] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/d78bcba8-ef60-4bb7-b83a-5290c4ab
-0b76) (100/100)Running simulations:   9%|▊         | 15/176 [03:29<35:03, 13.06s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/0e2e9e7d-2949-4311-8ff7-
-1250266825cb
-
-[15:32:58] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/9e0a5fb0-0592-473b-af06-b21cce26
-c46d) (100/100)Running simulations:   9%|▉         | 16/176 [03:40<32:56, 12.35s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/c4d7adbd-10d3-4233-881a-
-cf37e1938a6c
-
-[15:33:13] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/ba07fce6-6632-4561-8486-078d031d
-8e5d) (100/100)Running simulations:  10%|▉         | 17/176 [03:55<34:39, 13.08s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/beccca51-4be7-49ba-bc85-
-62e8ab3f8cff
-
-[15:33:23] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/8ad1f8a5-0df4-45c5-8f1f-558f5497
-3408) (100/100)Running simulations:  10%|█         | 18/176 [04:05<32:12, 12.23s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/8eecfb26-a939-4759-86e5-
-6b53cd5a06eb
-
-[15:33:34] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/2ecb55d3-ad22-4b98-8998-3697f1c3
-0f15) (100/100)Running simulations:  11%|█         | 19/176 [04:15<30:33, 11.68s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/536aa13e-da9c-4c5c-8717-
-f6d83651f0fe
-
-[15:33:48] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/a872d0ba-53b9-4f4b-a66f-6f96efd6
-4d5c) (100/100)Running simulations:  11%|█▏        | 20/176 [04:30<32:33, 12.52s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/796832f8-cad1-4cf2-bbaa-
-f55ce6c363e2
-
-[15:33:58] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/19c7eb71-13e6-4034-a329-81ed0acc
-8351) (100/100)Running simulations:  12%|█▏        | 21/176 [04:40<30:33, 11.83s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/0c070396-42cf-4377-994c-
-477f0082033b
-
-[15:34:13] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/5838fa4c-c1c6-484c-ad9d-6ab8063c
-9d0c) (100/100)Running simulations:  12%|█▎        | 22/176 [04:55<32:32, 12.68s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/d7f35860-cceb-45ba-bb95-
-6cc19b362071
-
-[15:34:23] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/ffc4ba55-57a1-4761-b6f1-43b93eb8
-e5fa) (100/100)Running simulations:  13%|█▎        | 23/176 [05:05<30:28, 11.95s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/9178d616-c5f8-4701-84e3-
-2fcc1a39f4b3
-
-[15:34:34] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/8b6d54b9-981f-4ce8-94d1-58de6de7
-821d) (100/100)Running simulations:  14%|█▎        | 24/176 [05:15<28:59, 11.44s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/6e864588-ff07-4577-a895-
-10ff8bb936a1
-
-[15:34:44] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/aba41124-aca9-4545-9e50-88117f26
-1e4f) (100/100)Running simulations:  14%|█▍        | 25/176 [05:26<27:54, 11.09s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/5f959475-345f-478b-b44f-
-32198984e79d
-
-[15:34:54] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/406841ca-ad9b-455a-89b0-d27f43d6
-c0c2) (100/100)Running simulations:  15%|█▍        | 26/176 [05:36<27:05, 10.84s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/928ccbb3-eb50-4541-bde8-
-711adbb05dc7
-
-[15:35:09] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/dc417f1e-f571-4c56-80b5-7e906df7
-3202) (100/100)Running simulations:  15%|█▌        | 27/176 [05:50<29:40, 11.95s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/8e3f28e3-6392-46d8-a22c-
-12e1e8e37e80
-
-[15:35:19] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/1817b46b-32a3-48e8-86b4-5fbcde4c
-d498) (100/100)Running simulations:  16%|█▌        | 28/176 [06:01<28:12, 11.43s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/2f1c99f2-1ed1-4ff8-9ff0-
-05cd60fc8051
-
-[15:35:29] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/0e364309-2940-4027-9fd1-f86d0177
-a35d) (100/100)Running simulations:  16%|█▋        | 29/176 [06:11<27:07, 11.07s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/128b3b32-fb38-472e-b340-
-2d3fa24cb442
-
-[15:35:39] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/08310759-5fa0-414d-848d-a4547819
-313e) (100/100)Running simulations:  17%|█▋        | 30/176 [06:21<26:26, 10.87s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/f9613c24-9688-4520-8619-
-22c21ecaacad
-
-[15:35:50] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/ab28f4da-b82f-48eb-b265-b36ea84f
-180a) (100/100)Running simulations:  18%|█▊        | 31/176 [06:31<25:51, 10.70s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/a460361c-3157-4107-b976-
-eaee46f072ac
-
-[15:36:04] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/b65c3cc2-94cc-4785-8435-d6c1a955
-63e5) (100/100)Running simulations:  18%|█▊        | 32/176 [06:46<28:27, 11.86s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/e682523d-10ba-4ca5-9a36-
-7d0f39b8d221
-
-[15:36:19] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/51b6f634-6896-45c9-9038-f5d13cef
-c332) (100/100)Running simulations:  19%|█▉        | 33/176 [07:01<30:20, 12.73s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/e9f2ae66-b750-4479-b69a-
-93f0ec4a96cf
-
-[15:36:34] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/a4bca03b-5f92-4eb3-ac19-9fe93048
-499e) (100/100)Running simulations:  19%|█▉        | 34/176 [07:15<31:23, 13.27s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/fdde69cd-0aed-4404-abff-
-e7bcab40bee4
-
-[15:36:48] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/cb747fee-836c-4079-ba3a-68113c3a
-8ee6) (100/100)Running simulations:  20%|█▉        | 35/176 [07:30<32:05, 13.65s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/e546d9ed-a1d6-4f53-983e-
-765f336c858b
-
-[15:36:58] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/3c91a435-32c3-4787-9c2e-7e217430
-463c) (100/100)Running simulations:  20%|██        | 36/176 [07:40<29:28, 12.63s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/099929ce-fba8-45f1-bce6-
-85a42b1913ff
-
-[15:37:13] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/fd937873-d7eb-4b6c-baf1-73cd682b
-11ca) (100/100)Running simulations:  21%|██        | 37/176 [07:55<30:40, 13.24s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/1c6907f3-639c-496e-9e67-
-7b7f1c7f2ed7
-
-[15:37:28] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/5a06529f-ba7a-4d47-9f1e-3be7adbb
-8e82) (100/100)Running simulations:  22%|██▏       | 38/176 [08:09<31:20, 13.63s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/d2d011cb-eb75-4fea-a2c5-
-0b6c369fa53d
-
-[15:37:42] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/19d38f8e-030f-44f6-8a17-722c1c47
-5cf1) (100/100)Running simulations:  22%|██▏       | 39/176 [08:24<31:44, 13.90s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/7f00c0a0-afed-4407-a72f-
-41a38d444b1e
-
-[15:37:57] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/299bf74a-47ca-443d-8e70-a1c2dde3
-3be3) (100/100)Running simulations:  23%|██▎       | 40/176 [08:38<31:57, 14.10s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/2ec41d16-252b-4261-8131-
-f0e66a428292
-
-[15:38:11] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/0d7cbb7e-3091-4cfa-a37b-5e74ad3f
-e6b7) (100/100)Running simulations:  23%|██▎       | 41/176 [08:53<32:07, 14.28s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/ea9353a0-a3b6-4b6a-9bc8-
-789b85b244fa
-
-[15:38:22] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/75d6deeb-31bc-4696-ab68-4e08722a
-7f11) (100/100)Running simulations:  24%|██▍       | 42/176 [09:03<29:12, 13.08s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/944c71c8-9f38-4e03-9c71-
-fc952fb88bc4
-
-[15:38:32] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/280ebb92-90db-4293-9189-90074164
-4044) (100/100)Running simulations:  24%|██▍       | 43/176 [09:14<27:05, 12.22s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/a12a94f8-5919-430d-8f6a-
-1fa9836a0582
-
-[15:38:42] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/414a439a-8bb3-4633-8cbf-25eb26a3
-1666) (100/100)Running simulations:  25%|██▌       | 44/176 [09:24<25:36, 11.64s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/be57c92d-0398-4884-ace3-
-b58c7de93fa9
-
-[15:38:57] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/9350fc53-329a-44d4-a832-9fa5eb6e
-a6b6) (100/100)Running simulations:  26%|██▌       | 45/176 [09:38<27:12, 12.46s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/d0c93cbf-26db-4a83-8fad-
-a731d0917996
-
-[15:39:07] ✅ Job completed and Results stored on Coop. [View 
-Results](https://www.expectedparrot.com/content/d4448a0a-7b69-4b8f-8626-9c03f283
-d430) (100/100)Running simulations:  26%|██▌       | 46/176 [09:49<25:33, 11.79s/it]Initializing...
-Progress: 
-https://www.expectedparrot.com/home/remote-job-progress/a9878434-13aa-4fea-a8e6-
-1c98ebe8d920
-

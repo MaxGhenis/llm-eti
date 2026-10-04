@@ -1,61 +1,24 @@
-"""LLM-ETI: What can LLMs tell us about the ETI?
+"""Reproducible analysis for archived LLM taxable-income responses."""
 
-A research package for investigating how Large Language Models perceive
-and simulate behavioral responses to tax policy changes.
-"""
-
-__version__ = "0.1.0"
-
-# Import key classes for convenience
-from .cache_utils import CacheExplorer
-from .config import Config
-from .edsl_client import EDSLClient
-from .experiment import (
-    ExperimentConfig,
-    generate_scenarios,
-    run_multi_model_experiment,
-    run_survey_experiment,
-)
-from .personas import Persona, create_persona, sample_personas
-from .simulation_engine import (
-    LabExperimentSimulation,
-    SimulationParams,
-    TaxSimulation,
-)
-from .survey import (
-    IncomeResponse,
-    TaxScenario,
-    create_tax_survey_prompt,
-    parse_response,
+from .study2 import (
+    MODEL_SPECS,
+    completion_summary,
+    load_study2_data,
+    model_summary,
+    primary_analysis_scenario_ids,
+    primary_balanced_scenario_ids,
+    sensitivity_summary,
 )
 
-# New modules for v2 experimental design
-from .tax_brackets import FilingStatus, get_marginal_rate_2024
+__version__ = "0.2.0"
 
 __all__ = [
+    "MODEL_SPECS",
     "__version__",
-    # Legacy
-    "CacheExplorer",
-    "Config",
-    "EDSLClient",
-    "TaxSimulation",
-    "LabExperimentSimulation",
-    "SimulationParams",
-    # v2 - Tax brackets
-    "FilingStatus",
-    "get_marginal_rate_2024",
-    # v2 - Personas
-    "Persona",
-    "create_persona",
-    "sample_personas",
-    # v2 - Survey
-    "IncomeResponse",
-    "TaxScenario",
-    "create_tax_survey_prompt",
-    "parse_response",
-    # v2 - Experiment
-    "ExperimentConfig",
-    "generate_scenarios",
-    "run_survey_experiment",
-    "run_multi_model_experiment",
+    "completion_summary",
+    "load_study2_data",
+    "model_summary",
+    "primary_analysis_scenario_ids",
+    "primary_balanced_scenario_ids",
+    "sensitivity_summary",
 ]

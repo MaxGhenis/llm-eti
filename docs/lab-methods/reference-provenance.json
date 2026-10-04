@@ -1,0 +1,23 @@
+{
+  "files": {
+    "METHODS.md": "e0b1f50d385ffb8e067a211a65129afd58f7ac050d40167bc11ba07299dc60fa",
+    "SOURCES.md": "2e9dbd88bd704233fe97800f29ab45db874cbf98b614b116e44c9bb053f3065e",
+    "SPECIFICATION.md": "6c1cf1eb6112b374a7a8296ce38f99a82dc6ad057dcd4719ede0d6205ad795d6",
+    "design_tools.py": "3d24706c56188db1a79e0229d2603be1a119209f0d235f610be3947e80514fe4",
+    "estimands.py": "025d92a2943a4e16f517ebbfcea55c83ee47f9d11d06bd6e2d1b1881bef213ba",
+    "kw_reference.py": "5a1668dce5208eb701aa049d138274344d0431b83e49ce9774b8444217e90b81",
+    "replay.py": "775bfc099dd2ec85c11272db87faf2eb5f7190c8c235599b4bdcc0c6e219334e",
+    "synthetic.py": "b42d8eef8fc8e7439476e7ca534b0893ef43377054f3d80ef577a1f65bbff9e2",
+    "test_estimands.py": "aa5de12650ec87594781a6389ed194b3b72e78d9e28a82e550fee4c15f142e0a",
+    "uncertainty_design.py": "7ede51a57e11985097dd2f8b0c566926a3026bd87f67065e21730ad696ba2351"
+  },
+  "integration_changes": [
+    "Relative package imports and repository formatting/type checks.",
+    "Replay CSV reader only; reference standalone report CLI omitted.",
+    "Reference harness remains synthetic; no retained archive is accepted for estimation.",
+    "Type narrowing/casts and explicit two-arm bootstrap indexing preserve validated behavior.",
+    "An explicit DesignError replaces arithmetic failure if outcome is called directly with missing tasks.",
+    "Reference SOURCES.md retained as REFERENCE-SOURCES.md; host source evidence supplements its resolved access limitations."
+  ],
+  "reviewed_reference_head": "1f6c23a0c00f0c197cd16e5b235f1e8420d9ee49"
+}

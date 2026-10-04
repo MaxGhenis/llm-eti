@@ -1,0 +1,18 @@
+$if(title)$
+\title{$title$$if(thanks)$\thanks{$thanks$}$endif$}
+$endif$
+$if(subtitle)$
+\usepackage{etoolbox}
+\makeatletter
+\providecommand{\subtitle}[1]{%
+  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
+}
+\makeatother
+\subtitle{$subtitle$}
+$endif$
+\author{%
+$for(by-author)$
+$by-author.name.literal$$for(by-author.affiliations)$\textsuperscript{$it.number$}$endfor$$sep$ \and $endfor$
+$if(by-affiliation)$\\[0.6em]{\small $for(by-affiliation)$\textsuperscript{$it.number$}$it.name$$sep$; $endfor$}$endif$
+}
+\date{$date$}
