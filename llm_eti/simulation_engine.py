@@ -1,12 +1,12 @@
 """Simulation engine using EDSL for LLM surveys."""
 
+import hashlib
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
 import pandas as pd
-from tqdm import tqdm
 
 from .edsl_client import EDSLClient
 from .lab_checkpoint import (
@@ -23,6 +23,8 @@ from .lab_checkpoint import (
 class SimulationParams:
     responses_per_household: int
     test_mode: bool = False
+    batch_size: int = 100
+    max_in_flight: int = 1
 
 
 class TaxSimulation:
@@ -129,14 +131,46 @@ class TaxSimulation:
             DataFrame of all results
         """
         scenarios_df = self.load_scenarios(csv_path)
-        all_results = []
+        scenarios = []
+        for index, row in scenarios_df.iterrows():
+            scenario = row.to_dict()
+            scenario.update(
+                {
+                    "work_id": f"tax-{index}",
+                    "mtr_last_pct": int(float(row["mtr"]) * 100),
+                    "mtr_this_pct": int(float(row["mtr_prime"]) * 100),
+                }
+            )
+            scenarios.append(scenario)
 
-        with tqdm(total=len(scenarios_df), desc="Running simulations") as pbar:
-            for _, row in scenarios_df.iterrows():
-                results = self.run_single_simulation(row.to_dict())
-                all_results.extend(results)
-                pbar.update(1)
-
+        raw_results = self.client.run_batched_surveys(
+            scenarios,
+            survey_type="tax",
+            responses_per_scenario=self.params.responses_per_household,
+            batch_size=self.params.batch_size,
+            max_in_flight=self.params.max_in_flight,
+            fresh=True,
+        )
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        all_results = [
+            {
+                "timestamp": timestamp,
+                "tax_unit_id": result.get("tax_unit_id"),
+                "filing_status": result.get("filing_status"),
+                "broad_income": result["broad_income"],
+                "taxable_income": result["taxable_income"],
+                "mtr": result["mtr"],
+                "mtr_prime": result["mtr_prime"],
+                "response_number": result["response_number"],
+                "taxable_income_this": result.get("taxable_income_this"),
+                "broad_income_this": result.get("broad_income_this"),
+                "implied_eti_taxable": result.get("implied_eti_taxable"),
+                "implied_eti_broad": result.get("implied_eti_broad"),
+                "model": result.get("model", self.client.model),
+                "income_response_raw": result.get("income_response_raw"),
+            }
+            for result in raw_results
+        ]
         return pd.DataFrame(all_results)
 
 

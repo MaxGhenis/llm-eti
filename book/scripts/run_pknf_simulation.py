@@ -103,6 +103,8 @@ def main():
         print(f"  - Cache enabled: {client.use_cache}")
         print(f"  - Low rate: {args.low_rate}%")
         print(f"  - High rate: {args.high_rate}%")
+        print(f"  - Batch size: {args.batch_size}")
+        print(f"  - Max in-flight jobs: {args.max_in_flight}")
 
         # Keep immutable attempts separate from the derived latest-row result CSV.
         output_dir = args.output_dir

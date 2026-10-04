@@ -19,11 +19,12 @@ try:
         Question,
         QuestionFreeText,
         QuestionNumerical,
+        Scenario,
         Survey,
     )
 except ImportError:
     # For testing without EDSL installed
-    Question = Survey = Agent = Model = Jobs = None
+    Question = Survey = Agent = Model = Jobs = Scenario = None
     QuestionFreeText = None
     QuestionNumerical = None
 
@@ -123,6 +124,31 @@ Respond with exactly one JSON object and nothing else:
         )
 
         return Survey(questions=[q])
+
+    def create_tax_survey_template(self) -> "Survey":
+        """Create one scenario-backed tax survey for a large EDSL Job."""
+        prompt = """You are a taxpayer with the following profile:
+- Last year, your broad income was ${{ broad_income }}
+- Last year, your taxable income was ${{ taxable_income }}
+- Last year, your marginal tax rate was {{ mtr_last_pct }}%
+
+Due to a change in tax law, your marginal tax rate this year will be {{ mtr_this_pct }}%.
+Your broad income before any adjustments or changes in behavior would be approximately the same as last year.
+
+Given this change in tax rates, you may adjust your behavior -- for example, how much you work,
+your charitable contributions, retirement savings, or the timing of income realizations like
+capital gains. What would your broad income be this year? And what would your taxable income be?
+
+Respond with exactly one JSON object and nothing else:
+{% raw %}{"broad_income": <number or null>, "taxable_income": <number or null>}{% endraw %}
+"""
+        if any(name in self.model.lower() for name in ("deepseek", "claude", "gpt-4o")):
+            prompt += "\nDo not use null. Return your best numeric estimates even if approximate. Use whole-dollar amounts."
+        return Survey(
+            questions=[
+                QuestionFreeText(question_name="income_responses", question_text=prompt)
+            ]
+        )
 
     def create_instructions_text(self, rounds: int, wage_per_unit: float = 20) -> str:
         """Create static instructions text for the lab experiment.
@@ -272,6 +298,22 @@ Respond with exactly one JSON object and nothing else:
         )
 
         return Survey([question])
+
+    def create_lab_experiment_survey_template(self) -> "Survey":
+        """Create a scenario-backed PKNF question for batched execution."""
+        prompt = (
+            "Round {{ round_num }} of {{ rounds }}\n{{ tax_text }}\n"
+            "You can earn an income of {{ max_income }} cents.\n"
+            "Please indicate whether you want to work for {{ max_income }} cents or another income. "
+            "Reply with a single integer number of cents (e.g. 340). "
+            "Do not include any text, units, or explanation — only the number."
+        )
+        # QuestionNumerical validates bounds when the question is constructed,
+        # so its maximum cannot vary by scenario. Validate the scenario-specific
+        # cap after parsing instead.
+        return Survey(
+            [QuestionFreeText(question_name="income_response", question_text=prompt)]
+        )
 
     def run_survey(self, survey: "Survey", agent: Optional["Agent"] = None) -> Any:
         """Run a single survey.
@@ -759,8 +801,7 @@ Respond with exactly one JSON object and nothing else:
 
             if results is None:
                 logger.warning(
-                    "Lab survey returned no Results object "
-                    "(round=%s, attempt=%d/%d)",
+                    "Lab survey returned no Results object (round=%s, attempt=%d/%d)",
                     scenario.get("round_num"),
                     attempts,
                     max_attempts,
@@ -770,7 +811,7 @@ Respond with exactly one JSON object and nothing else:
             df = results.to_pandas()
             if df.empty:
                 logger.warning(
-                    "Lab survey returned empty DataFrame " "(round=%s, attempt=%d/%d)",
+                    "Lab survey returned empty DataFrame (round=%s, attempt=%d/%d)",
                     scenario.get("round_num"),
                     attempts,
                     max_attempts,
@@ -827,6 +868,179 @@ Respond with exactly one JSON object and nothing else:
                 all_results.append(failure_dict)
 
         return all_results
+
+    def _make_model(self) -> Any:
+        """Construct the configured EDSL model in one place."""
+        if self.model.startswith("gemini-"):
+            return Model(self.model, service_name="google")
+        return Model(self.model)
+
+    @staticmethod
+    def _chunks(
+        items: List[Dict[str, Any]], size: int
+    ) -> Iterable[List[Dict[str, Any]]]:
+        for start in range(0, len(items), size):
+            yield items[start : start + size]
+
+    def run_batched_surveys(
+        self,
+        scenarios: List[Dict[str, Any]],
+        *,
+        survey_type: str,
+        responses_per_scenario: int = 1,
+        agent_instruction: Optional[str] = None,
+        batch_size: int = 100,
+        max_in_flight: int = 1,
+        fresh: bool = True,
+        on_submit: Optional[Callable[[List[Dict[str, Any]], Any], None]] = None,
+        on_chunk_complete: Optional[Callable[[List[Dict[str, Any]]], None]] = None,
+    ) -> List[Dict[str, Any]]:
+        """Execute scenario chunks as bounded concurrent remote EDSL jobs.
+
+        Each chunk is one remote Job containing many independent interviews.  In
+        production ``fresh`` prevents repeated simulated subjects from silently
+        becoming remote-cache hits. ``on_submit`` receives the background Results
+        handle immediately, allowing callers to checkpoint its job UUID.
+        """
+        if batch_size < 1 or max_in_flight < 1 or responses_per_scenario < 1:
+            raise ValueError(
+                "batch_size, max_in_flight, and responses_per_scenario must be positive"
+            )
+        if not scenarios:
+            return []
+
+        survey = (
+            self.create_tax_survey_template()
+            if survey_type == "tax"
+            else self.create_lab_experiment_survey_template()
+        )
+        agent = Agent(name="Batched respondent", instruction=agent_instruction)
+
+        def submit_and_fetch(chunk: List[Dict[str, Any]]) -> Any:
+            """Submit once, then tolerate temporary connection loss while polling."""
+            pending = None
+            for attempt in range(1, 5):
+                try:
+                    job = Jobs(
+                        survey=survey,
+                        agents=[agent],
+                        models=[self._make_model()],
+                        scenarios=[Scenario(scenario) for scenario in chunk],
+                    )
+                    pending = job.run(
+                        cache=False if fresh else self.use_cache,
+                        fresh=fresh,
+                        disable_remote_cache=fresh,
+                        background=True,
+                        remote_inference_description=(
+                            f"llm-eti {survey_type} batch ({len(chunk)} scenarios)"
+                        ),
+                    )
+                    break
+                except Exception as exc:
+                    if attempt == 4:
+                        raise
+                    wait_seconds = 5 * (2 ** (attempt - 1))
+                    logger.warning(
+                        "Remote %s batch submission failed (%s); retrying in %ss "
+                        "(%s/4)",
+                        survey_type,
+                        type(exc).__name__,
+                        wait_seconds,
+                        attempt,
+                    )
+                    time.sleep(wait_seconds)
+
+            if on_submit is not None:
+                on_submit(chunk, pending)
+
+            for attempt in range(1, 5):
+                try:
+                    return pending.fetch(polling_interval=2.0)
+                except Exception as exc:
+                    if attempt == 4:
+                        raise
+                    wait_seconds = 5 * (2 ** (attempt - 1))
+                    logger.warning(
+                        "Remote %s batch polling failed (%s); retrying in %ss (%s/4)",
+                        survey_type,
+                        type(exc).__name__,
+                        wait_seconds,
+                        attempt,
+                    )
+                    time.sleep(wait_seconds)
+            raise AssertionError("unreachable")
+
+        results: List[Dict[str, Any]] = []
+        chunks = iter(self._chunks(scenarios, batch_size))
+        with ThreadPoolExecutor(max_workers=max_in_flight) as executor:
+            pending = {}
+            for _ in range(max_in_flight):
+                try:
+                    chunk = next(chunks)
+                except StopIteration:
+                    break
+                pending[executor.submit(submit_and_fetch, chunk)] = chunk
+
+            while pending:
+                done, _ = wait(pending, return_when=FIRST_COMPLETED)
+                for future in done:
+                    chunk = pending.pop(future)
+                    try:
+                        df = future.result().to_pandas()
+                    except Exception as exc:
+                        raise RuntimeError(
+                            f"Remote {survey_type} batch failed for {len(chunk)} scenarios"
+                        ) from exc
+                    scenario_by_id = {str(s["work_id"]): s for s in chunk}
+                    chunk_results: List[Dict[str, Any]] = []
+                    for _, row in df.iterrows():
+                        scenario = scenario_by_id.get(str(row.get("scenario.work_id")))
+                        if scenario is None:
+                            logger.warning(
+                                "Dropping EDSL result without a known work_id"
+                            )
+                            continue
+                        if survey_type == "tax":
+                            parsed = self._extract_tax_result_from_row(scenario, row, 1)
+                            if parsed is not None:
+                                parsed["response_number"] = (
+                                    int(row.get("iteration.iteration", 0)) + 1
+                                )
+                                results.append(parsed)
+                                chunk_results.append(parsed)
+                        else:
+                            income = self._parse_lab_income_response(row)
+                            if (
+                                income is not None
+                                and not 0 <= income <= scenario["max_income"]
+                            ):
+                                logger.warning(
+                                    "Lab income outside scenario range (work_id=%s, income=%s)",
+                                    scenario["work_id"],
+                                    income,
+                                )
+                                income = None
+                            parsed = scenario.copy()
+                            parsed.update(
+                                {
+                                    "income": income,
+                                    "response_raw": row.get("answer.income_response"),
+                                    "model": row.get("model.model", self.model),
+                                    "response_attempt": 1,
+                                    "parse_failed": income is None,
+                                }
+                            )
+                            results.append(parsed)
+                            chunk_results.append(parsed)
+                    if on_chunk_complete is not None:
+                        on_chunk_complete(chunk_results)
+                    try:
+                        next_chunk = next(chunks)
+                    except StopIteration:
+                        continue
+                    pending[executor.submit(submit_and_fetch, next_chunk)] = next_chunk
+        return results
 
     def run_batch_surveys(
         self,
