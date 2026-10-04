@@ -1,0 +1,23 @@
+\begin{table}[!htbp] \centering
+  \caption{Elasticity Results by Income Group, \textit{All Models} (CPI-adjusted to 2026\$; Gruber \& Saez 2002, Table 9)}
+  \label{tab:obs_regs_income}
+  \begin{tabular}{lccc}
+  \toprule
+  Income range & \shortstack{Broad \\ income (1)} & \shortstack{Taxable \\ income (2)} & \shortstack{Taxable inc. \\ (tax. cuts) (3)} \\
+  \midrule
+  \$24K--\$118K (\$24K--\$75K) & $0.113^{***}$ & $0.341^{***}$ & $0.339^{***}$ \\
+  & (0.006) & (0.017) & (0.020) \\
+  N. Obs & 6,195 & 6,161 & 3,803 \\[10pt]
+  \$118K--\$235K (\$75K--\$176K) & $0.104^{***}$ & $0.290^{***}$ & $0.307^{***}$ \\
+  & (0.010) & (0.018) & (0.018) \\ 
+  N. Obs & 2,026 & 2,022 & 2,307 \\[10pt]
+  \$235K+ (\$176K+) & $0.090^{***}$ & $0.244^{***}$ & $0.246^{***}$ \\
+  & (0.011) & (0.023) & (0.021) \\ 
+  N. Obs & 836 & 836 & 978 \\[2pt]
+  \bottomrule
+  \end{tabular}
+  \begin{flushleft}\footnotesize
+  Each cell: income-weighted OLS elasticity of income with respect to the net-of-tax rate, estimated within the base-year income group. Heteroskedasticity-robust SEs in parentheses. Columns (1)--(2) split the sample by base-year broad income; column (3) by base-year taxable income. Groups control for base-year income via a natural cubic spline (df\,$=$5), or a single linear term when N\,$<$150. OLS rather than 2SLS because the net-of-tax rate change is imposed by the simulation. Income ranges are GS's 1992-dollar cutoffs inflated to 2026 dollars with CPI-U (factor 2.35); the 2026 CPI value is an estimate.\\
+  $^{*}p<0.1$, $^{**}p<0.05$, $^{***}p<0.01$
+  \end{flushleft}
+\end{table}

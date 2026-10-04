@@ -1,0 +1,7 @@
+| Treatment   |   Pre-Reform |   Post-Reform |
+|:------------|-------------:|--------------:|
+| Prog,Prog   |         1.00 |          1.00 |
+| Flat25,Prog |         0.44 |          1.00 |
+| Flat50,Prog |         0.40 |          1.00 |
+| Prog,Flat25 |         1.00 |          0.45 |
+| Prog,Flat50 |         1.00 |          0.39 |

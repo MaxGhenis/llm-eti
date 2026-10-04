@@ -1,0 +1,32 @@
+\begin{table}[!htbp] \centering
+  \caption{Model Comparison: Elasticity Results (Broad Income); Gruber \& Saez 2002, Table 4}
+  \label{tab:obs_regs_broad}
+  \begin{tabular}{lcccccc}
+  \toprule
+  & GPT-4o & \shortstack{GPT-4o \\ mini} & \shortstack{Claude \\ Haiku 4.5} & \shortstack{DeepSeek \\ V3} & Gemma 4 & \shortstack{All \\ Models} \\
+  \midrule
+  Constant & $0.000$ & $-0.001^{***}$ & $-0.003^{***}$ & $-0.000^{*}$ & $-0.001^{**}$ & $-0.001^{***}$ \\
+  & (0.000) & (0.000) & (0.000) & (0.000) & (0.000) & (0.000) \\
+  Net-of-tax elasticity & $0.017^{***}$ & $0.048^{***}$ & $0.440^{***}$ & $0.000$ & $0.012^{*}$ & $0.107^{***}$ \\
+  & (0.004) & (0.009) & (0.015) & (0.000) & (0.006) & (0.005) \\
+  Base income spline 1 & $0.001^{*}$ & $0.001$ & $-0.003$ & $0.000$ & $-0.000$ & $-0.000$ \\
+  & (0.001) & (0.001) & (0.002) & (0.000) & (0.000) & (0.001) \\
+  Base income spline 2 & $-0.000$ & $0.000$ & $0.001^{**}$ & $-0.000$ & $0.001^{**}$ & $0.000^{*}$ \\
+  & (0.000) & (0.001) & (0.001) & (0.000) & (0.000) & (0.000) \\
+  Base income spline 3 & $-0.000^{*}$ & $-0.001$ & $0.001^{**}$ & $-0.000$ & $-0.000$ & $0.000$ \\
+  & (0.000) & (0.000) & (0.001) & (0.000) & (0.000) & (0.000) \\
+  Base income spline 4 & $-0.000$ & $0.001$ & $0.002^{**}$ & $0.000$ & $0.000^{*}$ & $0.001^{**}$ \\
+  & (0.000) & (0.001) & (0.001) & (0.000) & (0.000) & (0.000) \\
+  Base income spline 5 & $-0.000$ & $-0.002$ & $-0.005^{**}$ & $0.000$ & $-0.001^{**}$ & $-0.002^{**}$ \\
+  & (0.000) & (0.002) & (0.002) & (0.000) & (0.001) & (0.001) \\
+  \midrule
+  $R^2$ & 0.036 & 0.032 & 0.352 & 0.003 & 0.007 & 0.079 \\
+  \midrule
+  N & 2,000 & 1,982 & 2,000 & 1,678 & 1,973 & 9,633 \\
+  \bottomrule
+  \end{tabular}
+  \begin{flushleft}\footnotesize
+  Table reports the analogous estimates to column 5 from Table 4 in \cite{GruberSaez2002}, broken up by LLM. Heteroskedasticity-robust SEs in parentheses. Specifications include a natural cubic spline (df\,$=$5) in log base-year income; its five basis-term coefficients are reported as ``Base income spline 1--5''.\\
+  $^{*}p<0.1$, $^{**}p<0.05$, $^{***}p<0.01$
+  \end{flushleft}
+\end{table}
