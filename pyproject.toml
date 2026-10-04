@@ -53,6 +53,7 @@ packages = ["llm_eti"]
 
 [tool.ruff]
 line-length = 88
+extend-exclude = ["archive"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
@@ -60,9 +61,11 @@ ignore = ["E501"]
 
 [tool.black]
 line-length = 88
+extend-exclude = "^/archive/"
 
 [tool.mypy]
 python_version = "3.11"
+exclude = ["^archive/"]
 warn_return_any = true
 warn_unused_configs = true
 
