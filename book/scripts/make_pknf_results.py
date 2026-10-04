@@ -174,6 +174,21 @@ def parse_filename(csv_path: Path) -> tuple[str, float, float]:
     return match["model"], flat_rate, top_rate
 
 
+def results_files(data_dir: Path) -> list[Path]:
+    """One results file per (model, flat, top); a legacy name and a seeded name
+    for the same design would otherwise enter the cross-model tables twice."""
+    files = sorted(data_dir.glob("pknf_results_*.csv"))
+    seen: dict[tuple[str, float, float], Path] = {}
+    for path in files:
+        key = parse_filename(path)
+        if key in seen:
+            raise ValueError(
+                f"Duplicate PKNF design {key}: {seen[key].name}, {path.name}"
+            )
+        seen[key] = path
+    return files
+
+
 def get_eti_divisor(treatment: str, top_rate: float) -> float | None:
     """
     Compute the ETI divisor (change in net-of-tax rate) for a treatment.
@@ -1093,7 +1108,7 @@ def process_file(csv_path: Path) -> tuple[str, float, float, pd.DataFrame]:
 
 
 def main() -> None:
-    csv_files = sorted(DATA_DIR.glob("pknf_results_*.csv"))
+    csv_files = results_files(DATA_DIR)
     if not csv_files:
         print(f"No pknf_results_*.csv files found in {DATA_DIR}")
         return

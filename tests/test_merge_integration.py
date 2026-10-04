@@ -191,3 +191,14 @@ def test_unrecognized_results_filename_is_rejected():
 
     with pytest.raises(ValueError, match="Unrecognized"):
         parse_filename(Path("pknf_results_gpt-4o-mini_25pct_50pct_test.csv"))
+
+
+def test_duplicate_designs_are_rejected(tmp_path):
+    results_files = importlib.import_module(
+        "book.scripts.make_pknf_results"
+    ).results_files
+    (tmp_path / "pknf_results_gpt-4o_25pct_50pct.csv").write_text("")
+    assert len(results_files(tmp_path)) == 1
+    (tmp_path / "pknf_results_gpt-4o_25pct_50pct_16rounds_seed0.csv").write_text("")
+    with pytest.raises(ValueError, match="Duplicate PKNF design"):
+        results_files(tmp_path)
