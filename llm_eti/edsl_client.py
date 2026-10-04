@@ -929,6 +929,7 @@ Respond with exactly one JSON object and nothing else:
                         scenarios=[Scenario(scenario) for scenario in chunk],
                     )
                     pending = job.run(
+                        n=responses_per_scenario,
                         cache=False if fresh else self.use_cache,
                         fresh=fresh,
                         disable_remote_cache=fresh,
@@ -952,6 +953,8 @@ Respond with exactly one JSON object and nothing else:
                     )
                     time.sleep(wait_seconds)
 
+            if pending is None:
+                raise RuntimeError(f"Remote {survey_type} batch was not submitted")
             if on_submit is not None:
                 on_submit(chunk, pending)
 
