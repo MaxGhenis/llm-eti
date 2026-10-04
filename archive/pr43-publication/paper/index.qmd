@@ -1,0 +1,83 @@
+---
+title: "What do language models imply about taxable-income responses?"
+subtitle: "An exploratory methods note on model outputs—not human elasticities"
+author:
+  - name: Jason DeBacker
+    affiliation: University of South Carolina
+  - name: Max Ghenis
+date: 2026-07-09
+date-format: "MMMM D, YYYY"
+description: >-
+  A reproducible comparison of model-implied taxable-income responses across
+  four language models, with explicit archive and interpretation boundaries.
+keywords:
+  - large language models
+  - elasticity of taxable income
+  - behavioral simulation
+  - reproducibility
+---
+
+::: {.content-visible when-format="html"}
+<div class="paper-utility">
+<a href="../" class="paper-home">← Project home</a>
+<span>Publication files</span>
+<a href="llm-eti.pdf">PDF</a>
+<a href="llm-eti.tex">TeX</a>
+<a href="llm-eti-source.zip">Source bundle</a>
+<a href="../reproduce.html">Reproduce</a>
+<a href="https://github.com/MaxGhenis/llm-eti">Code</a>
+</div>
+:::
+
+::: {.content-visible when-format="html"}
+<nav id="TOC" role="doc-toc" aria-label="Paper contents">
+<h2>On this page</h2>
+<ul>
+<li><a href="#abstract">Abstract</a></li>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#design-and-methods">Design and methods</a></li>
+<li><a href="#results">Results</a></li>
+<li><a href="#discussion">Discussion</a></li>
+<li><a href="#reproducibility-and-data-provenance">Reproducibility</a></li>
+<li><a href="#appendix-archived-prompt-instrument">Prompt appendix</a></li>
+<li><a href="#appendix-why-the-capped-laboratory-estimates-are-withheld">Lab identification appendix</a></li>
+<li><a href="#data-code-and-declarations">Data and declarations</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+</nav>
+:::
+
+::: {#paper-content role="main"}
+
+# Abstract {.unnumbered}
+
+{{< include generated/abstract.md >}}
+
+**Keywords:** large language models; elasticity of taxable income; behavioral
+simulation; reproducibility<br>
+**JEL classification:** H21, H31, C90
+
+::: {.interpretation-note}
+**Interpretation boundary.** Every estimate in this paper describes archived
+language-model outputs. None identifies how people respond to taxes.
+:::
+
+{{< include sections/introduction.md >}}
+
+{{< include sections/methods.md >}}
+
+{{< include sections/results.md >}}
+
+{{< include sections/discussion.md >}}
+
+{{< include sections/reproducibility.md >}}
+
+{{< include sections/appendix.md >}}
+
+{{< include sections/lab_methods.md >}}
+
+{{< include sections/declarations.md >}}
+
+# References {.unnumbered}
+
+:::

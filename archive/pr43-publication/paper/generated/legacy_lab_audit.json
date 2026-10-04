@@ -1,0 +1,1490 @@
+{
+  "archives": [
+    {
+      "archive": "legacy_pickle",
+      "blockers": [
+        "full_planned_subject_and_row_inventory_including_absent_subjects",
+        "run_bound_delivered_instrument_and_assignment_version",
+        "complete_attempt_failure_retry_and_cache_inventory",
+        "independent_draw_units_and_state_history_provenance",
+        "observed_caps_incompatible_with_original_instrument",
+        "incomplete_observed_subject_phase_original_cap_grid",
+        "no_validated_task_choice_parser_for_retained_free_text"
+      ],
+      "file": "PKNF_replication_results.pkl",
+      "finite_sample_completion_bounds": null,
+      "human_Table_6_reproduced": false,
+      "observations": {
+        "cap_counts": {
+          "14": 54,
+          "16": 40,
+          "20": 45,
+          "22": 37,
+          "24": 38,
+          "26": 40,
+          "28": 30,
+          "30": 36
+        },
+        "choice_status": "Free text retained; no prospectively validated task-choice parser",
+        "duplicate_label_rounds": 0,
+        "full_planned_subject_count": null,
+        "independent_subject_count": null,
+        "missing_observed_subject_phase_cap_cells": [
+          {
+            "cap": 16,
+            "phase": 0,
+            "subject_label": "0"
+          },
+          {
+            "cap": 21,
+            "phase": 0,
+            "subject_label": "0"
+          },
+          {
+            "cap": 24,
+            "phase": 0,
+            "subject_label": "0"
+          },
+          {
+            "cap": 25,
+            "phase": 0,
+            "subject_label": "0"
+          },
+          {
+            "cap": 30,
+            "phase": 0,
+            "subject_label": "0"
+          },
+          {
+            "cap": 21,
+            "phase": 1,
+            "subject_label": "0"
+          },
+          {
+            "cap": 24,
+            "phase": 1,
+            "subject_label": "0"
+          },
+          {
+            "cap": 25,
+            "phase": 1,
+            "subject_label": "0"
+          },
+          {
+            "cap": 20,
+            "phase": 0,
+            "subject_label": "1"
+          },
+          {
+            "cap": 21,
+            "phase": 0,
+            "subject_label": "1"
+          },
+          {
+            "cap": 25,
+            "phase": 0,
+            "subject_label": "1"
+          },
+          {
+            "cap": 30,
+            "phase": 0,
+            "subject_label": "1"
+          },
+          {
+            "cap": 14,
+            "phase": 1,
+            "subject_label": "1"
+          },
+          {
+            "cap": 21,
+            "phase": 1,
+            "subject_label": "1"
+          },
+          {
+            "cap": 22,
+            "phase": 1,
+            "subject_label": "1"
+          },
+          {
+            "cap": 25,
+            "phase": 1,
+            "subject_label": "1"
+          },
+          {
+            "cap": 16,
+            "phase": 0,
+            "subject_label": "10"
+          },
+          {
+            "cap": 21,
+            "phase": 0,
+            "subject_label": "10"
+          },
+          {
+            "cap": 22,
+            "phase": 0,
+            "subject_label": "10"
+          },
+          {
+            "cap": 25,
+            "phase": 0,
+            "subject_label": "10"
+          },
+          {
+            "cap": 30,
+            "phase": 0,
+            "subject_label": "10"
+          },
+          {
+            "cap": 14,
+            "phase": 1,
+            "subject_label": "10"
+          },
+          {
+            "cap": 21,
+            "phase": 1,
+            "subject_label": "10"
+          },
+          {
+            "cap": 25,
+            "phase": 1,
+            "subject_label": "10"
+          },
+          {
+            "cap": 14,
+            "phase": 0,
+            "subject_label": "11"
+          },
+          {
+            "cap": 21,
+            "phase": 0,
+            "subject_label": "11"
+          },
+          {
+            "cap": 24,
+            "phase": 0,
+            "subject_label": "11"
+          },
+          {
+            "cap": 25,
+            "phase": 0,
+            "subject_label": "11"
+          },
+          {
+            "cap": 14,
+            "phase": 1,
+            "subject_label": "11"
+          },
+          {
+            "cap": 16,
+            "phase": 1,
+            "subject_label": "11"
+          },
+          {
+            "cap": 21,
+            "phase": 1,
+            "subject_label": "11"
+          },
+          {
+            "cap": 25,
+            "phase": 1,
+            "subject_label": "11"
+          },
+          {
+            "cap": 21,
+            "phase": 0,
+            "subject_label": "12"
+          },
+          {
+            "cap": 24,
+            "phase": 0,
+            "subject_label": "12"
+          },
+          {
+            "cap": 25,
+            "phase": 0,
+            "subject_label": "12"
+          },
+          {
+            "cap": 30,
+            "phase": 0,
+            "subject_label": "12"
+          },
+          {
+            "cap": 20,
+            "phase": 1,
+            "subject_label": "12"
+          },
+          {
+            "cap": 21,
+            "phase": 1,
+            "subject_label": "12"
+          },
+          {
+            "cap": 25,
+            "phase": 1,
+            "subject_label": "12"
+          },
+          {
+            "cap": 21,
+            "phase": 0,
+            "subject_label": "13"
+          },
+          {
+            "cap": 22,
+            "phase": 0,
+            "subject_label": "13"
+          },
+          {
+            "cap": 25,
+            "phase": 0,
+            "subject_label": "13"
+          },
+          {
+            "cap": 30,
+            "phase": 0,
+            "subject_label": "13"
+          },
+          {
+            "cap": 20,
+            "phase": 1,
+            "subject_label": "13"
+          },
+          {
+            "cap": 21,
+            "phase": 1,
+            "subject_label": "13"
+          },
+          {
+            "cap": 22,
+            "phase": 1,
+            "subject_label": "13"
+          },
+          {
+            "cap": 24,
+            "phase": 1,
+            "subject_label": "13"
+          },
+          {
+            "cap": 25,
+            "phase": 1,
+            "subject_label": "13"
+          },
+          {
+            "cap": 21,
+            "phase": 0,
+            "subject_label": "14"
+          },
+          {
+            "cap": 22,
+            "phase": 0,
+            "subject_label": "14"
+          },
+          {
+            "cap": 25,
+            "phase": 0,
+            "subject_label": "14"
+          },
+          {
+            "cap": 30,
+            "phase": 0,
+            "subject_label": "14"
+          },
+          {
+            "cap": 21,
+            "phase": 1,
+            "subject_label": "14"
+          },
+          {
+            "cap": 22,
+            "phase": 1,
+            "subject_label": "14"
+          },
+          {
+            "cap": 25,
+            "phase": 1,
+            "subject_label": "14"
+          },
+          {
+            "cap": 14,
+            "phase": 0,
+            "subject_label": "15"
+          },
+          {
+            "cap": 16,
+            "phase": 0,
+            "subject_label": "15"
+          },
+          {
+            "cap": 21,
+            "phase": 0,
+            "subject_label": "15"
+          },
+          {
+            "cap": 25,
+            "phase": 0,
+            "subject_label": "15"
+          },
+          {
+            "cap": 30,
+            "phase": 0,
+            "subject_label": "15"
+          },
+          {
+            "cap": 20,
+            "phase": 1,
+            "subject_label": "15"
+          },
+          {
+            "cap": 21,
+            "phase": 1,
+            "subject_label": "15"
+          },
+          {
+            "cap": 22,
+            "phase": 1,
+            "subject_label": "15"
+          },
+          {
+            "cap": 24,
+            "phase": 1,
+            "subject_label": "15"
+          },
+          {
+            "cap": 25,
+            "phase": 1,
+            "subject_label": "15"
+          },
+          {
+            "cap": 20,
+            "phase": 0,
+            "subject_label": "16"
+          },
+          {
+            "cap": 21,
+            "phase": 0,
+            "subject_label": "16"
+          },
+          {
+            "cap": 24,
+            "phase": 0,
+            "subject_label": "16"
+          },
+          {
+            "cap": 25,
+            "phase": 0,
+            "subject_label": "16"
+          },
+          {
+            "cap": 20,
+            "phase": 1,
+            "subject_label": "16"
+          },
+          {
+            "cap": 21,
+            "phase": 1,
+            "subject_label": "16"
+          },
+          {
+            "cap": 24,
+            "phase": 1,
+            "subject_label": "16"
+          },
+          {
+            "cap": 25,
+            "phase": 1,
+            "subject_label": "16"
+          },
+          {
+            "cap": 30,
+            "phase": 1,
+            "subject_label": "16"
+          },
+          {
+            "cap": 16,
+            "phase": 0,
+            "subject_label": "17"
+          },
+          {
+            "cap": 20,
+            "phase": 0,
+            "subject_label": "17"
+          },
+          {
+            "cap": 21,
+            "phase": 0,
+            "subject_label": "17"
+          },
+          {
+            "cap": 24,
+            "phase": 0,
+            "subject_label": "17"
+          },
+          {
+            "cap": 25,
+            "phase": 0,
+            "subject_label": "17"
+          },
+          {
+            "cap": 30,
+            "phase": 0,
+            "subject_label": "17"
+          },
+          {
+            "cap": 16,
+            "phase": 1,
+            "subject_label": "17"
+          },
+          {
+            "cap": 20,
+            "phase": 1,
+            "subject_label": "17"
+          },
+          {
+            "cap": 21,
+            "phase": 1,
+            "subject_label": "17"
+          },
+          {
+            "cap": 24,
+            "phase": 1,
+            "subject_label": "17"
+          },
+          {
+            "cap": 25,
+            "phase": 1,
+            "subject_label": "17"
+          },
+          {
+            "cap": 14,
+            "phase": 0,
+            "subject_label": "18"
+          },
+          {
+            "cap": 20,
+            "phase": 0,
+            "subject_label": "18"
+          },
+          {
+            "cap": 21,
+            "phase": 0,
+            "subject_label": "18"
+          },
+          {
+            "cap": 22,
+            "phase": 0,
+            "subject_label": "18"
+          },
+          {
+            "cap": 25,
+            "phase": 0,
+            "subject_label": "18"
+          },
+          {
+            "cap": 30,
+            "phase": 0,
+            "subject_label": "18"
+          },
+          {
+            "cap": 16,
+            "phase": 1,
+            "subject_label": "18"
+          },
+          {
+            "cap": 21,
+            "phase": 1,
+            "subject_label": "18"
+          },
+          {
+            "cap": 24,
+            "phase": 1,
+            "subject_label": "18"
+          },
+          {
+            "cap": 25,
+            "phase": 1,
+            "subject_label": "18"
+          },
+          {
+            "cap": 30,
+            "phase": 1,
+            "subject_label": "18"
+          },
+          {
+            "cap": 14,
+            "phase": 0,
+            "subject_label": "19"
+          },
+          {
+            "cap": 21,
+            "phase": 0,
+            "subject_label": "19"
+          },
+          {
+            "cap": 22,
+            "phase": 0,
+            "subject_label": "19"
+          },
+          {
+            "cap": 25,
+            "phase": 0,
+            "subject_label": "19"
+          },
+          {
+            "cap": 16,
+            "phase": 1,
+            "subject_label": "19"
+          },
+          {
+            "cap": 20,
+            "phase": 1,
+            "subject_label": "19"
+          },
+          {
+            "cap": 21,
+            "phase": 1,
+            "subject_label": "19"
+          },
+          {
+            "cap": 25,
+            "phase": 1,
+            "subject_label": "19"
+          },
+          {
+            "cap": 21,
+            "phase": 0,
+            "subject_label": "2"
+          },
+          {
+            "cap": 25,
+            "phase": 0,
+            "subject_label": "2"
+          },
+          {
+            "cap": 30,
+            "phase": 0,
+            "subject_label": "2"
+          },
+          {
+            "cap": 20,
+            "phase": 1,
+            "subject_label": "2"
+          },
+          {
+            "cap": 21,
+            "phase": 1,
+            "subject_label": "2"
+          },
+          {
+            "cap": 24,
+            "phase": 1,
+            "subject_label": "2"
+          },
+          {
+            "cap": 25,
+            "phase": 1,
+            "subject_label": "2"
+          },
+          {
+            "cap": 30,
+            "phase": 1,
+            "subject_label": "2"
+          },
+          {
+            "cap": 20,
+            "phase": 0,
+            "subject_label": "3"
+          },
+          {
+            "cap": 21,
+            "phase": 0,
+            "subject_label": "3"
+          },
+          {
+            "cap": 24,
+            "phase": 0,
+            "subject_label": "3"
+          },
+          {
+            "cap": 25,
+            "phase": 0,
+            "subject_label": "3"
+          },
+          {
+            "cap": 21,
+            "phase": 1,
+            "subject_label": "3"
+          },
+          {
+            "cap": 22,
+            "phase": 1,
+            "subject_label": "3"
+          },
+          {
+            "cap": 24,
+            "phase": 1,
+            "subject_label": "3"
+          },
+          {
+            "cap": 25,
+            "phase": 1,
+            "subject_label": "3"
+          },
+          {
+            "cap": 14,
+            "phase": 0,
+            "subject_label": "4"
+          },
+          {
+            "cap": 20,
+            "phase": 0,
+            "subject_label": "4"
+          },
+          {
+            "cap": 21,
+            "phase": 0,
+            "subject_label": "4"
+          },
+          {
+            "cap": 24,
+            "phase": 0,
+            "subject_label": "4"
+          },
+          {
+            "cap": 25,
+            "phase": 0,
+            "subject_label": "4"
+          },
+          {
+            "cap": 21,
+            "phase": 1,
+            "subject_label": "4"
+          },
+          {
+            "cap": 24,
+            "phase": 1,
+            "subject_label": "4"
+          },
+          {
+            "cap": 25,
+            "phase": 1,
+            "subject_label": "4"
+          },
+          {
+            "cap": 20,
+            "phase": 0,
+            "subject_label": "5"
+          },
+          {
+            "cap": 21,
+            "phase": 0,
+            "subject_label": "5"
+          },
+          {
+            "cap": 24,
+            "phase": 0,
+            "subject_label": "5"
+          },
+          {
+            "cap": 25,
+            "phase": 0,
+            "subject_label": "5"
+          },
+          {
+            "cap": 30,
+            "phase": 0,
+            "subject_label": "5"
+          },
+          {
+            "cap": 21,
+            "phase": 1,
+            "subject_label": "5"
+          },
+          {
+            "cap": 24,
+            "phase": 1,
+            "subject_label": "5"
+          },
+          {
+            "cap": 25,
+            "phase": 1,
+            "subject_label": "5"
+          },
+          {
+            "cap": 14,
+            "phase": 0,
+            "subject_label": "6"
+          },
+          {
+            "cap": 21,
+            "phase": 0,
+            "subject_label": "6"
+          },
+          {
+            "cap": 25,
+            "phase": 0,
+            "subject_label": "6"
+          },
+          {
+            "cap": 16,
+            "phase": 1,
+            "subject_label": "6"
+          },
+          {
+            "cap": 21,
+            "phase": 1,
+            "subject_label": "6"
+          },
+          {
+            "cap": 22,
+            "phase": 1,
+            "subject_label": "6"
+          },
+          {
+            "cap": 25,
+            "phase": 1,
+            "subject_label": "6"
+          },
+          {
+            "cap": 30,
+            "phase": 1,
+            "subject_label": "6"
+          },
+          {
+            "cap": 14,
+            "phase": 0,
+            "subject_label": "7"
+          },
+          {
+            "cap": 21,
+            "phase": 0,
+            "subject_label": "7"
+          },
+          {
+            "cap": 22,
+            "phase": 0,
+            "subject_label": "7"
+          },
+          {
+            "cap": 25,
+            "phase": 0,
+            "subject_label": "7"
+          },
+          {
+            "cap": 14,
+            "phase": 1,
+            "subject_label": "7"
+          },
+          {
+            "cap": 20,
+            "phase": 1,
+            "subject_label": "7"
+          },
+          {
+            "cap": 21,
+            "phase": 1,
+            "subject_label": "7"
+          },
+          {
+            "cap": 25,
+            "phase": 1,
+            "subject_label": "7"
+          },
+          {
+            "cap": 20,
+            "phase": 0,
+            "subject_label": "8"
+          },
+          {
+            "cap": 21,
+            "phase": 0,
+            "subject_label": "8"
+          },
+          {
+            "cap": 25,
+            "phase": 0,
+            "subject_label": "8"
+          },
+          {
+            "cap": 21,
+            "phase": 1,
+            "subject_label": "8"
+          },
+          {
+            "cap": 25,
+            "phase": 1,
+            "subject_label": "8"
+          },
+          {
+            "cap": 30,
+            "phase": 1,
+            "subject_label": "8"
+          },
+          {
+            "cap": 14,
+            "phase": 0,
+            "subject_label": "9"
+          },
+          {
+            "cap": 16,
+            "phase": 0,
+            "subject_label": "9"
+          },
+          {
+            "cap": 21,
+            "phase": 0,
+            "subject_label": "9"
+          },
+          {
+            "cap": 25,
+            "phase": 0,
+            "subject_label": "9"
+          },
+          {
+            "cap": 16,
+            "phase": 1,
+            "subject_label": "9"
+          },
+          {
+            "cap": 21,
+            "phase": 1,
+            "subject_label": "9"
+          },
+          {
+            "cap": 22,
+            "phase": 1,
+            "subject_label": "9"
+          },
+          {
+            "cap": 25,
+            "phase": 1,
+            "subject_label": "9"
+          }
+        ],
+        "observed_rounds_by_label": {
+          "0": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "1": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "10": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "11": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "12": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "13": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "14": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "15": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "16": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "17": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "18": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "19": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "2": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "3": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "4": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "5": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "6": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "7": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "8": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "9": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ]
+        },
+        "observed_subject_labels": 20,
+        "outside_original_cap_support_rows": 70,
+        "raw_answer_payload_mismatches": 0,
+        "recorded_task_choice_zero_rows": null,
+        "response_model_labels": {
+          "gpt-3.5-turbo-0125": 320
+        },
+        "round_adapter": "Stored zero-based round_num + 1; no rows deleted",
+        "rows": 320,
+        "schema": [
+          "obs_number",
+          "sim_num",
+          "round_num",
+          "treatment",
+          "model_answer",
+          "model_response",
+          "rate1",
+          "rate2",
+          "max_labor"
+        ],
+        "stored_schedule_vs_historical_code_mismatches": 0,
+        "subjects_with_complete_original_grid": 0,
+        "treatment_label_counts": {
+          "1": 64,
+          "2": 144,
+          "3": 32,
+          "4": 80
+        },
+        "unique_retained_response_ids": 320
+      },
+      "sequence_or_reform_contrast": null,
+      "sha256": "43b22a36e9ab387ea511b60aa77373257cef9d420f05b31ebc58737a52899438",
+      "status": "withheld",
+      "structural_notch_eti": {
+        "above_dominated_support": false,
+        "dominated_width_cents": 200,
+        "estimate": null,
+        "identified": false,
+        "lower_bound": null,
+        "maximum_cap_cents": 600,
+        "reason": "No observed interior marginal buncher; discrete capped support; see METHODS.md",
+        "threshold_cents": 400,
+        "upper_bound": null
+      },
+      "subject_bootstrap": null,
+      "zero_inclusive_standardized_outcomes": null
+    },
+    {
+      "archive": "gemini_minimal",
+      "blockers": [
+        "full_planned_subject_and_row_inventory_including_absent_subjects",
+        "run_bound_delivered_instrument_and_assignment_version",
+        "complete_attempt_failure_retry_and_cache_inventory",
+        "independent_draw_units_and_state_history_provenance",
+        "observed_caps_incompatible_with_original_instrument",
+        "incomplete_observed_subject_phase_original_cap_grid",
+        "no_Prog_Prog_comparison_arm",
+        "no_retained_raw_provider_answers"
+      ],
+      "file": "pknf_results_gemini-2.5-flash_minimal.csv",
+      "finite_sample_completion_bounds": null,
+      "human_Table_6_reproduced": false,
+      "observations": {
+        "cap_counts": {
+          "15": 5,
+          "16": 2,
+          "17": 2,
+          "18": 2,
+          "19": 2,
+          "20": 2,
+          "21": 2,
+          "22": 3,
+          "24": 2,
+          "25": 2,
+          "26": 2,
+          "27": 1,
+          "28": 1,
+          "29": 1,
+          "30": 3
+        },
+        "choice_status": "Recorded numeric choices only; raw provider answers not retained",
+        "duplicate_label_rounds": 0,
+        "full_planned_subject_count": null,
+        "income_or_phase_inconsistencies": 0,
+        "independent_subject_count": null,
+        "invalid_recorded_task_choices": 0,
+        "missing_observed_subject_phase_cap_cells": [
+          {
+            "cap": 14,
+            "phase": 0,
+            "subject_label": "0"
+          },
+          {
+            "cap": 16,
+            "phase": 0,
+            "subject_label": "0"
+          },
+          {
+            "cap": 20,
+            "phase": 0,
+            "subject_label": "0"
+          },
+          {
+            "cap": 21,
+            "phase": 0,
+            "subject_label": "0"
+          },
+          {
+            "cap": 25,
+            "phase": 0,
+            "subject_label": "0"
+          },
+          {
+            "cap": 14,
+            "phase": 1,
+            "subject_label": "0"
+          },
+          {
+            "cap": 21,
+            "phase": 1,
+            "subject_label": "0"
+          },
+          {
+            "cap": 24,
+            "phase": 1,
+            "subject_label": "0"
+          },
+          {
+            "cap": 14,
+            "phase": 0,
+            "subject_label": "1"
+          },
+          {
+            "cap": 16,
+            "phase": 0,
+            "subject_label": "1"
+          },
+          {
+            "cap": 20,
+            "phase": 0,
+            "subject_label": "1"
+          },
+          {
+            "cap": 22,
+            "phase": 0,
+            "subject_label": "1"
+          },
+          {
+            "cap": 30,
+            "phase": 0,
+            "subject_label": "1"
+          },
+          {
+            "cap": 14,
+            "phase": 1,
+            "subject_label": "1"
+          },
+          {
+            "cap": 20,
+            "phase": 1,
+            "subject_label": "1"
+          },
+          {
+            "cap": 21,
+            "phase": 1,
+            "subject_label": "1"
+          },
+          {
+            "cap": 24,
+            "phase": 1,
+            "subject_label": "1"
+          },
+          {
+            "cap": 25,
+            "phase": 1,
+            "subject_label": "1"
+          }
+        ],
+        "observed_rounds_by_label": {
+          "0": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "1": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ]
+        },
+        "observed_subject_labels": 2,
+        "outside_original_cap_support_rows": 16,
+        "raw_answer_payload_mismatches": null,
+        "recorded_task_choice_cap_rows": 31,
+        "recorded_task_choice_zero_rows": 0,
+        "round_adapter": "Stored one-based round; no rows deleted",
+        "rows": 32,
+        "schema": [
+          "treatment",
+          "subject_id",
+          "round",
+          "tax_schedule",
+          "labor_endowment",
+          "labor_supply",
+          "income",
+          "post_reform",
+          "model"
+        ],
+        "subjects_with_complete_original_grid": 0,
+        "tax_schedule_label_counts": {
+          "flat25": 16,
+          "progressive": 16
+        },
+        "treatment_label_counts": {
+          "Prog,Flat25": 32
+        }
+      },
+      "sequence_or_reform_contrast": null,
+      "sha256": "e3b890dae7b5152b1a43c0ead2235ad3963fc0c3b2fbea473d7886f25eb547bd",
+      "status": "withheld",
+      "structural_notch_eti": {
+        "above_dominated_support": false,
+        "dominated_width_cents": 200,
+        "estimate": null,
+        "identified": false,
+        "lower_bound": null,
+        "maximum_cap_cents": 600,
+        "reason": "No observed interior marginal buncher; discrete capped support; see METHODS.md",
+        "threshold_cents": 400,
+        "upper_bound": null
+      },
+      "subject_bootstrap": null,
+      "zero_inclusive_standardized_outcomes": null
+    }
+  ],
+  "empirical_lab_estimates_released": false,
+  "reference_methods_head": "1f6c23a0c00f0c197cd16e5b235f1e8420d9ee49",
+  "scope": "Retained legacy lab archive audit; separate from 8095 Study 2 responses"
+}

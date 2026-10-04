@@ -1,0 +1,114 @@
+---
+pagetitle: "What do language models imply about taxable-income responses?"
+description: >-
+  A reproducible methods note comparing model-implied tax responses across four
+  language models—without treating them as estimates of human behavior.
+image: assets/social-card.png
+page-layout: full
+title-block-style: none
+toc: false
+---
+
+<div class="site-frame">
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<header class="masthead">
+<a class="wordmark" href="./" aria-label="LLM ETI project home">
+<span>LLM</span><i>×</i><span>ETI</span>
+</a>
+<nav aria-label="Primary navigation">
+<a href="paper/">Paper</a>
+<a href="reproduce.html">Reproduce</a>
+<a href="https://github.com/MaxGhenis/llm-eti">Code</a>
+</nav>
+</header>
+
+<main id="main-content">
+
+<section class="hero">
+<div class="hero-copy">
+<p class="eyebrow">Exploratory methods note · July 2026</p>
+<h1>What do language models imply about taxable-income responses?</h1>
+<p class="deck">Four models answer the same stylized tax question. Their outputs disagree—often because some adjust income while others copy the supplied baseline.</p>
+<p class="boundary"><strong>Model outputs, not human elasticities.</strong> The exercise studies what LLMs say under a prompt; it does not identify how taxpayers behave.</p>
+<div class="hero-actions">
+<a class="action action-primary" href="paper/">Read the web paper <span aria-hidden="true">→</span></a>
+<a class="action" href="paper/llm-eti.pdf">PDF</a>
+<a class="text-action" href="paper/llm-eti.tex">TeX source</a>
+</div>
+</div>
+<div class="hero-visual" data-reveal>
+{{< include paper/generated/hero_metrics.html >}}
+</div>
+</section>
+
+<section class="editorial-section finding" id="finding">
+<div class="section-index">
+<span>01</span>
+<p>The finding</p>
+</div>
+<div class="section-body">
+<p class="display-statement">The four models do not produce a common response distribution.</p>
+<div class="finding-grid">
+<p>Claude changes broad and taxable income in most responses. DeepSeek adjusts less often but usually moves in the direction implied by a positive response. Gemma and GPT-4o mini usually preserve the baseline, with occasional large or zero-dollar answers.</p>
+<p>That mixture makes averages and medians tell different stories. A familiar-looking mean is therefore a property of the model, prompt, cleaning rule, and summary—not a validation against human behavior.</p>
+</div>
+<figure class="feature-figure" data-reveal>
+{{< include paper/generated/feature_figure.html >}}
+</figure>
+</div>
+</section>
+
+<section class="editorial-section design" id="design">
+<div class="section-index">
+<span>02</span>
+<p>The design</p>
+</div>
+<div class="section-body">
+<p class="kicker">Every exclusion is visible.</p>
+{{< include paper/generated/sample_flow.html >}}
+<p class="method-note">The pipeline reconstructs the whole-dollar incomes and integer tax rates actually shown to each model. It removes duplicate delivered prompts and ambiguous reruns, estimates on a common panel, and reports model-specific and boundary sensitivities.</p>
+<a class="inline-link" href="paper/#design-and-methods">Read the methods <span aria-hidden="true">→</span></a>
+</div>
+</section>
+
+<section class="editorial-section interpretation" id="interpretation">
+<div class="section-index">
+<span>03</span>
+<p>The boundary</p>
+</div>
+<div class="section-body two-column-statement">
+<div>
+<p class="kicker">What this can show</p>
+<p>How model families encode a stylized tax question; where prompts and parsers create measurement choices; and whether model outputs remain stable across defensible summaries.</p>
+</div>
+<div>
+<p class="kicker">What this cannot show</p>
+<p>How people respond to tax reforms, whether an LLM can replace causal evidence, or what elasticity should be used to score a policy.</p>
+</div>
+</div>
+</section>
+
+<section class="publication-strip" id="publication">
+<div>
+<p class="eyebrow">One source, three reading modes</p>
+<h2>Read online. Cite the PDF. Audit the TeX and data.</h2>
+</div>
+<div class="publication-links">
+<a href="paper/">Web paper <span>HTML</span></a>
+<a href="paper/llm-eti.pdf">Typeset paper <span>PDF</span></a>
+<a href="paper/llm-eti-source.zip">Compilation source <span>TeX + figures</span></a>
+<a href="reproduce.html">Reproduction guide <span>Code + data</span></a>
+</div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+<p><strong>Jason DeBacker</strong>, University of South Carolina<br><strong>Max Ghenis</strong></p>
+<p>Built from frozen inputs with Quarto. Analysis and publication artifacts are reproducible without model API access.</p>
+<a href="https://github.com/MaxGhenis/llm-eti">GitHub repository ↗</a>
+</footer>
+
+</div>
