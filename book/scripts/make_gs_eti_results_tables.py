@@ -25,7 +25,7 @@ from patsy import dmatrix  # noqa: E402
 # Paths
 # --------------------------------------------------
 # Overridable so the paper can be rebuilt from its frozen inputs:
-#   LLM_ETI_GS_DATA_DIR=paper/inputs/gs LLM_ETI_GS_OUT_DIR=paper/images_tables
+#   LLM_ETI_GS_DATA_DIR=paper_inputs/gs LLM_ETI_GS_OUT_DIR=paper/images_tables
 DATA_DIR = Path(
     os.environ.get("LLM_ETI_GS_DATA_DIR", Path(__file__).parents[1] / "data")
 )
