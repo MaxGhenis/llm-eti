@@ -183,7 +183,9 @@ def build_reg_table(ycol, base_col, measure):
     for k in range(n_spline):
         coefs = [fmt_coef(r["spline_coefs"][k], r["spline_ps"][k]) for r in res]
         ses = [f"({r['spline_ses'][k]:.3f})" for r in res]
-        spline_lines.append(f"  Base income spline {k + 1} & " + " & ".join(coefs) + r" \\")
+        spline_lines.append(
+            f"  Base income spline {k + 1} & " + " & ".join(coefs) + r" \\"
+        )
         spline_lines.append("  & " + " & ".join(ses) + r" \\")
 
     headers = [c[0] for c in columns()]
@@ -232,9 +234,7 @@ def build_summary_table():
     ncol = len(headers)
     mean_eti, median_eti, same_inc, obs = [], [], [], []
     for _, sample in columns():
-        eti = (
-            sample["implied_eti_taxable"].replace([np.inf, -np.inf], np.nan).dropna()
-        )
+        eti = sample["implied_eti_taxable"].replace([np.inf, -np.inf], np.nan).dropna()
         same = (sample["taxable_income_this"] == sample["taxable_income"]).mean() * 100
         mean_eti.append(f"{eti.mean():.3f}")
         median_eti.append(f"{eti.median():.3f}")
@@ -450,7 +450,9 @@ def build_table9(label, sample):
 
     body = []
     for i, rlabel in enumerate(row_labels):
-        coefs = " & ".join(fmt_coef(res[i][j]["coef"], res[i][j]["p"]) for j in range(3))
+        coefs = " & ".join(
+            fmt_coef(res[i][j]["coef"], res[i][j]["p"]) for j in range(3)
+        )
         ses = " & ".join(
             ("--" if np.isnan(res[i][j]["se"]) else f"({res[i][j]['se']:.3f})")
             for j in range(3)

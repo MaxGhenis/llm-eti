@@ -36,9 +36,7 @@ def main(argv: list[str]) -> int:
         if expected != actual:
             failures += 1
             diff = [
-                (i, e, a)
-                for i, (e, a) in enumerate(zip(expected, actual))
-                if e != a
+                (i, e, a) for i, (e, a) in enumerate(zip(expected, actual)) if e != a
             ][:5]
             print(
                 f"MISMATCH {name}: {len(expected)} vs {len(actual)} numbers; "
