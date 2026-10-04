@@ -78,3 +78,24 @@ help:
 	@echo "  lint                  - Run linters"
 	@echo ""
 	@echo "  clean                 - Clean all generated files"
+
+# ---- Paper (Overleaf mirror in manuscript/, frozen inputs in paper_inputs/) ----
+PY ?= uv run python
+OVERLEAF ?= https://git.overleaf.com/6818d868a5b36406065db49b
+GS_TABLES = gs_eti_regression_taxable_spline.tex gs_eti_regression_broad_spline.tex \
+	gs_table9_income_group_all_models_cpi2026.tex gs_summary_statistics.tex=summary_statistics.tex
+
+paper-tables:  ## regenerate paper tables from paper_inputs/ into build/paper-tables
+	rm -rf build/paper-tables && mkdir -p build/paper-tables
+	LLM_ETI_GS_DATA_DIR=paper_inputs/gs LLM_ETI_GS_OUT_DIR=build/paper-tables \
+		$(PY) book/scripts/make_gs_eti_results_tables.py
+
+check-paper: paper-tables  ## inputs unchanged and manuscript numbers match regeneration
+	cd paper_inputs/gs && shasum -a 256 -c SHA256SUMS
+	$(PY) scripts/check_paper_tables.py build/paper-tables manuscript/images_tables $(GS_TABLES)
+
+paper-pull:  ## bring Overleaf edits into manuscript/
+	git subtree pull --prefix=manuscript $(OVERLEAF) main --squash
+
+paper-push:  ## send repo-side manuscript changes (regenerated tables) to Overleaf
+	git subtree push --prefix=manuscript $(OVERLEAF) main
