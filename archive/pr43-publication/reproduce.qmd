@@ -1,0 +1,82 @@
+---
+pagetitle: "Reproduce LLM × ETI"
+description: "Data provenance, build instructions, and citation for the LLM-ETI research publication."
+page-layout: full
+title-block-style: none
+toc: false
+---
+
+<div class="site-frame interior-page">
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<header class="masthead">
+<a class="wordmark" href="./" aria-label="LLM ETI project home">
+<span>LLM</span><i>×</i><span>ETI</span>
+</a>
+<nav aria-label="Primary navigation">
+<a href="paper/">Paper</a>
+<a aria-current="page" href="reproduce.html">Reproduce</a>
+<a href="https://github.com/MaxGhenis/llm-eti">Code</a>
+</nav>
+</header>
+
+<main id="main-content" class="reproduce-main">
+
+<header class="interior-hero">
+<p class="eyebrow">Open materials</p>
+<h1>Reproduce the publication</h1>
+<p class="deck">The published results begin with six frozen CSVs. No model API key or fresh PolicyEngine dataset is required.</p>
+</header>
+
+<section class="reproduce-section">
+<div class="section-index"><span>01</span><p>Build</p></div>
+<div class="section-body">
+<p>Install <a href="https://docs.astral.sh/uv/">uv</a>, Quarto 1.9.38, and a LaTeX distribution, then run:</p>
+
+```bash
+git clone https://github.com/MaxGhenis/llm-eti.git
+cd llm-eti
+uv sync --python 3.13 --group dev --frozen
+make publication
+```
+
+<p>The target regenerates every table, figure, and headline value; runs the offline test and static-analysis suites; renders the site and web paper; compiles the PDF; retains the TeX source; and checks for generated-file drift.</p>
+</div>
+</section>
+
+<section class="reproduce-section">
+<div class="section-index"><span>02</span><p>Boundary</p></div>
+<div class="section-body">
+<p>The exact historical PolicyEngine-US and upstream dataset revisions were not recorded by the legacy generator. The checked-in `data/scenarios.csv` is therefore the scenario boundary. The five archived response files under `data/responses/` are the model-output boundary.</p>
+<p><a class="inline-link" href="https://github.com/MaxGhenis/llm-eti/blob/main/data/run_manifest.json">Inspect the run manifest and SHA-256 digests ↗</a></p>
+</div>
+</section>
+
+<section class="reproduce-section">
+<div class="section-index"><span>03</span><p>Outputs</p></div>
+<div class="section-body output-list">
+<p><code>paper/generated/analysis_summary.json</code><span>Machine-readable sample counts, slopes, confidence intervals, sensitivities, and input hashes.</span></p>
+<p><code>paper/figures/</code><span>Publication figures in PNG, SVG, and PDF.</span></p>
+<p><code>_site/paper/llm-eti.pdf</code><span>Compiled paper.</span></p>
+<p><code>_site/paper/llm-eti.tex</code><span>Retained LaTeX generated from the same Quarto source.</span></p>
+<p><code>_site/paper/llm-eti-source.zip</code><span>Directly compilable TeX source with bibliography and figures.</span></p>
+</div>
+</section>
+
+<section class="reproduce-section">
+<div class="section-index"><span>04</span><p>Cite</p></div>
+<div class="section-body">
+<p>DeBacker, Jason, and Max Ghenis. 2026. “What do language models imply about taxable-income responses?” Version 0.2.0.</p>
+<p>Machine-readable metadata are available in <a href="https://github.com/MaxGhenis/llm-eti/blob/main/CITATION.cff"><code>CITATION.cff</code></a>.</p>
+</div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+<p><a href="./">← Project overview</a></p>
+<p>Questions about third-party output and data terms are documented in <a href="https://github.com/MaxGhenis/llm-eti/blob/main/NOTICE.md">NOTICE.md</a>.</p>
+</footer>
+
+</div>

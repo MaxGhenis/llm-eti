@@ -1,0 +1,32 @@
+project:
+  type: website
+  output-dir: _site
+  render:
+    - index.qmd
+    - reproduce.qmd
+  resources:
+    - assets/site.js
+    - assets/paper.css
+
+website:
+  title: "LLM × ETI"
+  site-url: https://maxghenis.github.io/llm-eti/
+  repo-url: https://github.com/MaxGhenis/llm-eti
+  favicon: assets/favicon.svg
+  search: false
+  open-graph: true
+  twitter-card: true
+
+format:
+  html:
+    theme: none
+    css: assets/site.css
+    include-after-body: assets/site-scripts.html
+    link-external-newwindow: true
+    smooth-scroll: true
+
+execute:
+  enabled: false
+  freeze: false
+
+lang: en

@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+tmp/
+
+# Local environments and credentials
+.venv/
+.env
+*.key
+*.pem
+.streamlit/secrets.toml
+
+# Quarto build output (source artifacts remain tracked)
+_site/
+**/.quarto/
+**/site_libs/
+**/*.quarto_ipynb
+/paper/index.tex
+/paper/index.pdf
+/paper/index-luamml-mathml.html
+
+# Simulation scratch files and checkpoints
+edsl_output_*.csv
+data/responses/*_test.csv
+data/responses/*.checkpoint.csv
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+/.quarto/

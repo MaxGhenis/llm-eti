@@ -1,0 +1,68 @@
+project:
+  type: manuscript
+  output-dir: ../_site/paper
+  render:
+    - index.qmd
+
+manuscript:
+  article: index.qmd
+  manuscript-url: https://maxghenis.github.io/llm-eti/paper/
+
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    theme: none
+    title-block-style: plain
+    template-partials:
+      - title-block.html
+    css: ../assets/paper.css
+    canonical-url: https://maxghenis.github.io/llm-eti/paper/
+    include-in-header:
+      text: |
+        <link rel="icon" href="../assets/favicon.svg">
+        <meta property="og:type" content="article">
+        <meta property="og:url" content="https://maxghenis.github.io/llm-eti/paper/">
+        <meta property="og:title" content="What do language models imply about taxable-income responses?">
+        <meta property="og:description" content="A reproducible methods note comparing model-implied tax responses without treating them as estimates of human behavior.">
+        <meta property="og:image" content="https://maxghenis.github.io/llm-eti/assets/social-card.png">
+        <meta property="og:image:alt" content="LLM × ETI: model outputs, not human elasticities">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="What do language models imply about taxable-income responses?">
+        <meta name="twitter:description" content="A reproducible methods note comparing model-implied tax responses without treating them as estimates of human behavior.">
+        <meta name="twitter:image" content="https://maxghenis.github.io/llm-eti/assets/social-card.png">
+        <meta name="twitter:image:alt" content="LLM × ETI: model outputs, not human elasticities">
+    link-external-newwindow: true
+    smooth-scroll: true
+    format-links: false
+  pdf:
+    documentclass: scrartcl
+    pdf-engine: lualatex
+    pdf-standard: ua-2
+    template-partials:
+      - title.tex
+    keep-tex: true
+    toc: true
+    toc-depth: 2
+    number-sections: true
+    colorlinks: true
+    papersize: letter
+    geometry:
+      - margin=1in
+    include-in-header:
+      - file: pdf-compatibility.tex
+      - text: |
+          \usepackage{booktabs}
+          \usepackage{longtable}
+          \usepackage{microtype}
+          \usepackage{fontspec}
+          \setmainfont{TeX Gyre Pagella}
+          \setsansfont{TeX Gyre Heros}
+
+execute:
+  enabled: false
+  freeze: false
+
+bibliography: references.bib
+link-citations: true
+lang: en

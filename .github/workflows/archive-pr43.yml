@@ -1,0 +1,21 @@
+name: Archived PR 43 checks
+
+on:
+  push:
+    branches: [main]
+    paths: ["archive/pr43-publication/**", ".github/workflows/archive-pr43.yml"]
+  pull_request:
+    branches: [main]
+    paths: ["archive/pr43-publication/**", ".github/workflows/archive-pr43.yml"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: archive/pr43-publication
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync --python 3.12 --frozen --group dev
+      - run: uv run --python 3.12 pytest -q
