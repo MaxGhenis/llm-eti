@@ -1,0 +1,7 @@
+| Treatment   |   GPT-4o Pre |   GPT-4o Post |   GPT-4o-mini Pre |   GPT-4o-mini Post |   Claude Haiku 4.5 Pre |   Claude Haiku 4.5 Post |   DeepSeek V3 Pre |   DeepSeek V3 Post |   Gemma 4 Pre |   Gemma 4 Post |
+|:------------|-------------:|--------------:|------------------:|-------------------:|-----------------------:|------------------------:|------------------:|-------------------:|--------------:|---------------:|
+| Prog,Prog   |         1.00 |          1.00 |              0.40 |               0.39 |                   1.00 |                    0.99 |              0.88 |               0.84 |          1.00 |           1.00 |
+| Prog,Flat25 |         1.00 |          0.41 |              0.44 |               0.41 |                   1.00 |                    0.32 |              0.89 |               0.36 |          1.00 |           0.43 |
+| Prog,Flat40 |         1.00 |          0.40 |              0.42 |               0.43 |                 nan    |                  nan    |            nan    |             nan    |          1.00 |           0.39 |
+| Flat25,Prog |         0.39 |          1.00 |            nan    |             nan    |                 nan    |                  nan    |            nan    |             nan    |        nan    |         nan    |
+| Flat40,Prog |         0.39 |          1.00 |            nan    |             nan    |                 nan    |                  nan    |            nan    |             nan    |        nan    |         nan    |
