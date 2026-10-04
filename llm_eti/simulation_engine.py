@@ -1,5 +1,6 @@
 """Simulation engine using EDSL for LLM surveys."""
 
+import hashlib
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -7,7 +8,6 @@ from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 
 from .edsl_client import EDSLClient
 
@@ -16,6 +16,8 @@ from .edsl_client import EDSLClient
 class SimulationParams:
     responses_per_household: int
     test_mode: bool = False
+    batch_size: int = 100
+    max_in_flight: int = 1
 
 
 class TaxSimulation:
@@ -67,56 +69,50 @@ class TaxSimulation:
         """
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        try:
-            # Create scenario for EDSL
-            scenario = {
-                "broad_income": row["broad_income"],
-                "taxable_income": row["taxable_income"],
-                "mtr_last": row["mtr"],
-                "mtr_this": row["mtr_prime"],
-            }
+        # Create scenario for EDSL
+        scenario = {
+            "broad_income": row["broad_income"],
+            "taxable_income": row["taxable_income"],
+            "mtr_last": row["mtr"],
+            "mtr_this": row["mtr_prime"],
+        }
 
-            # Run survey with EDSL
-            results = self.client.run_batch_surveys(
-                [scenario],
-                n=self.params.responses_per_household,
-                survey_type="tax",
+        # Run survey with EDSL
+        results = self.client.run_batch_surveys(
+            [scenario],
+            n=self.params.responses_per_household,
+            survey_type="tax",
+        )
+
+        # Format results to match existing structure
+        formatted_results = []
+        for i, result in enumerate(results):
+            formatted_results.append(
+                {
+                    "timestamp": timestamp,
+                    "tax_unit_id": row.get("tax_unit_id"),
+                    "filing_status": row.get("filing_status"),
+                    "broad_income": row["broad_income"],
+                    "taxable_income": row["taxable_income"],
+                    "mtr": row["mtr"],
+                    "mtr_prime": row["mtr_prime"],
+                    "response_number": i + 1,
+                    "taxable_income_this": result.get("taxable_income_this"),
+                    "broad_income_this": result.get("broad_income_this"),
+                    "implied_eti_taxable": result.get("implied_eti_taxable"),
+                    "implied_eti_broad": result.get("implied_eti_broad"),
+                    "model": result.get("model", self.client.model),
+                    "income_response_raw": result.get("income_response_raw"),
+                }
             )
 
-            # Format results to match existing structure
-            formatted_results = []
-            for i, result in enumerate(results):
-                formatted_results.append(
-                    {
-                        "timestamp": timestamp,
-                        "tax_unit_id": row.get("tax_unit_id"),
-                        "filing_status": row.get("filing_status"),
-                        "broad_income": row["broad_income"],
-                        "taxable_income": row["taxable_income"],
-                        "mtr": row["mtr"],
-                        "mtr_prime": row["mtr_prime"],
-                        "response_number": i + 1,
-                        "taxable_income_this": result.get("taxable_income_this"),
-                        "broad_income_this": result.get("broad_income_this"),
-                        "implied_eti_taxable": result.get("implied_eti_taxable"),
-                        "implied_eti_broad": result.get("implied_eti_broad"),
-                        "model": result.get("model", self.client.model),
-                        "income_response_raw": result.get("income_response_raw"),
-                    }
-                )
-
-            return formatted_results
-
-        except Exception as e:
-            import traceback
-
+        if not formatted_results:
             print(
-                f"\nError in simulation for income {row['broad_income']}, rate {row['mtr_prime']}:"
+                "Warning: skipping household with no valid tax responses "
+                f"for income {row['broad_income']} and rate {row['mtr_prime']}"
             )
-            print(f"Error type: {type(e).__name__}")
-            print(f"Error message: {str(e)}")
-            traceback.print_exc()
-            return []
+
+        return formatted_results
 
     def run_bulk_simulation(self, csv_path: Path) -> pd.DataFrame:
         """Run simulations for all households in the CSV.
@@ -128,14 +124,46 @@ class TaxSimulation:
             DataFrame of all results
         """
         scenarios_df = self.load_scenarios(csv_path)
-        all_results = []
+        scenarios = []
+        for index, row in scenarios_df.iterrows():
+            scenario = row.to_dict()
+            scenario.update(
+                {
+                    "work_id": f"tax-{index}",
+                    "mtr_last_pct": int(float(row["mtr"]) * 100),
+                    "mtr_this_pct": int(float(row["mtr_prime"]) * 100),
+                }
+            )
+            scenarios.append(scenario)
 
-        with tqdm(total=len(scenarios_df), desc="Running simulations") as pbar:
-            for _, row in scenarios_df.iterrows():
-                results = self.run_single_simulation(row.to_dict())
-                all_results.extend(results)
-                pbar.update(1)
-
+        raw_results = self.client.run_batched_surveys(
+            scenarios,
+            survey_type="tax",
+            responses_per_scenario=self.params.responses_per_household,
+            batch_size=self.params.batch_size,
+            max_in_flight=self.params.max_in_flight,
+            fresh=True,
+        )
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        all_results = [
+            {
+                "timestamp": timestamp,
+                "tax_unit_id": result.get("tax_unit_id"),
+                "filing_status": result.get("filing_status"),
+                "broad_income": result["broad_income"],
+                "taxable_income": result["taxable_income"],
+                "mtr": result["mtr"],
+                "mtr_prime": result["mtr_prime"],
+                "response_number": result["response_number"],
+                "taxable_income_this": result.get("taxable_income_this"),
+                "broad_income_this": result.get("broad_income_this"),
+                "implied_eti_taxable": result.get("implied_eti_taxable"),
+                "implied_eti_broad": result.get("implied_eti_broad"),
+                "model": result.get("model", self.client.model),
+                "income_response_raw": result.get("income_response_raw"),
+            }
+            for result in raw_results
+        ]
         return pd.DataFrame(all_results)
 
 
@@ -170,6 +198,9 @@ class LabExperimentSimulation:
         subjects_per_treatment: int = 100,
         low_rate: float = 25.0,
         high_rate: float = 50.0,
+        checkpoint_path: Optional[Path] = None,
+        batch_size: int = 100,
+        max_in_flight: int = 1,
     ) -> pd.DataFrame:
         """Run the full lab experiment simulation.
 
@@ -191,69 +222,129 @@ class LabExperimentSimulation:
         instructions = self.client.create_instructions_text(
             rounds=rounds, wage_per_unit=self.config["wage_per_unit"]
         )
-        all_results = []
 
+        # Load checkpoint if it exists
+        all_results: List[Dict] = []
+        completed_set: set = set()
+        if checkpoint_path is not None and Path(checkpoint_path).exists():
+            try:
+                existing_df = pd.read_csv(checkpoint_path)
+                if not existing_df.empty:
+                    all_results = existing_df.to_dict("records")
+                    for row in all_results:
+                        completed_set.add(
+                            (
+                                str(row["treatment"]),
+                                int(row["subject_id"]),
+                                int(row["round"]),
+                            )
+                        )
+                    print(
+                        f"Resuming from checkpoint: {len(all_results)} results loaded "
+                        f"({len(completed_set)} (treatment, subject, round) tuples completed)"
+                    )
+            except Exception as e:
+                print(f"Warning: Could not load checkpoint {checkpoint_path}: {e}")
+                all_results = []
+                completed_set = set()
+
+        scenarios: List[Dict] = []
         for treatment_label in treatments:
             try:
                 treatment = Treatment.from_label(treatment_label)
             except ValueError:
                 print(f"Warning: Unknown treatment '{treatment_label}', skipping")
                 continue
-
+            output_label = treatment.label.replace(
+                "Flat25", f"Flat{int(low_rate)}"
+            ).replace("Flat50", f"Flat{int(high_rate)}")
             for subject_id in range(subjects_per_treatment):
-                # Random labor endowments for each round
-                labor_endowments = np.random.randint(
+                # Python's hash is randomized between processes; a stable seed is
+                # required for checkpoints to reproduce the same work items.
+                seed = (
+                    int.from_bytes(
+                        hashlib.sha256(treatment_label.encode()).digest()[:4], "big"
+                    )
+                    + subject_id
+                )
+                rng = np.random.default_rng(seed)
+                labor_endowments = rng.integers(
                     int(self.config["labor_endowment_min"]),
                     int(self.config["labor_endowment_max"]) + 1,
                     size=rounds,
                 )
-
-                for round_idx in range(rounds):
-                    round_num = round_idx + 1  # 1-based round number
-
-                    # Get tax schedule for this round
+                for round_idx, labor_endowment in enumerate(labor_endowments):
+                    round_num = round_idx + 1
+                    if (output_label, subject_id, round_num) in completed_set:
+                        continue
                     schedule = treatment.get_schedule_for_round(round_num, rounds)
-
-                    scenario = {
-                        "round_num": round_num,
-                        "tax_schedule": schedule.value,
-                        "labor_endowment": int(labor_endowments[round_idx]),
-                        "wage_per_unit": self.config["wage_per_unit"],
-                        "rounds": rounds,
-                        "low_rate": low_rate,
-                        "high_rate": high_rate,
-                    }
-
-                    # Run survey
-                    results = self.client.run_batch_surveys(
-                        [scenario],
-                        n=1,
-                        survey_type="lab",
-                        agent_instruction=instructions,
+                    max_income = int(labor_endowment * self.config["wage_per_unit"])
+                    if schedule.value == "progressive":
+                        tax_text = (
+                            f"In this round, the tax rate is {low_rate}% for incomes equal to or below 400 cents. "
+                            f"The tax rate is {high_rate}% on the entire income if income exceeds 400 cents."
+                        )
+                    else:
+                        rate = low_rate if schedule.value == "flat25" else high_rate
+                        tax_text = (
+                            f"In this round, the tax rate is {rate}% for all incomes."
+                        )
+                    scenarios.append(
+                        {
+                            "work_id": f"lab-{output_label}-{subject_id}-{round_num}",
+                            "treatment": output_label,
+                            "subject_id": subject_id,
+                            "round": round_num,
+                            "round_num": round_num,
+                            "tax_schedule": schedule.value,
+                            "labor_endowment": int(labor_endowment),
+                            "wage_per_unit": self.config["wage_per_unit"],
+                            "rounds": rounds,
+                            "max_income": max_income,
+                            "tax_text": tax_text,
+                        }
                     )
 
-                    if results:
-                        result = results[0]
-                        income_choice = result.get("income", 0)
+        def format_result(result: Dict) -> Dict:
+            income_choice = result.get("income")
+            return {
+                "treatment": result["treatment"],
+                "subject_id": result["subject_id"],
+                "round": result["round"],
+                "tax_schedule": result["tax_schedule"],
+                "labor_endowment": result["labor_endowment"],
+                "labor_supply": (
+                    income_choice / result["wage_per_unit"]
+                    if income_choice is not None
+                    else None
+                ),
+                "income": income_choice,
+                "post_reform": result["round"] > rounds // 2,
+                "model": result.get("model", self.client.model),
+                "response_error": result.get("parse_failed", False),
+            }
 
-                        # Relabel treatment to reflect actual rates used
-                        output_label = treatment.label.replace(
-                            "Flat25", f"Flat{int(low_rate)}"
-                        ).replace("Flat50", f"Flat{int(high_rate)}")
+        def checkpoint_chunk(chunk_results: List[Dict]) -> None:
+            if checkpoint_path is None or not chunk_results:
+                return
+            pd.DataFrame([format_result(result) for result in chunk_results]).to_csv(
+                checkpoint_path,
+                mode="a",
+                header=not Path(checkpoint_path).exists(),
+                index=False,
+            )
 
-                        all_results.append(
-                            {
-                                "treatment": output_label,
-                                "subject_id": subject_id,
-                                "round": round_num,
-                                "tax_schedule": schedule.value,
-                                "labor_endowment": labor_endowments[round_idx],
-                                "labor_supply": income_choice
-                                / self.config["wage_per_unit"],
-                                "income": income_choice,
-                                "post_reform": round_num > rounds // 2,
-                                "model": result.get("model", self.client.model),
-                            }
-                        )
+        raw_results = self.client.run_batched_surveys(
+            scenarios,
+            survey_type="lab",
+            agent_instruction=instructions,
+            batch_size=batch_size,
+            max_in_flight=max_in_flight,
+            fresh=True,
+            on_chunk_complete=checkpoint_chunk,
+        )
+        for result in raw_results:
+            row_data = format_result(result)
+            all_results.append(row_data)
 
         return pd.DataFrame(all_results)

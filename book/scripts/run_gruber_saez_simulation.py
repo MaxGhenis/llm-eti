@@ -25,6 +25,7 @@ ALL_MODELS = [
     "gpt-4o",
     "deepseek-ai/DeepSeek-V3",
     "claude-haiku-4-5-20251001",
+    "google/gemma-4-26B-A4B-it",
 ]
 
 
@@ -45,6 +46,8 @@ def main():
     parser.add_argument(
         "--cache-analysis", action="store_true", help="Analyze cache usage after run"
     )
+    parser.add_argument("--batch-size", type=int, default=100)
+    parser.add_argument("--max-in-flight", type=int, default=1)
     args = parser.parse_args()
 
     # Check for API key
@@ -72,16 +75,26 @@ def main():
         params = SimulationParams(
             responses_per_household=args.responses,
             test_mode=args.test,
+            batch_size=args.batch_size,
+            max_in_flight=args.max_in_flight,
         )
 
         print("Running simulation with:")
         print(f"  - Model: {model}")
         print(f"  - Responses per household: {args.responses}")
         print(f"  - Cache enabled: {client.use_cache}")
+        print("  - Fresh responses: True")
+        print(f"  - Batch size: {args.batch_size}")
+        print(f"  - Max in-flight jobs: {args.max_in_flight}")
 
         # Run simulation
         simulation = TaxSimulation(client, params)
         results_df = simulation.run_bulk_simulation(CSV_PATH)
+        if results_df.empty:
+            raise RuntimeError(
+                "Simulation produced no result rows; refusing to write empty CSV "
+                f"for model {model}"
+            )
 
         # Save results
         output_dir = Path(__file__).parent.parent / "data"
