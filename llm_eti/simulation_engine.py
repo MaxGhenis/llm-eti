@@ -23,6 +23,8 @@ from .lab_checkpoint import (
 class SimulationParams:
     responses_per_household: int
     test_mode: bool = False
+    batch_size: int = 100
+    max_in_flight: int = 1
 
 
 class TaxSimulation:
@@ -129,14 +131,46 @@ class TaxSimulation:
             DataFrame of all results
         """
         scenarios_df = self.load_scenarios(csv_path)
-        all_results = []
+        scenarios = []
+        for index, row in scenarios_df.iterrows():
+            scenario = row.to_dict()
+            scenario.update(
+                {
+                    "work_id": f"tax-{index}",
+                    "mtr_last_pct": int(float(row["mtr"]) * 100),
+                    "mtr_this_pct": int(float(row["mtr_prime"]) * 100),
+                }
+            )
+            scenarios.append(scenario)
 
-        with tqdm(total=len(scenarios_df), desc="Running simulations") as pbar:
-            for _, row in scenarios_df.iterrows():
-                results = self.run_single_simulation(row.to_dict())
-                all_results.extend(results)
-                pbar.update(1)
-
+        raw_results = self.client.run_batched_surveys(
+            scenarios,
+            survey_type="tax",
+            responses_per_scenario=self.params.responses_per_household,
+            batch_size=self.params.batch_size,
+            max_in_flight=self.params.max_in_flight,
+            fresh=True,
+        )
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        all_results = [
+            {
+                "timestamp": timestamp,
+                "tax_unit_id": result.get("tax_unit_id"),
+                "filing_status": result.get("filing_status"),
+                "broad_income": result["broad_income"],
+                "taxable_income": result["taxable_income"],
+                "mtr": result["mtr"],
+                "mtr_prime": result["mtr_prime"],
+                "response_number": result["response_number"],
+                "taxable_income_this": result.get("taxable_income_this"),
+                "broad_income_this": result.get("broad_income_this"),
+                "implied_eti_taxable": result.get("implied_eti_taxable"),
+                "implied_eti_broad": result.get("implied_eti_broad"),
+                "model": result.get("model", self.client.model),
+                "income_response_raw": result.get("income_response_raw"),
+            }
+            for result in raw_results
+        ]
         return pd.DataFrame(all_results)
 
 
@@ -172,8 +206,14 @@ class LabExperimentSimulation:
         low_rate: float = 25.0,
         high_rate: float = 50.0,
         seed: int = 0,
+        execution: str = "serial",
     ) -> Dict:
-        """Build the full offline design without issuing a survey request."""
+        """Build the full offline design without issuing a survey request.
+
+        ``execution`` ("serial" or "batched") selects the prompt builder and
+        executor whose source is bound into the manifest, so a ledger written
+        by one path can never be resumed by the other.
+        """
         return build_manifest(
             self.client,
             self.config,
@@ -183,6 +223,7 @@ class LabExperimentSimulation:
             low_rate,
             high_rate,
             seed,
+            execution=execution,
         )
 
     def run_experiment(
@@ -194,6 +235,8 @@ class LabExperimentSimulation:
         high_rate: float = 50.0,
         checkpoint_path: Optional[Path] = None,
         seed: int = 0,
+        batch_size: Optional[int] = None,
+        max_in_flight: int = 1,
     ) -> pd.DataFrame:
         """Run or resume only a manifest-compatible experiment.
 
@@ -201,14 +244,29 @@ class LabExperimentSimulation:
         count as completed; zero is a valid income. This method returns the latest
         row per planned scenario, while preserving failures/retries in the ledger.
         Legacy manifest-free CSVs are never reused or overwritten automatically.
+
+        ``batch_size=None`` issues one request per scenario (serial path). An
+        integer submits pending scenarios as concurrent remote EDSL jobs of that
+        size (``max_in_flight`` at a time); every returned row is written to the
+        same ledger as each chunk completes.
         """
+        execution = "serial" if batch_size is None else "batched"
         manifest = self.experiment_manifest(
-            treatments, rounds, subjects_per_treatment, low_rate, high_rate, seed
+            treatments,
+            rounds,
+            subjects_per_treatment,
+            low_rate,
+            high_rate,
+            seed,
+            execution=execution,
         )
         path = None if checkpoint_path is None else Path(checkpoint_path)
         with checkpoint_lock(path):
             records = prepare_checkpoint(path, manifest)
             latest = {row["scenario_id"]: row for row in records}
+            if batch_size is not None:
+                self._run_batched(manifest, path, latest, batch_size, max_in_flight)
+                return pd.DataFrame(list(latest.values()), columns=RECORD_FIELDS)
             with tqdm(total=len(manifest["scenarios"]), desc="Lab experiment") as pbar:
                 for scenario in manifest["scenarios"]:
                     scenario_id = scenario["scenario_id"]
@@ -253,6 +311,84 @@ class LabExperimentSimulation:
                     latest[scenario_id] = row
                     pbar.update(1)
             return pd.DataFrame(list(latest.values()), columns=RECORD_FIELDS)
+
+    def _run_batched(
+        self,
+        manifest: Dict,
+        path: Optional[Path],
+        latest: Dict,
+        batch_size: int,
+        max_in_flight: int,
+    ) -> None:
+        """Submit pending scenarios in chunks; append each result to the ledger."""
+        by_id = {
+            scenario["scenario_id"]: scenario for scenario in manifest["scenarios"]
+        }
+        requests = []
+        for scenario in manifest["scenarios"]:
+            previous = latest.get(scenario["scenario_id"])
+            if previous is not None and previous["status"] == "success":
+                continue
+            if scenario["tax_schedule"] == "progressive":
+                tax_text = (
+                    f"In this round, the tax rate is {scenario['low_rate']}% for incomes equal to or below 400 cents. "
+                    f"The tax rate is {scenario['high_rate']}% on the entire income if income exceeds 400 cents."
+                )
+            else:
+                rate = (
+                    scenario["low_rate"]
+                    if scenario["tax_schedule"] == "flat25"
+                    else scenario["high_rate"]
+                )
+                tax_text = f"In this round, the tax rate is {rate}% for all incomes."
+            requests.append(
+                {
+                    **scenario,
+                    "work_id": scenario["scenario_id"],
+                    "round_num": scenario["round"],
+                    "max_income": int(
+                        scenario["labor_endowment"] * scenario["wage_per_unit"]
+                    ),
+                    "tax_text": tax_text,
+                }
+            )
+        if not requests:
+            return
+
+        def record(scenario_id: str, result: Dict) -> None:
+            row = self._checkpoint_row(
+                manifest, by_id[scenario_id], latest.get(scenario_id), result
+            )
+            append_record(path, row)
+            latest[scenario_id] = row
+
+        returned: set = set()
+
+        def checkpoint_chunk(chunk_results: List[Dict]) -> None:
+            # Runs on the caller's thread, which holds the checkpoint lock.
+            for result in chunk_results:
+                scenario_id = str(result.get("work_id"))
+                if scenario_id not in by_id or scenario_id in returned:
+                    continue
+                returned.add(scenario_id)
+                record(scenario_id, result)
+
+        self.client.run_batched_surveys(
+            requests,
+            survey_type="lab",
+            agent_instruction=manifest["spec"]["instructions"],
+            batch_size=batch_size,
+            max_in_flight=max_in_flight,
+            fresh=True,
+            on_chunk_complete=checkpoint_chunk,
+        )
+        # A completed job that silently omitted a scenario is a failed attempt.
+        for request in requests:
+            if request["work_id"] not in returned:
+                record(
+                    request["work_id"],
+                    {"response_raw": "no result returned by batched EDSL job"},
+                )
 
     def _checkpoint_row(self, manifest, scenario, previous, result):
         income = result.get("income")

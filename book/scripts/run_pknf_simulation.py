@@ -55,6 +55,13 @@ def main():
         default=Path(__file__).parent.parent / "data",
         help="Results directory; use a new directory for incompatible experiments",
     )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=100,
+        help="Scenarios per remote EDSL job; 0 sends one request at a time (serial)",
+    )
+    parser.add_argument("--max-in-flight", type=int, default=1)
     args = parser.parse_args()
 
     # Check for API key
@@ -103,6 +110,8 @@ def main():
         print(f"  - Cache enabled: {client.use_cache}")
         print(f"  - Low rate: {args.low_rate}%")
         print(f"  - High rate: {args.high_rate}%")
+        print(f"  - Batch size: {args.batch_size}")
+        print(f"  - Max in-flight jobs: {args.max_in_flight}")
 
         # Keep immutable attempts separate from the derived latest-row result CSV.
         output_dir = args.output_dir
@@ -131,6 +140,8 @@ def main():
             high_rate=args.high_rate,
             checkpoint_path=checkpoint_path,
             seed=args.seed,
+            batch_size=args.batch_size or None,
+            max_in_flight=args.max_in_flight,
         )
 
         # Derived snapshot only; failed attempts remain in the separate checkpoint.

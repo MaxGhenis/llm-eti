@@ -65,10 +65,26 @@ def rate_label(rate: float) -> str:
     return str(int(value)) if value.is_integer() else repr(value)
 
 
+EXECUTION_METHODS = {
+    "serial": ("create_lab_experiment_survey", "run_batch_surveys"),
+    "batched": ("create_lab_experiment_survey_template", "run_batched_surveys"),
+}
+
+
 def build_manifest(
-    client, config, treatments, rounds, subjects, low_rate, high_rate, seed
+    client,
+    config,
+    treatments,
+    rounds,
+    subjects,
+    low_rate,
+    high_rate,
+    seed,
+    execution="serial",
 ) -> dict:
     """Materialize the complete design before requests, using a stable RNG seed."""
+    if execution not in EXECUTION_METHODS:
+        raise ValueError(f"execution must be one of {sorted(EXECUTION_METHODS)}")
     for name, value, minimum in (
         ("rounds", rounds, 2),
         ("subjects", subjects, 1),
@@ -113,11 +129,12 @@ def build_manifest(
         "edsl_version": edsl_version,
         "config": dict(config),
         "instructions": instructions,
+        "execution": execution,
         "client_source_sha256": {
             name: hashlib.sha256(
                 inspect.getsource(getattr(client, name)).encode()
             ).hexdigest()
-            for name in ("create_lab_experiment_survey", "run_batch_surveys")
+            for name in EXECUTION_METHODS[execution]
         },
         "implementation_sha256": {
             name: hashlib.sha256(

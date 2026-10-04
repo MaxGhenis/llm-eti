@@ -14,6 +14,7 @@ Loops over all pknf_results_*.csv files in book/data/ and generates:
 Expected filename format: pknf_results_{model}_{flat_rate}pct_{top_rate}pct.csv
 """
 
+import re
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -157,16 +158,20 @@ def parse_filename(csv_path: Path) -> tuple[str, float, float]:
     """
     Parse model name, flat rate, and top rate from filename.
 
-    Expected format: pknf_results_{model}_{flat_rate}pct_{top_rate}pct.csv
-    Uses rsplit to handle model names that contain underscores (e.g., google_gemma-...).
+    Expected format: pknf_results_{model}_{flat_rate}pct_{top_rate}pct.csv, with the
+    optional "_{rounds}rounds_seed{seed}" suffix written by the checkpointed runner.
+    Model names may contain underscores (e.g., google_gemma-...).
     """
-    stem = csv_path.stem  # e.g., "pknf_results_gpt-4o-mini_25pct_50pct"
-    rest = stem[len("pknf_results_") :]  # e.g., "gpt-4o-mini_25pct_50pct"
-    parts = rest.rsplit("_", 2)  # ["gpt-4o-mini", "25pct", "50pct"]
-    model = parts[0]
-    flat_rate = float(parts[1].replace("pct", "")) / 100
-    top_rate = float(parts[2].replace("pct", "")) / 100
-    return model, flat_rate, top_rate
+    match = re.fullmatch(
+        r"pknf_results_(?P<model>.+)_(?P<flat>[0-9.]+)pct_(?P<top>[0-9.]+)pct"
+        r"(?:_(?P<rounds>\d+)rounds_seed(?P<seed>\d+))?",
+        csv_path.stem,
+    )
+    if match is None:
+        raise ValueError(f"Unrecognized PKNF results filename: {csv_path.name}")
+    flat_rate = float(match["flat"]) / 100
+    top_rate = float(match["top"]) / 100
+    return match["model"], flat_rate, top_rate
 
 
 def get_eti_divisor(treatment: str, top_rate: float) -> float | None:
